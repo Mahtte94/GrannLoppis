@@ -1,27 +1,27 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../types';
 import { theme } from '../../styles/theme';
 
-type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
+type RegisterScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Register'>;
 
-export default function LoginScreen() {
-  const navigation = useNavigation<LoginScreenNavigationProp>();
+export default function RegisterScreen() {
+  const navigation = useNavigation<RegisterScreenNavigationProp>();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>GrannLoppis</Text>
-      <Text style={styles.subtitle}>Welcome back!</Text>
+      <Text style={styles.title}>Välkommen till LoppisRundan!</Text>
+      <Text style={styles.subtitle}>Gå med i LoppisRundan idag!</Text>
 
-      <Text style={styles.placeholder}>Login form coming soon...</Text>
+      <Text style={styles.placeholder}>Registration form coming soon...</Text>
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('Register')}
+        onPress={() => navigation.navigate('RoleSelection')}
       >
-        <Text style={styles.buttonText}>Go to Register</Text>
+        <Text style={styles.buttonText}>Välj din roll</Text>
       </TouchableOpacity>
     </View>
   );
@@ -56,10 +56,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.md,
     borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.md,
   },
   buttonText: {
     color: theme.colors.white,
     fontSize: theme.fontSize.md,
     fontWeight: '600',
+  },
+  linkButton: {
+    marginTop: theme.spacing.sm,
+  },
+  linkText: {
+    color: theme.colors.primary,
+    fontSize: theme.fontSize.sm,
   },
 });
