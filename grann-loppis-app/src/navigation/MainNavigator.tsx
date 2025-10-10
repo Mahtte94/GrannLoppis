@@ -17,6 +17,7 @@ import AddItemScreen from '../screens/seller/AddItemScreen';
 
 // Buyer screens
 import BrowseEventsScreen from '../screens/buyer/BrowseEventsScreen';
+import EventDetailsScreen from '../screens/buyer/EventDetailsScreen';
 import { EventMapScreen } from '../screens/buyer/EventMapScreen';
 import SellerDetailsScreen from '../screens/buyer/SellerDetailsScreen';
 
@@ -81,6 +82,11 @@ function BuyerNavigator() {
         name="BrowseEvents"
         component={BrowseEventsScreen}
         options={{ title: 'Browse Events' }}
+      />
+      <BuyerStack.Screen
+        name="EventDetails"
+        component={EventDetailsScreen}
+        options={{ title: 'Event Details' }}
       />
       <BuyerStack.Screen
         name="EventMap"

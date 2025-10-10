@@ -27,6 +27,7 @@ export type SellerStackParamList = {
 
 export type BuyerStackParamList = {
   BrowseEvents: undefined;
+  EventDetails: { eventId: string };
   EventMap: { eventId: string };
   SellerDetails: { participantId: string };
 };
