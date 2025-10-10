@@ -20,31 +20,31 @@ export default function RoleSelectionScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Select Your Role</Text>
-      <Text style={styles.subtitle}>How do you want to use GrannLoppis?</Text>
+      <Text style={styles.title}>Välj din roll</Text>
+      <Text style={styles.subtitle}>Hur vill du använda GrannLoppis?</Text>
 
       <TouchableOpacity
         style={styles.roleButton}
-        onPress={() => selectRole(UserRole.BUYER)}
+        onPress={() => selectRole(UserRole.ORGANIZER)}
       >
-        <Text style={styles.roleTitle}>Buyer</Text>
-        <Text style={styles.roleDescription}>Browse events and find great deals</Text>
+        <Text style={styles.roleTitle}>Arrangör</Text>
+        <Text style={styles.roleDescription}>Skapa och hantera evenemang</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.roleButton}
         onPress={() => selectRole(UserRole.SELLER)}
       >
-        <Text style={styles.roleTitle}>Seller</Text>
-        <Text style={styles.roleDescription}>Join events and sell your items</Text>
+        <Text style={styles.roleTitle}>Säljare</Text>
+        <Text style={styles.roleDescription}>Gå med i evenemang och sälj dina saker</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.roleButton}
-        onPress={() => selectRole(UserRole.ORGANIZER)}
+        onPress={() => selectRole(UserRole.BUYER)}
       >
-        <Text style={styles.roleTitle}>Organizer</Text>
-        <Text style={styles.roleDescription}>Create and manage events</Text>
+        <Text style={styles.roleTitle}>Köpare</Text>
+        <Text style={styles.roleDescription}>Bläddra bland evenemang och hitta fynd</Text>
       </TouchableOpacity>
     </View>
   );

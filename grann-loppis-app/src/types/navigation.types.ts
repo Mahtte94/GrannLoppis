@@ -13,8 +13,8 @@ export type AuthStackParamList = {
 };
 
 export type OrganizerStackParamList = {
+  ManageEvent: undefined;
   CreateEvent: undefined;
-  ManageEvent: { eventId: string };
   ParticipantsList: { eventId: string };
 };
 

@@ -30,14 +30,14 @@ function OrganizerNavigator() {
   return (
     <OrganizerStack.Navigator>
       <OrganizerStack.Screen
+        name="ManageEvent"
+        component={ManageEventScreen}
+        options={{ title: 'My Events' }}
+      />
+      <OrganizerStack.Screen
         name="CreateEvent"
         component={CreateEventScreen}
         options={{ title: 'Create Event' }}
-      />
-      <OrganizerStack.Screen
-        name="ManageEvent"
-        component={ManageEventScreen}
-        options={{ title: 'Manage Event' }}
       />
       <OrganizerStack.Screen
         name="ParticipantsList"

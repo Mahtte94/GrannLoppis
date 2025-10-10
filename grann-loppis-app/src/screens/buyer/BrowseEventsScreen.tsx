@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, FlatList } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { BuyerStackParamList, Event, EventStatus } from '../../types';
 import { useAuth } from '../../context/AuthContext';
+import { EventCard } from '../../components/EventCard';
+import { Loading } from '../../components/common/Loading';
 import { theme } from '../../styles/theme';
 
 type BrowseEventsScreenNavigationProp = StackNavigationProp<BuyerStackParamList, 'BrowseEvents'>;
@@ -14,6 +16,7 @@ export default function BrowseEventsScreen() {
   const { setUser } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('list');
   const [region] = useState<Region>({
     latitude: 59.3293,
     longitude: 18.0686,
@@ -83,12 +86,7 @@ export default function BrowseEventsScreen() {
   };
 
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={styles.loadingText}>Loading events...</Text>
-      </View>
-    );
+    return <Loading message="Loading events..." fullScreen />;
   }
 
   return (
@@ -103,31 +101,66 @@ export default function BrowseEventsScreen() {
             <Text style={styles.logoutText}>Change Role</Text>
           </TouchableOpacity>
         </View>
+
+        <View style={styles.viewToggle}>
+          <TouchableOpacity
+            style={[styles.toggleButton, viewMode === 'list' && styles.toggleButtonActive]}
+            onPress={() => setViewMode('list')}
+          >
+            <Text style={[styles.toggleText, viewMode === 'list' && styles.toggleTextActive]}>
+              List
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.toggleButton, viewMode === 'map' && styles.toggleButtonActive]}
+            onPress={() => setViewMode('map')}
+          >
+            <Text style={[styles.toggleText, viewMode === 'map' && styles.toggleTextActive]}>
+              Map
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <MapView
-        style={styles.map}
-        provider={PROVIDER_GOOGLE}
-        initialRegion={region}
-        showsUserLocation={true}
-      >
-        {events.map((event, index) => {
-          // Spread events around Stockholm for demo
-          const lat = 59.3293 + (index - 1) * 0.015;
-          const lng = 18.0686 + (index - 1) * 0.02;
+      {viewMode === 'list' ? (
+        <FlatList
+          data={events}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <EventCard event={item} onPress={handleEventPress} />
+          )}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No events found</Text>
+            </View>
+          }
+        />
+      ) : (
+        <MapView
+          style={styles.map}
+          provider={PROVIDER_GOOGLE}
+          initialRegion={region}
+          showsUserLocation={true}
+        >
+          {events.map((event, index) => {
+            // Spread events around Stockholm for demo
+            const lat = 59.3293 + (index - 1) * 0.015;
+            const lng = 18.0686 + (index - 1) * 0.02;
 
-          return (
-            <Marker
-              key={event.id}
-              coordinate={{ latitude: lat, longitude: lng }}
-              pinColor={event.status === EventStatus.ACTIVE ? theme.colors.success : theme.colors.secondary}
-              onPress={() => handleEventPress(event)}
-              title={event.name}
-              description={`${event.participants} sellers • ${event.area}`}
-            />
-          );
-        })}
-      </MapView>
+            return (
+              <Marker
+                key={event.id}
+                coordinate={{ latitude: lat, longitude: lng }}
+                pinColor={event.status === EventStatus.ACTIVE ? theme.colors.success : theme.colors.secondary}
+                onPress={() => handleEventPress(event)}
+                title={event.name}
+                description={`${event.participants} sellers • ${event.area}`}
+              />
+            );
+          })}
+        </MapView>
+      )}
     </View>
   );
 }
@@ -135,17 +168,7 @@ export default function BrowseEventsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: theme.colors.background,
-  },
-  loadingText: {
-    marginTop: theme.spacing.md,
-    fontSize: theme.fontSize.md,
-    color: theme.colors.textLight,
   },
   header: {
     padding: theme.spacing.xl,
@@ -158,6 +181,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: theme.spacing.md,
   },
   title: {
     fontSize: theme.fontSize.xxl,
@@ -181,6 +205,40 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: theme.fontSize.sm,
     fontWeight: '600',
+  },
+  viewToggle: {
+    flexDirection: 'row',
+    backgroundColor: theme.colors.background,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.xs,
+  },
+  toggleButton: {
+    flex: 1,
+    paddingVertical: theme.spacing.sm,
+    alignItems: 'center',
+    borderRadius: theme.borderRadius.sm,
+  },
+  toggleButtonActive: {
+    backgroundColor: theme.colors.primary,
+  },
+  toggleText: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: '600',
+    color: theme.colors.textLight,
+  },
+  toggleTextActive: {
+    color: theme.colors.white,
+  },
+  listContent: {
+    padding: theme.spacing.md,
+  },
+  emptyContainer: {
+    padding: theme.spacing.xl,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.textLight,
   },
   map: {
     flex: 1,
