@@ -1,25 +1,15 @@
-import React, { useState } from "react";
+import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { AuthProvider } from "./src/context/AuthContext";
 import AppNavigator from "./src/navigation/AppNavigator";
-import { View, Text, TextInput, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 
 export default function App() {
-  const [text, setText] = useState("Edit me!");
 
   return (
     <AuthProvider>
       <StatusBar style="auto" />
-      <View style={styles.container}>
-        <Text style={styles.label}>Type something:</Text>
-        <TextInput
-          style={styles.input}
-          value={text}
-          onChangeText={setText}
-          placeholder="Start typing..."
-        />
-        <Text style={styles.output}>You typed: {text}</Text>
-      </View>
+      
       <AppNavigator />
     </AuthProvider>
   );
