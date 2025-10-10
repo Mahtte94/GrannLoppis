@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, TabActions } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../types';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
+import { authService, userService } from '../../services/firebase';
+import { useAuth } from '../../context/AuthContext';
 import { theme } from '../../styles/theme';
 
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
 export default function LoginScreen() {
   const navigation = useNavigation<LoginScreenNavigationProp>();
+  const { setUser } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({ email: '', password: '' });
@@ -45,17 +48,39 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      // TODO: Implement actual login logic with Firebase
-      // await authService.login(email, password);
+      // Login with Firebase
+      const firebaseUser = await authService.login({ email, password });
+      console.log('✅ Login successful! Firebase user:', firebaseUser.uid);
 
-      // For now, just simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Fetch user profile and update context manually
+      const userProfile = await userService.getUserProfile(firebaseUser.uid);
+      console.log('✅ User profile fetched:', userProfile);
 
-      // Navigate to RoleSelection after successful login
-      navigation.navigate('RoleSelection');
-    } catch (error) {
-      setErrors({ ...errors, password: 'Invalid email or password' });
-    } finally {
+      if (userProfile) {
+        // Update the auth context
+        setUser(userProfile);
+        console.log('✅ Auth context updated - waiting for tabs to update...');
+
+        // Wait for tabs to update, then navigate
+        setTimeout(() => {
+          const targetTab = userProfile.role === 'organizer' ? 'OrganizerTab' : userProfile.role === 'seller' ? 'SellerTab' : 'BuyerTab';
+          const parent = navigation.getParent();
+
+          if (parent) {
+            try {
+              parent.dispatch(TabActions.jumpTo(targetTab));
+              console.log(`✈️ Successfully navigated to ${targetTab}`);
+            } catch (error) {
+              console.log('✈️ Navigation failed:', error);
+            }
+          }
+        }, 100);
+      }
+
+      setLoading(false);
+    } catch (error: any) {
+      console.error('❌ Login error:', error);
+      setErrors({ ...errors, password: error.message || 'Invalid email or password' });
       setLoading(false);
     }
   };
@@ -111,7 +136,7 @@ export default function LoginScreen() {
 
             <Button
               title="Har du inget konto? Registrera dig"
-              onPress={() => navigation.navigate('RoleSelection')}
+              onPress={() => navigation.navigate('Register')}
               variant="outline"
               style={styles.registerButton}
             />
@@ -156,5 +181,31 @@ const styles = StyleSheet.create({
   },
   registerButton: {
     marginTop: theme.spacing.md,
+  },
+  successContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: theme.spacing.xl,
+    backgroundColor: theme.colors.background,
+  },
+  successTitle: {
+    fontSize: theme.fontSize.xxl,
+    fontWeight: 'bold',
+    color: theme.colors.primary,
+    marginBottom: theme.spacing.md,
+    textAlign: 'center',
+  },
+  successText: {
+    fontSize: theme.fontSize.lg,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xl,
+    textAlign: 'center',
+  },
+  successHint: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.textLight,
+    textAlign: 'center',
+    lineHeight: 24,
   },
 });

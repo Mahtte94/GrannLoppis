@@ -1,19 +1,45 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../context/AuthContext';
+import { eventsService, authService } from '../../services/firebase';
+import { auth } from '../../../firebase.config';
 import { theme } from '../../styles/theme';
 
 export default function CreateEventScreen() {
   const navigation = useNavigation();
-  const { setUser } = useAuth();
+  const { user } = useAuth();
   const [eventName, setEventName] = useState('');
   const [area, setArea] = useState('');
   const [date, setDate] = useState('');
   const [errors, setErrors] = useState({ eventName: '', area: '', date: '' });
   const [loading, setLoading] = useState(false);
+
+  const testFirebaseAuth = async () => {
+    console.log('=== FIREBASE AUTH TEST ===');
+    console.log('Firebase Auth instance:', auth);
+    console.log('Current Firebase user:', auth.currentUser);
+    console.log('Context user:', user);
+
+    if (auth.currentUser) {
+      try {
+        const token = await auth.currentUser.getIdToken();
+        console.log('Auth token exists:', !!token);
+        console.log('Token preview:', token.substring(0, 50) + '...');
+      } catch (error) {
+        console.error('Error getting token:', error);
+      }
+    } else {
+      console.log('NO FIREBASE USER - NOT AUTHENTICATED!');
+    }
+
+    Alert.alert(
+      'Debug Info',
+      `Firebase User: ${auth.currentUser ? 'YES' : 'NO'}\nContext User: ${user ? 'YES' : 'NO'}\nUser ID: ${user?.id || 'N/A'}\n\nCheck console for details`
+    );
+  };
 
   const validateForm = () => {
     const newErrors = { eventName: '', area: '', date: '' };
@@ -41,30 +67,66 @@ export default function CreateEventScreen() {
   const handleCreateEvent = async () => {
     if (!validateForm()) return;
 
+    if (!user) {
+      Alert.alert('Error', 'You must be logged in to create an event');
+      return;
+    }
+
     setLoading(true);
     try {
-      // TODO: Implement actual event creation logic with Firebase
-      // const eventData = {
-      //   name: eventName,
-      //   area: area,
-      //   date: new Date(date),
-      // };
-      // await eventsService.createEvent(eventData);
+      // Debug: Log current user and auth state
+      console.log('Current user:', user);
+      console.log('User ID:', user.id);
 
-      // For now, just simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Parse the date string to a Date object
+      const eventDate = new Date(date);
+
+      if (isNaN(eventDate.getTime())) {
+        Alert.alert('Invalid Date', 'Please enter a valid date in YYYY-MM-DD format');
+        setLoading(false);
+        return;
+      }
+
+      console.log('Creating event with data:', {
+        name: eventName,
+        area: area,
+        date: eventDate,
+        organizerId: user.id,
+      });
+
+      // Create the event in Firebase
+      const createdEvent = await eventsService.createEvent({
+        name: eventName,
+        area: area,
+        date: eventDate,
+        organizerId: user.id,
+      });
+
+      console.log('Event created successfully:', createdEvent);
 
       // Clear form after successful creation
       setEventName('');
       setArea('');
       setDate('');
 
-      // Optionally navigate if there's a screen to go back to
-      if (navigation.canGoBack()) {
-        navigation.goBack();
-      }
-    } catch (error) {
+      // Show success message with event code
+      Alert.alert(
+        'Event Created!',
+        `Your event "${createdEvent.name}" has been created successfully!\n\nEvent Code: ${createdEvent.eventCode}\n\nShare this code with sellers so they can join your event.`,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              if (navigation.canGoBack()) {
+                navigation.goBack();
+              }
+            },
+          },
+        ]
+      );
+    } catch (error: any) {
       console.error('Error creating event:', error);
+      Alert.alert('Error', error.message || 'Failed to create event. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -126,6 +188,13 @@ export default function CreateEventScreen() {
             </View>
 
             <Button
+              title="Debug: Test Auth"
+              onPress={testFirebaseAuth}
+              variant="outline"
+              style={styles.debugButton}
+            />
+
+            <Button
               title="Skapa evenemang"
               onPress={handleCreateEvent}
               loading={loading}
@@ -134,8 +203,14 @@ export default function CreateEventScreen() {
             />
 
             <Button
-              title="Avbryt"
-              onPress={() => setUser(null)}
+              title="Logga ut"
+              onPress={async () => {
+                try {
+                  await authService.logout();
+                } catch (error) {
+                  console.error('Logout error:', error);
+                }
+              }}
               variant="outline"
               disabled={loading}
             />
@@ -183,6 +258,9 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.sm,
     color: theme.colors.text,
     lineHeight: 20,
+  },
+  debugButton: {
+    marginBottom: theme.spacing.md,
   },
   createButton: {
     marginBottom: theme.spacing.md,

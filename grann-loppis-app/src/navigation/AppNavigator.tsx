@@ -2,12 +2,11 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
 import { theme } from '../styles/theme';
 
 export default function AppNavigator() {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
 
   if (loading) {
     return (
@@ -20,7 +19,7 @@ export default function AppNavigator() {
 
   return (
     <NavigationContainer>
-      {user ? <MainNavigator /> : <AuthNavigator />}
+      <MainNavigator />
     </NavigationContainer>
   );
 }

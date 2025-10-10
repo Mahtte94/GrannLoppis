@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { UserRole, OrganizerStackParamList, SellerStackParamList, BuyerStackParamList } from '../types';
 import { useAuth } from '../context/AuthContext';
+import AuthNavigator from './AuthNavigator';
 
 // Organizer screens
 import CreateEventScreen from '../screens/organizer/CreateEventScreen';
@@ -104,41 +105,85 @@ function BuyerNavigator() {
 
 export default function MainNavigator() {
   const { user } = useAuth();
+  const [forceUpdate, setForceUpdate] = useState(0);
 
-  if (!user) {
-    return null;
+  // Force re-render when user changes
+  useEffect(() => {
+    console.log('👤 User changed in MainNavigator:', user ? `${user.displayName} (${user.role})` : 'null');
+    setForceUpdate(prev => prev + 1);
+  }, [user]);
+
+  console.log('🔄 MainNavigator rendering, user:', user ? `${user.displayName} (${user.role})` : 'null', 'forceUpdate:', forceUpdate);
+
+  // Determine initial route based on user state
+  const getInitialRoute = () => {
+    if (!user) return 'BuyerTab'; // Default to browse for non-logged-in users
+    if (user.role === UserRole.ORGANIZER) return 'OrganizerTab';
+    if (user.role === UserRole.SELLER) return 'SellerTab';
+    return 'BuyerTab';
+  };
+
+  // Create screens array based on user state
+  const screens = [];
+
+  // Browse tab - always visible
+  screens.push(
+    <Tab.Screen
+      key="BuyerTab"
+      name="BuyerTab"
+      component={BuyerNavigator}
+      options={{ title: 'Bläddra' }}
+    />
+  );
+
+  // Organizer tab - only if user is logged in as organizer
+  if (user?.role === UserRole.ORGANIZER) {
+    screens.push(
+      <Tab.Screen
+        key="OrganizerTab"
+        name="OrganizerTab"
+        component={OrganizerNavigator}
+        options={{ title: 'Mina event' }}
+      />
+    );
   }
 
-  // Show different tabs based on user role
+  // Seller tab - only if user is logged in as seller
+  if (user?.role === UserRole.SELLER) {
+    screens.push(
+      <Tab.Screen
+        key="SellerTab"
+        name="SellerTab"
+        component={SellerNavigator}
+        options={{ title: 'Sälj' }}
+      />
+    );
+  }
+
+  // Auth tab - shown when not logged in
+  if (!user) {
+    screens.push(
+      <Tab.Screen
+        key="AuthTab"
+        name="AuthTab"
+        component={AuthNavigator}
+        options={{ title: 'Konto' }}
+      />
+    );
+  }
+
+  const initialRoute = getInitialRoute();
+  console.log('🎯 Initial route will be:', initialRoute);
+
+  // Always show browse tab, conditionally show others based on user role
   return (
     <Tab.Navigator
+      initialRouteName={initialRoute}
       screenOptions={{
         headerShown: false,
       }}
     >
-      {user.role === UserRole.ORGANIZER && (
-        <Tab.Screen
-          name="OrganizerTab"
-          component={OrganizerNavigator}
-          options={{ title: 'Events' }}
-        />
-      )}
-
-      {user.role === UserRole.SELLER && (
-        <Tab.Screen
-          name="SellerTab"
-          component={SellerNavigator}
-          options={{ title: 'Sell' }}
-        />
-      )}
-
-      {user.role === UserRole.BUYER && (
-        <Tab.Screen
-          name="BuyerTab"
-          component={BuyerNavigator}
-          options={{ title: 'Browse' }}
-        />
-      )}
+      {screens}
     </Tab.Navigator>
   );
 }
