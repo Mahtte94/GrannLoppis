@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -7,6 +7,7 @@ import { BuyerStackParamList, Event, EventStatus } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { EventCard } from '../../components/EventCard';
 import { Loading } from '../../components/common/Loading';
+import { eventsService } from '../../services/firebase';
 import { theme } from '../../styles/theme';
 
 type BrowseEventsScreenNavigationProp = StackNavigationProp<BuyerStackParamList, 'BrowseEvents'>;
@@ -36,46 +37,14 @@ export default function BrowseEventsScreen() {
     try {
       setLoading(true);
 
-      // Mock events data for testing
-      const mockEvents: Event[] = [
-        {
-          id: 'event-1',
-          name: 'Södermalm Spring Market',
-          date: new Date('2025-05-15'),
-          area: 'Södermalm, Stockholm',
-          eventCode: 'SPRING2025',
-          organizerId: 'org-1',
-          createdAt: new Date(),
-          status: EventStatus.UPCOMING,
-          participants: 12,
-        },
-        {
-          id: 'event-2',
-          name: 'Vasastan Garage Sale',
-          date: new Date('2025-05-20'),
-          area: 'Vasastan, Stockholm',
-          eventCode: 'VASA2025',
-          organizerId: 'org-2',
-          createdAt: new Date(),
-          status: EventStatus.UPCOMING,
-          participants: 8,
-        },
-        {
-          id: 'event-3',
-          name: 'Östermalm Flea Market',
-          date: new Date('2025-05-18'),
-          area: 'Östermalm, Stockholm',
-          eventCode: 'OSTER2025',
-          organizerId: 'org-3',
-          createdAt: new Date(),
-          status: EventStatus.ACTIVE,
-          participants: 15,
-        },
-      ];
+      // Fetch real events from Firebase
+      const fetchedEvents = await eventsService.getAllEvents();
+      console.log('Fetched events:', fetchedEvents);
 
-      setEvents(mockEvents);
+      setEvents(fetchedEvents);
     } catch (error) {
       console.error('Error loading events:', error);
+      Alert.alert('Error', 'Failed to load events. Please try again.');
     } finally {
       setLoading(false);
     }
