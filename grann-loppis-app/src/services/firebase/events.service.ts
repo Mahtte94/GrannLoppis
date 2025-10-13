@@ -11,7 +11,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from '../../../firebase.config';
-import { Event, EventStatus } from '../../types';
+import { Event, EventStatus, Coordinates } from '../../types';
 
 const EVENTS_COLLECTION = 'events';
 
@@ -32,6 +32,7 @@ export interface CreateEventInput {
   startDate: Date;
   endDate: Date;
   area: string;
+  coordinates: Coordinates;
   organizerId: string;
 }
 
@@ -40,6 +41,7 @@ export interface UpdateEventInput {
   startDate?: Date;
   endDate?: Date;
   area?: string;
+  coordinates?: Coordinates;
   status?: EventStatus;
 }
 
@@ -55,6 +57,7 @@ export async function createEvent(input: CreateEventInput): Promise<Event> {
       startDate: Timestamp.fromDate(input.startDate),
       endDate: Timestamp.fromDate(input.endDate),
       area: input.area,
+      coordinates: input.coordinates,
       eventCode,
       organizerId: input.organizerId,
       status: EventStatus.UPCOMING,
@@ -70,6 +73,7 @@ export async function createEvent(input: CreateEventInput): Promise<Event> {
       startDate: input.startDate,
       endDate: input.endDate,
       area: input.area,
+      coordinates: input.coordinates,
       eventCode,
       organizerId: input.organizerId,
       status: EventStatus.UPCOMING,
@@ -101,6 +105,7 @@ export async function getEventById(eventId: string): Promise<Event | null> {
       startDate: data.startDate.toDate(),
       endDate: data.endDate.toDate(),
       area: data.area,
+      coordinates: data.coordinates,
       eventCode: data.eventCode,
       organizerId: data.organizerId,
       status: data.status,
@@ -128,6 +133,7 @@ export async function getAllEvents(): Promise<Event[]> {
         startDate: data.startDate.toDate(),
         endDate: data.endDate.toDate(),
         area: data.area,
+        coordinates: data.coordinates,
         eventCode: data.eventCode,
         organizerId: data.organizerId,
         status: data.status,
@@ -164,6 +170,7 @@ export async function getOrganizerEvents(organizerId: string): Promise<Event[]> 
         startDate: data.startDate.toDate(),
         endDate: data.endDate.toDate(),
         area: data.area,
+        coordinates: data.coordinates,
         eventCode: data.eventCode,
         organizerId: data.organizerId,
         status: data.status,
@@ -203,6 +210,9 @@ export async function updateEvent(
     }
     if (input.area !== undefined) {
       updateData.area = input.area;
+    }
+    if (input.coordinates !== undefined) {
+      updateData.coordinates = input.coordinates;
     }
     if (input.status !== undefined) {
       updateData.status = input.status;
@@ -245,6 +255,7 @@ export async function searchEvents(searchTerm: string): Promise<Event[]> {
         startDate: data.startDate.toDate(),
         endDate: data.endDate.toDate(),
         area: data.area,
+        coordinates: data.coordinates,
         eventCode: data.eventCode,
         organizerId: data.organizerId,
         status: data.status,

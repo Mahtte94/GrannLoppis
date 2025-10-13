@@ -2,18 +2,21 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Input } from '../../components/common/Input';
+import { LocationInput } from '../../components/common/LocationInput';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../context/AuthContext';
 import { eventsService, authService } from '../../services/firebase';
 import { auth } from '../../../firebase.config';
 import { theme } from '../../styles/theme';
-import { getDaysBetween } from '../../utils/helpers';
+import { getDaysBetween, geocodeAddress } from '../../utils/helpers';
+import { Coordinates } from '../../types';
 
 export default function CreateEventScreen() {
   const navigation = useNavigation();
   const { user } = useAuth();
   const [eventName, setEventName] = useState('');
   const [area, setArea] = useState('');
+  const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [errors, setErrors] = useState({ eventName: '', area: '', startDate: '', endDate: '' });
@@ -114,6 +117,22 @@ export default function CreateEventScreen() {
       console.log('Current user:', user);
       console.log('User ID:', user.id);
 
+      // Geocode the area to get coordinates
+      console.log('Geocoding area:', area);
+      const geocodedCoordinates = await geocodeAddress(area);
+
+      if (!geocodedCoordinates) {
+        Alert.alert(
+          'Ogiltigt område',
+          'Det angivna området kunde inte hittas. Vänligen ange en giltig plats (t.ex. "Vasastan, Stockholm" eller "Göteborg").'
+        );
+        setLoading(false);
+        return;
+      }
+
+      console.log('Area geocoded successfully:', geocodedCoordinates);
+      setCoordinates(geocodedCoordinates);
+
       // Parse the date strings to Date objects
       const eventStartDate = new Date(startDate);
       const eventEndDate = new Date(endDate);
@@ -123,6 +142,7 @@ export default function CreateEventScreen() {
       console.log('Creating event with data:', {
         name: eventName,
         area: area,
+        coordinates: geocodedCoordinates,
         startDate: eventStartDate,
         endDate: eventEndDate,
         organizerId: user.id,
@@ -133,6 +153,7 @@ export default function CreateEventScreen() {
       const createdEvent = await eventsService.createEvent({
         name: eventName,
         area: area,
+        coordinates: geocodedCoordinates,
         startDate: eventStartDate,
         endDate: eventEndDate,
         organizerId: user.id,
@@ -143,6 +164,7 @@ export default function CreateEventScreen() {
       // Clear form after successful creation
       setEventName('');
       setArea('');
+      setCoordinates(null);
       setStartDate('');
       setEndDate('');
 
@@ -196,12 +218,13 @@ export default function CreateEventScreen() {
               error={errors.eventName}
             />
 
-            <Input
+            <LocationInput
               label="Område"
-              placeholder="T.ex. Vasastan, Stockholm"
+              placeholder="T.ex. Vasastan, Stockholm eller Göteborg"
               value={area}
               onChangeText={(text) => {
                 setArea(text);
+                setCoordinates(null); // Clear coordinates when text changes
                 setErrors({ ...errors, area: '' });
               }}
               error={errors.area}

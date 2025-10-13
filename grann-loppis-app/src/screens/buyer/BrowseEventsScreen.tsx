@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { BuyerStackParamList, Event, EventStatus } from '../../types';
 import { useAuth } from '../../context/AuthContext';
@@ -18,8 +18,8 @@ export default function BrowseEventsScreen() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('list');
-  const [region] = useState<Region>({
-    latitude: 59.3293,
+  const [region, setRegion] = useState<Region>({
+    latitude: 59.3293, // Default to Stockholm
     longitude: 18.0686,
     latitudeDelta: 0.1,
     longitudeDelta: 0.1,
@@ -29,11 +29,7 @@ export default function BrowseEventsScreen() {
     setUser(null);
   };
 
-  useEffect(() => {
-    loadEvents();
-  }, []);
-
-  const loadEvents = async () => {
+  const loadEvents = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -42,13 +38,50 @@ export default function BrowseEventsScreen() {
       console.log('Fetched events:', fetchedEvents);
 
       setEvents(fetchedEvents);
+
+      // Calculate region to show all events
+      if (fetchedEvents.length > 0) {
+        const validEvents = fetchedEvents.filter(
+          (e) => e.coordinates && e.coordinates.lat && e.coordinates.lng
+        );
+
+        if (validEvents.length > 0) {
+          const lats = validEvents.map((e) => e.coordinates.lat);
+          const lngs = validEvents.map((e) => e.coordinates.lng);
+
+          const minLat = Math.min(...lats);
+          const maxLat = Math.max(...lats);
+          const minLng = Math.min(...lngs);
+          const maxLng = Math.max(...lngs);
+
+          const centerLat = (minLat + maxLat) / 2;
+          const centerLng = (minLng + maxLng) / 2;
+          const latDelta = (maxLat - minLat) * 1.5 || 0.1; // Add padding, or use default
+          const lngDelta = (maxLng - minLng) * 1.5 || 0.1;
+
+          setRegion({
+            latitude: centerLat,
+            longitude: centerLng,
+            latitudeDelta: Math.max(latDelta, 0.05), // Minimum zoom level
+            longitudeDelta: Math.max(lngDelta, 0.05),
+          });
+        }
+      }
     } catch (error) {
       console.error('Error loading events:', error);
       Alert.alert('Error', 'Failed to load events. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // Reload events whenever the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      console.log('🔄 BrowseEventsScreen focused, reloading events...');
+      loadEvents();
+    }, [loadEvents])
+  );
 
   const handleEventPress = (event: Event) => {
     navigation.navigate('EventDetails', { eventId: event.id });
@@ -112,15 +145,20 @@ export default function BrowseEventsScreen() {
           initialRegion={region}
           showsUserLocation={true}
         >
-          {events.map((event, index) => {
-            // Spread events around Stockholm for demo
-            const lat = 59.3293 + (index - 1) * 0.015;
-            const lng = 18.0686 + (index - 1) * 0.02;
+          {events.map((event) => {
+            // Skip events without valid coordinates
+            if (!event.coordinates || !event.coordinates.lat || !event.coordinates.lng) {
+              console.warn(`Event ${event.id} missing coordinates`);
+              return null;
+            }
 
             return (
               <Marker
                 key={event.id}
-                coordinate={{ latitude: lat, longitude: lng }}
+                coordinate={{
+                  latitude: event.coordinates.lat,
+                  longitude: event.coordinates.lng
+                }}
                 pinColor={event.status === EventStatus.ACTIVE ? theme.colors.success : theme.colors.secondary}
                 onPress={() => handleEventPress(event)}
                 title={event.name}

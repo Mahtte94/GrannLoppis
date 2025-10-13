@@ -1,3 +1,5 @@
+import { Coordinates } from './participant.types';
+
 export enum EventStatus {
   UPCOMING = 'upcoming',
   ACTIVE = 'active',
@@ -10,6 +12,7 @@ export interface Event {
   startDate: Date;
   endDate: Date;
   area: string;
+  coordinates: Coordinates;
   eventCode: string;
   organizerId: string;
   createdAt: Date;
@@ -22,4 +25,5 @@ export interface CreateEventInput {
   startDate: Date;
   endDate: Date;
   area: string;
+  coordinates: Coordinates;
 }
