@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { BuyerStackParamList, Event, EventStatus } from '../../types';
 import { theme } from '../../styles/theme';
+import { eventsService } from '../../services/firebase';
 
 type EventDetailsScreenRouteProp = RouteProp<BuyerStackParamList, 'EventDetails'>;
 type EventDetailsScreenNavigationProp = StackNavigationProp<BuyerStackParamList, 'EventDetails'>;
@@ -23,46 +24,14 @@ export default function EventDetailsScreen() {
     try {
       setLoading(true);
 
-      // Mock event data - in production, fetch from Firebase
-      const mockEvents: Record<string, Event> = {
-        'event-1': {
-          id: 'event-1',
-          name: 'Södermalm Spring Market',
-          date: new Date('2025-05-15'),
-          area: 'Södermalm, Stockholm',
-          eventCode: 'SPRING2025',
-          organizerId: 'org-1',
-          createdAt: new Date(),
-          status: EventStatus.UPCOMING,
-          participants: 12,
-        },
-        'event-2': {
-          id: 'event-2',
-          name: 'Vasastan Garage Sale',
-          date: new Date('2025-05-20'),
-          area: 'Vasastan, Stockholm',
-          eventCode: 'VASA2025',
-          organizerId: 'org-2',
-          createdAt: new Date(),
-          status: EventStatus.UPCOMING,
-          participants: 8,
-        },
-        'event-3': {
-          id: 'event-3',
-          name: 'Östermalm Flea Market',
-          date: new Date('2025-05-18'),
-          area: 'Östermalm, Stockholm',
-          eventCode: 'OSTER2025',
-          organizerId: 'org-3',
-          createdAt: new Date(),
-          status: EventStatus.ACTIVE,
-          participants: 15,
-        },
-      };
+      // Fetch real event from Firebase
+      const fetchedEvent = await eventsService.getEventById(eventId);
+      console.log('Fetched event:', fetchedEvent);
 
-      setEvent(mockEvents[eventId] || null);
+      setEvent(fetchedEvent);
     } catch (error) {
       console.error('Error loading event:', error);
+      Alert.alert('Fel', 'Kunde inte ladda evenemang. Försök igen.');
     } finally {
       setLoading(false);
     }
@@ -107,7 +76,7 @@ export default function EventDetailsScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={styles.loadingText}>Loading event...</Text>
+        <Text style={styles.loadingText}>Laddar evenemang...</Text>
       </View>
     );
   }
@@ -115,7 +84,7 @@ export default function EventDetailsScreen() {
   if (!event) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.errorText}>Event not found</Text>
+        <Text style={styles.errorText}>Evenemang hittades inte</Text>
       </View>
     );
   }

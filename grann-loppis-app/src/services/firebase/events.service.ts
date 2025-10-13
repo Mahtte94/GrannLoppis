@@ -8,7 +8,6 @@ import {
   deleteDoc,
   query,
   where,
-  orderBy,
   Timestamp,
 } from 'firebase/firestore';
 import { db } from '../../../firebase.config';
@@ -114,14 +113,9 @@ export async function getEventById(eventId: string): Promise<Event | null> {
  */
 export async function getAllEvents(): Promise<Event[]> {
   try {
-    const q = query(
-      collection(db, EVENTS_COLLECTION),
-      orderBy('date', 'desc')
-    );
+    const querySnapshot = await getDocs(collection(db, EVENTS_COLLECTION));
 
-    const querySnapshot = await getDocs(q);
-
-    return querySnapshot.docs.map((doc) => {
+    const events = querySnapshot.docs.map((doc) => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -135,6 +129,9 @@ export async function getAllEvents(): Promise<Event[]> {
         createdAt: data.createdAt.toDate(),
       };
     });
+
+    // Sort client-side by date (descending)
+    return events.sort((a, b) => b.date.getTime() - a.date.getTime());
   } catch (error) {
     console.error('Error fetching events:', error);
     throw new Error('Failed to load events');
@@ -148,13 +145,12 @@ export async function getOrganizerEvents(organizerId: string): Promise<Event[]> 
   try {
     const q = query(
       collection(db, EVENTS_COLLECTION),
-      where('organizerId', '==', organizerId),
-      orderBy('date', 'desc')
+      where('organizerId', '==', organizerId)
     );
 
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map((doc) => {
+    const events = querySnapshot.docs.map((doc) => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -168,6 +164,9 @@ export async function getOrganizerEvents(organizerId: string): Promise<Event[]> 
         createdAt: data.createdAt.toDate(),
       };
     });
+
+    // Sort client-side by date (descending) to avoid needing composite index
+    return events.sort((a, b) => b.date.getTime() - a.date.getTime());
   } catch (error) {
     console.error('Error fetching organizer events:', error);
     throw new Error('Failed to load your events');

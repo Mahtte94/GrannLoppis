@@ -1,57 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, FlatList, Alert } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { OrganizerStackParamList, Event, EventStatus } from '../../types';
+import { OrganizerStackParamList, Event } from '../../types';
 import { EventCard } from '../../components/EventCard';
 import { Button } from '../../components/common/Button';
 import { Loading } from '../../components/common/Loading';
 import { theme } from '../../styles/theme';
+import { useAuth } from '../../context/AuthContext';
+import { eventsService } from '../../services/firebase/events.service';
 
 type ManageEventScreenNavigationProp = StackNavigationProp<OrganizerStackParamList, 'ManageEvent'>;
 
 export default function ManageEventScreen() {
   const navigation = useNavigation<ManageEventScreenNavigationProp>();
+  const { user } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadEvents();
-  }, []);
+  // Use useFocusEffect to reload events when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      loadEvents();
+    }, [user])
+  );
 
   const loadEvents = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
 
-      // Mock events data - in production, fetch user's events from Firebase
-      const mockEvents: Event[] = [
-        {
-          id: 'event-1',
-          name: 'Södermalm Spring Market',
-          date: new Date('2025-05-15'),
-          area: 'Södermalm, Stockholm',
-          eventCode: 'SPRING2025',
-          organizerId: 'current-user-id',
-          createdAt: new Date(),
-          status: EventStatus.UPCOMING,
-          participants: 12,
-        },
-        {
-          id: 'event-2',
-          name: 'Vasastan Garage Sale',
-          date: new Date('2025-05-20'),
-          area: 'Vasastan, Stockholm',
-          eventCode: 'VASA2025',
-          organizerId: 'current-user-id',
-          createdAt: new Date(),
-          status: EventStatus.ACTIVE,
-          participants: 8,
-        },
-      ];
+      // Fetch real events from Firebase
+      const fetchedEvents = await eventsService.getOrganizerEvents(user.id);
+      setEvents(fetchedEvents);
 
-      setEvents(mockEvents);
     } catch (error) {
       console.error('Error loading events:', error);
+      Alert.alert('Fel', 'Kunde inte ladda dina evenemang. Försök igen.');
     } finally {
       setLoading(false);
     }
@@ -66,7 +55,7 @@ export default function ManageEventScreen() {
   };
 
   if (loading) {
-    return <Loading message="Loading your events..." fullScreen />;
+    return <Loading message="Laddar dina evenemang..." fullScreen />;
   }
 
   return (

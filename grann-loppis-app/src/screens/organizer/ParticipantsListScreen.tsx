@@ -1,69 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-import { Participant } from '../../types';
+import { View, Text, StyleSheet, FlatList, Alert } from 'react-native';
+import { RouteProp, useRoute } from '@react-navigation/native';
+import { OrganizerStackParamList, Participant } from '../../types';
 import { ParticipantCard } from '../../components/ParticipantCard';
 import { Loading } from '../../components/common/Loading';
 import { theme } from '../../styles/theme';
+import { participantsService } from '../../services/firebase/participants.service';
+
+type ParticipantsListScreenRouteProp = RouteProp<OrganizerStackParamList, 'ParticipantsList'>;
 
 export default function ParticipantsListScreen() {
+  const route = useRoute<ParticipantsListScreenRouteProp>();
+  const { eventId } = route.params;
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadParticipants();
-  }, []);
+  }, [eventId]);
 
   const loadParticipants = async () => {
     try {
       setLoading(true);
 
-      // Mock participants data - in production, fetch from Firebase
-      const mockParticipants: Participant[] = [
-        {
-          id: 'participant-1',
-          eventId: 'event-1',
-          userId: 'user-1',
-          address: 'Sveavägen 123, Stockholm',
-          coordinates: { lat: 59.3326, lng: 18.0649 },
-          displayName: "Anna's Vintage Shop",
-          description: 'Vintage furniture and home decor',
-          joinedAt: new Date('2025-04-01'),
-        },
-        {
-          id: 'participant-2',
-          eventId: 'event-1',
-          userId: 'user-2',
-          address: 'Drottninggatan 45, Stockholm',
-          coordinates: { lat: 59.3311, lng: 18.0686 },
-          displayName: "Erik's Books & More",
-          description: 'Books, games, and electronics',
-          joinedAt: new Date('2025-04-05'),
-        },
-        {
-          id: 'participant-3',
-          eventId: 'event-1',
-          userId: 'user-3',
-          address: 'Kungsgatan 78, Stockholm',
-          coordinates: { lat: 59.3345, lng: 18.0632 },
-          displayName: "Maria's Kids Corner",
-          description: 'Children clothes, toys, and books',
-          joinedAt: new Date('2025-04-10'),
-        },
-        {
-          id: 'participant-4',
-          eventId: 'event-1',
-          userId: 'user-4',
-          address: 'Birger Jarlsgatan 22, Stockholm',
-          coordinates: { lat: 59.3365, lng: 18.0725 },
-          displayName: "Johan's Tech Hub",
-          description: 'Electronics, gadgets, and accessories',
-          joinedAt: new Date('2025-04-12'),
-        },
-      ];
+      // Fetch real participants from Firebase
+      const fetchedParticipants = await participantsService.getEventParticipants(eventId);
+      setParticipants(fetchedParticipants);
 
-      setParticipants(mockParticipants);
     } catch (error) {
       console.error('Error loading participants:', error);
+      Alert.alert('Fel', 'Kunde inte ladda deltagare. Försök igen.');
     } finally {
       setLoading(false);
     }
@@ -75,14 +41,16 @@ export default function ParticipantsListScreen() {
   };
 
   if (loading) {
-    return <Loading message="Loading participants..." fullScreen />;
+    return <Loading message="Laddar deltagare..." fullScreen />;
   }
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Event Participants</Text>
-        <Text style={styles.subtitle}>{participants.length} sellers registered</Text>
+        <Text style={styles.title}>Deltagare</Text>
+        <Text style={styles.subtitle}>
+          {participants.length} {participants.length === 1 ? 'säljare' : 'säljare'} anslutna
+        </Text>
       </View>
 
       <FlatList
@@ -99,9 +67,9 @@ export default function ParticipantsListScreen() {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>No participants yet</Text>
+            <Text style={styles.emptyTitle}>Inga säljare ännu</Text>
             <Text style={styles.emptyText}>
-              Share your event code with sellers so they can join
+              Dela din evenemangskod med säljare så att de kan ansluta sig
             </Text>
           </View>
         }
