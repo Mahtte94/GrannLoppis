@@ -29,14 +29,16 @@ function generateEventCode(): string {
 
 export interface CreateEventInput {
   name: string;
-  date: Date;
+  startDate: Date;
+  endDate: Date;
   area: string;
   organizerId: string;
 }
 
 export interface UpdateEventInput {
   name?: string;
-  date?: Date;
+  startDate?: Date;
+  endDate?: Date;
   area?: string;
   status?: EventStatus;
 }
@@ -50,7 +52,8 @@ export async function createEvent(input: CreateEventInput): Promise<Event> {
 
     const eventData = {
       name: input.name,
-      date: Timestamp.fromDate(input.date),
+      startDate: Timestamp.fromDate(input.startDate),
+      endDate: Timestamp.fromDate(input.endDate),
       area: input.area,
       eventCode,
       organizerId: input.organizerId,
@@ -64,7 +67,8 @@ export async function createEvent(input: CreateEventInput): Promise<Event> {
     return {
       id: docRef.id,
       name: input.name,
-      date: input.date,
+      startDate: input.startDate,
+      endDate: input.endDate,
       area: input.area,
       eventCode,
       organizerId: input.organizerId,
@@ -94,7 +98,8 @@ export async function getEventById(eventId: string): Promise<Event | null> {
     return {
       id: docSnap.id,
       name: data.name,
-      date: data.date.toDate(),
+      startDate: data.startDate.toDate(),
+      endDate: data.endDate.toDate(),
       area: data.area,
       eventCode: data.eventCode,
       organizerId: data.organizerId,
@@ -120,7 +125,8 @@ export async function getAllEvents(): Promise<Event[]> {
       return {
         id: doc.id,
         name: data.name,
-        date: data.date.toDate(),
+        startDate: data.startDate.toDate(),
+        endDate: data.endDate.toDate(),
         area: data.area,
         eventCode: data.eventCode,
         organizerId: data.organizerId,
@@ -130,8 +136,8 @@ export async function getAllEvents(): Promise<Event[]> {
       };
     });
 
-    // Sort client-side by date (descending)
-    return events.sort((a, b) => b.date.getTime() - a.date.getTime());
+    // Sort client-side by start date (descending)
+    return events.sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
   } catch (error) {
     console.error('Error fetching events:', error);
     throw new Error('Failed to load events');
@@ -155,7 +161,8 @@ export async function getOrganizerEvents(organizerId: string): Promise<Event[]> 
       return {
         id: doc.id,
         name: data.name,
-        date: data.date.toDate(),
+        startDate: data.startDate.toDate(),
+        endDate: data.endDate.toDate(),
         area: data.area,
         eventCode: data.eventCode,
         organizerId: data.organizerId,
@@ -165,8 +172,8 @@ export async function getOrganizerEvents(organizerId: string): Promise<Event[]> 
       };
     });
 
-    // Sort client-side by date (descending) to avoid needing composite index
-    return events.sort((a, b) => b.date.getTime() - a.date.getTime());
+    // Sort client-side by start date (descending) to avoid needing composite index
+    return events.sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
   } catch (error) {
     console.error('Error fetching organizer events:', error);
     throw new Error('Failed to load your events');
@@ -188,8 +195,11 @@ export async function updateEvent(
     if (input.name !== undefined) {
       updateData.name = input.name;
     }
-    if (input.date !== undefined) {
-      updateData.date = Timestamp.fromDate(input.date);
+    if (input.startDate !== undefined) {
+      updateData.startDate = Timestamp.fromDate(input.startDate);
+    }
+    if (input.endDate !== undefined) {
+      updateData.endDate = Timestamp.fromDate(input.endDate);
     }
     if (input.area !== undefined) {
       updateData.area = input.area;
@@ -232,7 +242,8 @@ export async function searchEvents(searchTerm: string): Promise<Event[]> {
       return {
         id: doc.id,
         name: data.name,
-        date: data.date.toDate(),
+        startDate: data.startDate.toDate(),
+        endDate: data.endDate.toDate(),
         area: data.area,
         eventCode: data.eventCode,
         organizerId: data.organizerId,

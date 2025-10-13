@@ -55,7 +55,7 @@ export default function BrowseEventsScreen() {
   };
 
   if (loading) {
-    return <Loading message="Loading events..." fullScreen />;
+    return <Loading message="Laddar evenemang..." fullScreen />;
   }
 
   return (
@@ -63,11 +63,11 @@ export default function BrowseEventsScreen() {
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <View>
-            <Text style={styles.title}>Browse Events</Text>
-            <Text style={styles.subtitle}>{events.length} events near you</Text>
+            <Text style={styles.title}>Bläddra evenemang</Text>
+            <Text style={styles.subtitle}>{events.length} evenemang nära dig</Text>
           </View>
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutText}>Change Role</Text>
+            <Text style={styles.logoutText}>Byt roll</Text>
           </TouchableOpacity>
         </View>
 
@@ -77,7 +77,7 @@ export default function BrowseEventsScreen() {
             onPress={() => setViewMode('list')}
           >
             <Text style={[styles.toggleText, viewMode === 'list' && styles.toggleTextActive]}>
-              List
+              Lista
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -85,7 +85,7 @@ export default function BrowseEventsScreen() {
             onPress={() => setViewMode('map')}
           >
             <Text style={[styles.toggleText, viewMode === 'map' && styles.toggleTextActive]}>
-              Map
+              Karta
             </Text>
           </TouchableOpacity>
         </View>
@@ -101,7 +101,7 @@ export default function BrowseEventsScreen() {
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No events found</Text>
+              <Text style={styles.emptyText}>Inga evenemang hittades</Text>
             </View>
           }
         />

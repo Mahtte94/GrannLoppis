@@ -5,6 +5,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { BuyerStackParamList, Event, EventStatus } from '../../types';
 import { theme } from '../../styles/theme';
 import { eventsService } from '../../services/firebase';
+import { getEventStatus, getStatusText, formatDateRange, getDaysBetween } from '../../utils/helpers';
 
 type EventDetailsScreenRouteProp = RouteProp<BuyerStackParamList, 'EventDetails'>;
 type EventDetailsScreenNavigationProp = StackNavigationProp<BuyerStackParamList, 'EventDetails'>;
@@ -37,15 +38,6 @@ export default function EventDetailsScreen() {
     }
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('sv-SE', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      weekday: 'long',
-    });
-  };
-
   const getStatusColor = (status: EventStatus) => {
     switch (status) {
       case EventStatus.ACTIVE:
@@ -56,19 +48,6 @@ export default function EventDetailsScreen() {
         return theme.colors.textLight;
       default:
         return theme.colors.textLight;
-    }
-  };
-
-  const getStatusText = (status: EventStatus) => {
-    switch (status) {
-      case EventStatus.ACTIVE:
-        return 'Active Now';
-      case EventStatus.UPCOMING:
-        return 'Upcoming';
-      case EventStatus.COMPLETED:
-        return 'Completed';
-      default:
-        return status;
     }
   };
 
@@ -89,36 +68,44 @@ export default function EventDetailsScreen() {
     );
   }
 
+  // Calculate the actual status based on the event date range
+  const actualStatus = getEventStatus(event.startDate, event.endDate);
+  const statusText = getStatusText(actualStatus);
+  const numDays = getDaysBetween(event.startDate, event.endDate);
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(event.status) }]}>
-            <Text style={styles.statusText}>{getStatusText(event.status)}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(actualStatus) }]}>
+            <Text style={styles.statusText}>{statusText}</Text>
           </View>
           <Text style={styles.title}>{event.name}</Text>
           <Text style={styles.location}>{event.area}</Text>
-          <Text style={styles.date}>{formatDate(event.date)}</Text>
+          <Text style={styles.date}>
+            {formatDateRange(event.startDate, event.endDate)}
+            {numDays > 1 && ` (${numDays} dagar)`}
+          </Text>
         </View>
 
         <View style={styles.infoSection}>
           <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Event Code</Text>
+            <Text style={styles.infoLabel}>Evenemangskod</Text>
             <Text style={styles.infoValue}>{event.eventCode}</Text>
           </View>
 
           <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Sellers</Text>
+            <Text style={styles.infoLabel}>Säljare</Text>
             <Text style={styles.infoValue}>{event.participants}</Text>
           </View>
         </View>
 
         <View style={styles.descriptionSection}>
-          <Text style={styles.sectionTitle}>About This Event</Text>
+          <Text style={styles.sectionTitle}>Om detta evenemang</Text>
           <Text style={styles.description}>
-            Join us for a great day of garage sale shopping! Browse items from {event.participants} sellers in {event.area}.
+            Välkommen till en fantastisk dag av loppisshopping! Bläddra bland föremål från {event.participants} säljare i {event.area}.
             {'\n\n'}
-            Find vintage clothing, furniture, books, electronics, and more at amazing prices.
+            Hitta vintagekläder, möbler, böcker, elektronik och mycket mer till fantastiska priser.
           </Text>
         </View>
       </ScrollView>
@@ -128,7 +115,7 @@ export default function EventDetailsScreen() {
           style={styles.mapButton}
           onPress={() => navigation.navigate('EventMap', { eventId: event.id })}
         >
-          <Text style={styles.mapButtonText}>View Sellers on Map</Text>
+          <Text style={styles.mapButtonText}>Visa säljare på karta</Text>
         </TouchableOpacity>
       </View>
     </View>

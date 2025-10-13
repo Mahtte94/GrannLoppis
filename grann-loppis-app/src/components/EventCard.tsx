@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Event, EventStatus } from '../types';
 import { Card } from './common/Card';
 import { theme } from '../styles/theme';
+import { getEventStatus, getStatusText, formatDateRange, getDaysBetween } from '../utils/helpers';
 
 interface EventCardProps {
   event: Event;
@@ -10,14 +11,9 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onPress }: EventCardProps) {
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
+  // Calculate the actual status based on the event date range
+  const actualStatus = getEventStatus(event.startDate, event.endDate);
+  const statusText = getStatusText(actualStatus);
 
   const getStatusColor = (status: EventStatus) => {
     switch (status) {
@@ -36,29 +32,33 @@ export function EventCard({ event, onPress }: EventCardProps) {
     <View>
       <View style={styles.header}>
         <Text style={styles.title}>{event.name}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(event.status) }]}>
-          <Text style={styles.statusText}>{event.status}</Text>
+        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(actualStatus) }]}>
+          <Text style={styles.statusText}>{statusText}</Text>
         </View>
       </View>
 
       <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>Date:</Text>
-        <Text style={styles.infoValue}>{formatDate(event.date)}</Text>
+        <Text style={styles.infoLabel}>Datum:</Text>
+        <Text style={styles.infoValue}>
+          {formatDateRange(event.startDate, event.endDate)}
+          {getDaysBetween(event.startDate, event.endDate) > 1 &&
+            ` (${getDaysBetween(event.startDate, event.endDate)} dagar)`}
+        </Text>
       </View>
 
       <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>Area:</Text>
+        <Text style={styles.infoLabel}>Plats:</Text>
         <Text style={styles.infoValue}>{event.area}</Text>
       </View>
 
       <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>Code:</Text>
+        <Text style={styles.infoLabel}>Kod:</Text>
         <Text style={styles.eventCode}>{event.eventCode}</Text>
       </View>
 
       <View style={styles.footer}>
         <Text style={styles.participantCount}>
-          {event.participants} {event.participants === 1 ? 'participant' : 'participants'}
+          {event.participants} {event.participants === 1 ? 'deltagare' : 'deltagare'}
         </Text>
       </View>
     </View>

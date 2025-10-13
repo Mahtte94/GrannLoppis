@@ -7,14 +7,16 @@ import { useAuth } from '../../context/AuthContext';
 import { eventsService, authService } from '../../services/firebase';
 import { auth } from '../../../firebase.config';
 import { theme } from '../../styles/theme';
+import { getDaysBetween } from '../../utils/helpers';
 
 export default function CreateEventScreen() {
   const navigation = useNavigation();
   const { user } = useAuth();
   const [eventName, setEventName] = useState('');
   const [area, setArea] = useState('');
-  const [date, setDate] = useState('');
-  const [errors, setErrors] = useState({ eventName: '', area: '', date: '' });
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [errors, setErrors] = useState({ eventName: '', area: '', startDate: '', endDate: '' });
   const [loading, setLoading] = useState(false);
 
   const testFirebaseAuth = async () => {
@@ -42,22 +44,56 @@ export default function CreateEventScreen() {
   };
 
   const validateForm = () => {
-    const newErrors = { eventName: '', area: '', date: '' };
+    const newErrors = { eventName: '', area: '', startDate: '', endDate: '' };
     let isValid = true;
 
     if (!eventName.trim()) {
-      newErrors.eventName = 'Event name is required';
+      newErrors.eventName = 'Evenemang namn krävs';
       isValid = false;
     }
 
     if (!area.trim()) {
-      newErrors.area = 'Area is required';
+      newErrors.area = 'Område krävs';
       isValid = false;
     }
 
-    if (!date.trim()) {
-      newErrors.date = 'Date is required';
+    if (!startDate.trim()) {
+      newErrors.startDate = 'Startdatum krävs';
       isValid = false;
+    }
+
+    if (!endDate.trim()) {
+      newErrors.endDate = 'Slutdatum krävs';
+      isValid = false;
+    }
+
+    // Validate date range if both dates are provided
+    if (startDate.trim() && endDate.trim()) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      if (isNaN(start.getTime())) {
+        newErrors.startDate = 'Ogiltigt datum format';
+        isValid = false;
+      }
+
+      if (isNaN(end.getTime())) {
+        newErrors.endDate = 'Ogiltigt datum format';
+        isValid = false;
+      }
+
+      if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+        if (end < start) {
+          newErrors.endDate = 'Slutdatum måste vara efter startdatum';
+          isValid = false;
+        }
+
+        const numDays = getDaysBetween(start, end);
+        if (numDays > 7) {
+          newErrors.endDate = 'Evenemang kan max vara 7 dagar';
+          isValid = false;
+        }
+      }
     }
 
     setErrors(newErrors);
@@ -68,7 +104,7 @@ export default function CreateEventScreen() {
     if (!validateForm()) return;
 
     if (!user) {
-      Alert.alert('Error', 'You must be logged in to create an event');
+      Alert.alert('Fel', 'Du måste vara inloggad för att skapa ett evenemang');
       return;
     }
 
@@ -78,27 +114,27 @@ export default function CreateEventScreen() {
       console.log('Current user:', user);
       console.log('User ID:', user.id);
 
-      // Parse the date string to a Date object
-      const eventDate = new Date(date);
+      // Parse the date strings to Date objects
+      const eventStartDate = new Date(startDate);
+      const eventEndDate = new Date(endDate);
 
-      if (isNaN(eventDate.getTime())) {
-        Alert.alert('Invalid Date', 'Please enter a valid date in YYYY-MM-DD format');
-        setLoading(false);
-        return;
-      }
+      const numDays = getDaysBetween(eventStartDate, eventEndDate);
 
       console.log('Creating event with data:', {
         name: eventName,
         area: area,
-        date: eventDate,
+        startDate: eventStartDate,
+        endDate: eventEndDate,
         organizerId: user.id,
+        numDays: numDays,
       });
 
       // Create the event in Firebase
       const createdEvent = await eventsService.createEvent({
         name: eventName,
         area: area,
-        date: eventDate,
+        startDate: eventStartDate,
+        endDate: eventEndDate,
         organizerId: user.id,
       });
 
@@ -107,12 +143,13 @@ export default function CreateEventScreen() {
       // Clear form after successful creation
       setEventName('');
       setArea('');
-      setDate('');
+      setStartDate('');
+      setEndDate('');
 
       // Show success message with event code
       Alert.alert(
-        'Event Created!',
-        `Your event "${createdEvent.name}" has been created successfully!\n\nEvent Code: ${createdEvent.eventCode}\n\nShare this code with sellers so they can join your event.`,
+        'Evenemang skapat!',
+        `Ditt evenemang "${createdEvent.name}" har skapats!\n\nEvenemangskod: ${createdEvent.eventCode}\n\n${numDays > 1 ? `Längd: ${numDays} dagar\n\n` : ''}Dela denna kod med säljare så att de kan gå med i ditt evenemang.`,
         [
           {
             text: 'OK',
@@ -126,7 +163,7 @@ export default function CreateEventScreen() {
       );
     } catch (error: any) {
       console.error('Error creating event:', error);
-      Alert.alert('Error', error.message || 'Failed to create event. Please try again.');
+      Alert.alert('Fel', error.message || 'Kunde inte skapa evenemang. Försök igen.');
     } finally {
       setLoading(false);
     }
@@ -171,19 +208,30 @@ export default function CreateEventScreen() {
             />
 
             <Input
-              label="Datum"
+              label="Startdatum"
               placeholder="YYYY-MM-DD (t.ex. 2025-10-15)"
-              value={date}
+              value={startDate}
               onChangeText={(text) => {
-                setDate(text);
-                setErrors({ ...errors, date: '' });
+                setStartDate(text);
+                setErrors({ ...errors, startDate: '' });
               }}
-              error={errors.date}
+              error={errors.startDate}
+            />
+
+            <Input
+              label="Slutdatum"
+              placeholder="YYYY-MM-DD (t.ex. 2025-10-20)"
+              value={endDate}
+              onChangeText={(text) => {
+                setEndDate(text);
+                setErrors({ ...errors, endDate: '' });
+              }}
+              error={errors.endDate}
             />
 
             <View style={styles.infoBox}>
               <Text style={styles.infoText}>
-                Efter att du skapat eventet får du en unik kod som säljare kan använda för att gå med.
+                Ditt evenemang kan vara mellan 1 och 7 dagar långt. Efter att du skapat eventet får du en unik kod som säljare kan använda för att gå med.
               </Text>
             </View>
 
