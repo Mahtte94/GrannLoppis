@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
-import MapView, { PROVIDER_GOOGLE, Region, Marker, Callout } from 'react-native-maps';
+import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import MapView, { PROVIDER_GOOGLE, Region, Marker } from 'react-native-maps';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { BuyerStackParamList, Participant, Event } from '../../types';
@@ -22,7 +22,6 @@ export function EventMapScreen() {
   const [event, setEvent] = useState<Event | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showSellers, setShowSellers] = useState(false);
   const [region, setRegion] = useState<Region | undefined>(undefined);
 
   useEffect(() => {
@@ -61,56 +60,40 @@ export function EventMapScreen() {
       console.log(`Loaded ${participantsData.length} participants for event ${eventId}`);
       setParticipants(participantsData);
 
+      // If there are participants, adjust region to show all markers
+      if (participantsData.length > 0 && eventData?.coordinates) {
+        const allLats = [eventData.coordinates.lat, ...participantsData.map(p => p.coordinates.lat)];
+        const allLngs = [eventData.coordinates.lng, ...participantsData.map(p => p.coordinates.lng)];
+
+        const minLat = Math.min(...allLats);
+        const maxLat = Math.max(...allLats);
+        const minLng = Math.min(...allLngs);
+        const maxLng = Math.max(...allLngs);
+
+        const centerLat = (minLat + maxLat) / 2;
+        const centerLng = (minLng + maxLng) / 2;
+        const latDelta = Math.max((maxLat - minLat) * 1.5, 0.01);
+        const lngDelta = Math.max((maxLng - minLng) * 1.5, 0.01);
+
+        const allMarkersRegion = {
+          latitude: centerLat,
+          longitude: centerLng,
+          latitudeDelta: latDelta,
+          longitudeDelta: lngDelta,
+        };
+
+        setRegion(allMarkersRegion);
+
+        setTimeout(() => {
+          mapRef.current?.animateToRegion(allMarkersRegion, 1000);
+        }, 500);
+      }
+
     } catch (error) {
       console.error('Error loading event and participants:', error);
       Alert.alert('Fel', 'Kunde inte ladda evenemang. Försök igen.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleShowSellers = () => {
-    if (participants.length === 0) {
-      Alert.alert('Inga säljare än', 'Inga säljare har gått med i detta evenemang än.');
-      return;
-    }
-
-    setShowSellers(true);
-
-    // Calculate region to show all seller markers
-    const lats = participants.map(p => p.coordinates.lat);
-    const lngs = participants.map(p => p.coordinates.lng);
-
-    const minLat = Math.min(...lats);
-    const maxLat = Math.max(...lats);
-    const minLng = Math.min(...lngs);
-    const maxLng = Math.max(...lngs);
-
-    const centerLat = (minLat + maxLat) / 2;
-    const centerLng = (minLng + maxLng) / 2;
-    const latDelta = (maxLat - minLat) * 1.5; // Add padding
-    const lngDelta = (maxLng - minLng) * 1.5;
-
-    const sellersRegion = {
-      latitude: centerLat,
-      longitude: centerLng,
-      latitudeDelta: Math.max(latDelta, 0.01), // Minimum zoom level
-      longitudeDelta: Math.max(lngDelta, 0.01),
-    };
-
-    mapRef.current?.animateToRegion(sellersRegion, 1000);
-  };
-
-  const handleBackToEventLocation = () => {
-    setShowSellers(false);
-    if (event?.coordinates) {
-      const eventRegion = {
-        latitude: event.coordinates.lat,
-        longitude: event.coordinates.lng,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      };
-      mapRef.current?.animateToRegion(eventRegion, 1000);
     }
   };
 
@@ -145,40 +128,21 @@ export function EventMapScreen() {
         showsUserLocation={true}
         showsMyLocationButton={true}
       >
-        {/* Show event location marker when not showing sellers */}
-        {!showSellers && event.coordinates && (
+        {/* Show event location marker */}
+        {event.coordinates && (
           <Marker
             coordinate={{
               latitude: event.coordinates.lat,
               longitude: event.coordinates.lng,
             }}
-            pinColor={theme.colors.primary}
-          >
-            <Callout style={styles.callout}>
-              <View style={styles.calloutContent}>
-                <Text style={styles.calloutTitle}>{event.name}</Text>
-                <Text style={styles.calloutArea}>{event.area}</Text>
-                <Text style={styles.calloutDate}>
-                  {formatDateRange(event.startDate, event.endDate)}
-                </Text>
-                <Text style={styles.calloutParticipants}>
-                  {participants.length} säljare
-                </Text>
-                <TouchableOpacity
-                  style={styles.calloutButton}
-                  onPress={handleShowSellers}
-                >
-                  <Text style={styles.calloutButtonText}>
-                    Visa säljare på kartan
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </Callout>
-          </Marker>
+            pinColor={theme.colors.secondary}
+            title={event.name}
+            description={`${event.area} • ${participants.length} säljare`}
+          />
         )}
 
-        {/* Show seller markers when in sellers view */}
-        {showSellers && participants.map((participant) => (
+        {/* Show seller markers (always visible if participants exist) */}
+        {participants.map((participant) => (
           <MapMarker
             key={participant.id}
             participant={participant}
@@ -189,25 +153,12 @@ export function EventMapScreen() {
 
       {/* Info box */}
       <View style={styles.infoBox}>
-        {!showSellers ? (
-          <View>
-            <Text style={styles.infoText}>
-              📍 {event.name}
-            </Text>
-            <Text style={styles.infoSubtext}>
-              Tryck på markören för mer information
-            </Text>
-          </View>
-        ) : (
-          <View>
-            <Text style={styles.infoText}>
-              {participants.length} säljare på denna plats
-            </Text>
-            <TouchableOpacity onPress={handleBackToEventLocation}>
-              <Text style={styles.backLink}>← Tillbaka till översikt</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        <Text style={styles.infoText}>
+          📍 {event.name}
+        </Text>
+        <Text style={styles.infoSubtext}>
+          {participants.length} {participants.length === 1 ? 'säljare' : 'säljare'} • Tryck på markörerna för mer info
+        </Text>
       </View>
     </View>
   );

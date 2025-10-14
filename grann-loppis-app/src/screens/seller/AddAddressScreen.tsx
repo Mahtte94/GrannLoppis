@@ -1,17 +1,25 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import * as Location from 'expo-location';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { theme } from '../../styles/theme';
+import { participantsService } from '../../services/firebase/participants.service';
+import { useAuth } from '../../context/AuthContext';
+import { SellerStackParamList } from '../../types/navigation.types';
 
 export default function AddAddressScreen() {
   const navigation = useNavigation();
+  const route = useRoute<RouteProp<SellerStackParamList, 'AddAddress'>>();
+  const { user } = useAuth();
   const [address, setAddress] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [description, setDescription] = useState('');
   const [errors, setErrors] = useState({ address: '', displayName: '', description: '' });
   const [loading, setLoading] = useState(false);
+
+  const event = route.params?.event;
 
   const validateForm = () => {
     const newErrors = { address: '', displayName: '', description: '' };
@@ -38,41 +46,118 @@ export default function AddAddressScreen() {
 
   const handleGetLocation = async () => {
     try {
-      // TODO: Implement location services with expo-location
-      // const { status } = await Location.requestForegroundPermissionsAsync();
-      // if (status !== 'granted') {
-      //   Alert.alert('Permission denied', 'Location permission is required');
-      //   return;
-      // }
-      // const location = await Location.getCurrentPositionAsync({});
-      // Use reverse geocoding to get address from coordinates
+      // Request location permissions
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Tillåtelse nekad', 'Platsåtkomst krävs för att använda din nuvarande plats.');
+        return;
+      }
 
-      Alert.alert('Coming soon', 'Location services will be implemented soon');
+      // Get current location
+      const location = await Location.getCurrentPositionAsync({});
+
+      // Use reverse geocoding to get address from coordinates
+      const geocoded = await Location.reverseGeocodeAsync({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+
+      if (geocoded && geocoded.length > 0) {
+        const result = geocoded[0];
+        const addressParts = [
+          result.street,
+          result.streetNumber,
+          result.postalCode,
+          result.city,
+        ].filter(Boolean);
+
+        const formattedAddress = addressParts.join(' ');
+        setAddress(formattedAddress);
+        setErrors({ ...errors, address: '' });
+      }
     } catch (err) {
-      Alert.alert('Error', 'Failed to get location');
+      console.error('Error getting location:', err);
+      Alert.alert('Fel', 'Kunde inte hämta din plats. Försök igen.');
     }
   };
 
   const handleSaveAddress = async () => {
     if (!validateForm()) return;
 
+    if (!event) {
+      Alert.alert('Fel', 'Evenemangsinformation saknas. Försök gå med i evenemanget igen.');
+      return;
+    }
+
+    if (!user) {
+      Alert.alert('Fel', 'Du måste vara inloggad för att gå med i ett evenemang.');
+      return;
+    }
+
     setLoading(true);
     try {
-      // TODO: Implement actual address saving logic with Firebase
-      // const participantData = {
-      //   address,
-      //   displayName,
-      //   description,
-      //   coordinates: { lat: 0, lng: 0 }, // Get from geocoding
-      // };
-      // await participantsService.addParticipant(participantData);
+      // Geocode the address to get coordinates
+      let coordinates = { lat: 0, lng: 0 };
 
-      // For now, just simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      try {
+        const geocoded = await Location.geocodeAsync(address);
+
+        if (geocoded && geocoded.length > 0) {
+          coordinates = {
+            lat: geocoded[0].latitude,
+            lng: geocoded[0].longitude,
+          };
+          console.log('Geocoded address to coordinates:', coordinates);
+        } else {
+          Alert.alert(
+            'Varning',
+            'Kunde inte hitta koordinater för adressen. Din plats kanske inte visas korrekt på kartan. Vill du fortsätta ändå?',
+            [
+              { text: 'Avbryt', style: 'cancel', onPress: () => setLoading(false) },
+              { text: 'Fortsätt', onPress: async () => {
+                await saveParticipant(coordinates);
+              }},
+            ]
+          );
+          return;
+        }
+      } catch (geocodeError) {
+        console.error('Geocoding error:', geocodeError);
+        Alert.alert(
+          'Varning',
+          'Kunde inte konvertera adressen till koordinater. Din plats kanske inte visas korrekt på kartan. Vill du fortsätta ändå?',
+          [
+            { text: 'Avbryt', style: 'cancel', onPress: () => setLoading(false) },
+            { text: 'Fortsätt', onPress: async () => {
+              await saveParticipant(coordinates);
+            }},
+          ]
+        );
+        return;
+      }
+
+      await saveParticipant(coordinates);
+    } catch (err) {
+      console.error('Error saving address:', err);
+      Alert.alert('Fel', 'Kunde inte spara adressen. Försök igen.');
+      setLoading(false);
+    }
+  };
+
+  const saveParticipant = async (coordinates: { lat: number; lng: number }) => {
+    try {
+      await participantsService.joinEvent(
+        event!.id,
+        user!.id,
+        displayName,
+        address,
+        coordinates,
+        description
+      );
 
       Alert.alert(
-        'Success!',
-        'Your address has been added. You can now add items to sell.',
+        'Klart!',
+        'Din adress har lagts till. Du kan nu börja lägga till föremål att sälja.',
         [{ text: 'OK', onPress: () => {
           if (navigation.canGoBack()) {
             navigation.goBack();
@@ -80,7 +165,8 @@ export default function AddAddressScreen() {
         }}]
       );
     } catch (err) {
-      Alert.alert('Error', 'Failed to save address. Please try again.');
+      console.error('Error saving participant:', err);
+      throw err;
     } finally {
       setLoading(false);
     }

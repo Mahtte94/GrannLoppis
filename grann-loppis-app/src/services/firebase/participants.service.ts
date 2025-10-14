@@ -4,6 +4,8 @@ import {
   addDoc,
   getDoc,
   getDocs,
+  updateDoc,
+  increment,
   query,
   where,
   Timestamp,
@@ -12,27 +14,38 @@ import { db } from '../../../firebase.config';
 import { Participant, JoinEventInput } from '../../types';
 
 const PARTICIPANTS_COLLECTION = 'participants';
+const EVENTS_COLLECTION = 'events';
 
 /**
  * Join an event as a seller/participant
  */
 export async function joinEvent(
+  eventId: string,
   userId: string,
   displayName: string,
-  input: JoinEventInput
+  address: string,
+  coordinates: { lat: number; lng: number },
+  description: string
 ): Promise<Participant> {
   try {
     const participantData = {
-      eventId: input.eventCode, // In production, resolve eventCode to eventId
+      eventId,
       userId,
       displayName,
-      address: input.address,
-      coordinates: input.coordinates,
-      description: input.description,
+      address,
+      coordinates,
+      description,
       joinedAt: Timestamp.now(),
     };
 
+    // Add participant to the participants collection
     const docRef = await addDoc(collection(db, PARTICIPANTS_COLLECTION), participantData);
+
+    // Increment the participants count on the event
+    const eventRef = doc(db, EVENTS_COLLECTION, eventId);
+    await updateDoc(eventRef, {
+      participants: increment(1),
+    });
 
     return {
       id: docRef.id,

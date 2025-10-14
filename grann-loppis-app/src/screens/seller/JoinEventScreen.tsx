@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { theme } from '../../styles/theme';
+import { eventsService } from '../../services/firebase/events.service';
+import { SellerStackParamList } from '../../types/navigation.types';
+
+type JoinEventScreenNavigationProp = StackNavigationProp<SellerStackParamList, 'JoinEvent'>;
 
 export default function JoinEventScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<JoinEventScreenNavigationProp>();
   const [eventCode, setEventCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,20 +29,28 @@ export default function JoinEventScreen() {
 
     setLoading(true);
     try {
-      // TODO: Implement actual event joining logic with Firebase
-      // const event = await eventsService.getEventByCode(eventCode);
-      // if (!event) {
-      //   setError('Invalid event code');
-      //   return;
-      // }
+      // Search for event by event code
+      const events = await eventsService.searchEvents(eventCode);
 
-      // For now, just simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (events.length === 0) {
+        setError('Invalid event code. Please check and try again.');
+        setLoading(false);
+        return;
+      }
 
-      // Navigate to AddAddress screen to complete seller registration
-      navigation.navigate('AddAddress' as never);
+      const event = events[0]; // Take the first matching event
+
+      // Navigate to AddAddress screen with event data
+      navigation.navigate('AddAddress', {
+        event: {
+          id: event.id,
+          eventCode: event.eventCode,
+          name: event.name,
+        },
+      });
     } catch (err) {
-      setError('Failed to join event. Please check the code and try again.');
+      console.error('Error joining event:', err);
+      setError('Failed to join event. Please try again.');
     } finally {
       setLoading(false);
     }
