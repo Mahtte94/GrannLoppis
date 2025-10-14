@@ -128,8 +128,8 @@ export function EventMapScreen() {
         showsUserLocation={true}
         showsMyLocationButton={true}
       >
-        {/* Show event location marker */}
-        {event.coordinates && (
+        {/* Show event location marker only when no participants */}
+        {participants.length === 0 && event.coordinates && (
           <Marker
             coordinate={{
               latitude: event.coordinates.lat,
@@ -137,11 +137,11 @@ export function EventMapScreen() {
             }}
             pinColor={theme.colors.secondary}
             title={event.name}
-            description={`${event.area} • ${participants.length} säljare`}
+            description={`${event.area} • Inga säljare än`}
           />
         )}
 
-        {/* Show seller markers (always visible if participants exist) */}
+        {/* Show seller markers when participants exist */}
         {participants.map((participant) => (
           <MapMarker
             key={participant.id}
