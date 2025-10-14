@@ -1,13 +1,21 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { theme } from '../../styles/theme';
+
+const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
 interface LocationInputProps {
   label?: string;
   placeholder?: string;
   value: string;
   onChangeText: (text: string) => void;
+  onLocationSelect?: (location: { description: string; lat: number; lng: number }) => void;
   error?: string;
+}
+
+interface Prediction {
+  place_id: string;
+  description: string;
 }
 
 export function LocationInput({
@@ -15,8 +23,73 @@ export function LocationInput({
   placeholder = 'Ange plats',
   value,
   onChangeText,
+  onLocationSelect,
   error,
 }: LocationInputProps) {
+  const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showPredictions, setShowPredictions] = useState(false);
+
+  useEffect(() => {
+    const fetchPredictions = async () => {
+      if (value.length < 2) {
+        setPredictions([]);
+        setShowPredictions(false);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(value)}&key=${GOOGLE_MAPS_API_KEY}&language=sv&components=country:se`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.predictions && Array.isArray(data.predictions)) {
+          setPredictions(data.predictions);
+          setShowPredictions(true);
+        } else {
+          setPredictions([]);
+          setShowPredictions(false);
+        }
+      } catch (error) {
+        console.error('Error fetching predictions:', error);
+        setPredictions([]);
+        setShowPredictions(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const timeoutId = setTimeout(fetchPredictions, 300);
+    return () => clearTimeout(timeoutId);
+  }, [value]);
+
+  const handleSelectPrediction = async (prediction: Prediction) => {
+    onChangeText(prediction.description);
+    setShowPredictions(false);
+    setPredictions([]);
+
+    // Fetch place details to get coordinates
+    if (onLocationSelect) {
+      try {
+        const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${prediction.place_id}&key=${GOOGLE_MAPS_API_KEY}&fields=geometry`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.result?.geometry?.location) {
+          onLocationSelect({
+            description: prediction.description,
+            lat: data.result.geometry.location.lat,
+            lng: data.result.geometry.location.lng,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching place details:', error);
+      }
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -26,9 +99,35 @@ export function LocationInput({
         placeholder={placeholder}
         placeholderTextColor={theme.colors.textLight}
         value={value}
-        onChangeText={onChangeText}
+        onChangeText={(text) => {
+          onChangeText(text);
+          setShowPredictions(true);
+        }}
         autoCapitalize="words"
       />
+
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color={theme.colors.primary} />
+        </View>
+      )}
+
+      {showPredictions && predictions.length > 0 && (
+        <View style={styles.predictionsContainer}>
+          {predictions.map((item, index) => (
+            <React.Fragment key={item.place_id}>
+              <TouchableOpacity
+                style={styles.predictionItem}
+                onPress={() => handleSelectPrediction(item)}
+              >
+                <Text style={styles.predictionText}>{item.description}</Text>
+              </TouchableOpacity>
+              {index < predictions.length - 1 && <View style={styles.separator} />}
+            </React.Fragment>
+          ))}
+        </View>
+      )}
+
       <Text style={styles.hintText}>
         Exempel: "Vasastan, Stockholm" eller "Göteborg"
       </Text>
@@ -41,6 +140,7 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: theme.spacing.md,
     width: '100%',
+    zIndex: 1,
   },
   label: {
     fontSize: theme.fontSize.md,
@@ -60,6 +160,31 @@ const styles = StyleSheet.create({
   },
   textInputError: {
     borderColor: theme.colors.error,
+  },
+  loadingContainer: {
+    position: 'absolute',
+    right: theme.spacing.md,
+    top: 42,
+  },
+  predictionsContainer: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    marginTop: 4,
+  },
+  predictionItem: {
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    backgroundColor: theme.colors.white,
+  },
+  predictionText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: theme.colors.border,
   },
   hintText: {
     fontSize: theme.fontSize.sm,

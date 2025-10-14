@@ -103,21 +103,27 @@ export default function CreateEventScreen() {
       console.log('Current user:', user);
       console.log('User ID:', user.id);
 
-      // Geocode the area to get coordinates
-      console.log('Geocoding area:', area);
-      const geocodedCoordinates = await geocodeAddress(area);
+      // Get coordinates - either from autocomplete selection or geocode manually entered text
+      let finalCoordinates = coordinates;
 
-      if (!geocodedCoordinates) {
-        Alert.alert(
-          'Ogiltigt område',
-          'Det angivna området kunde inte hittas. Vänligen ange en giltig plats (t.ex. "Vasastan, Stockholm" eller "Göteborg").'
-        );
-        setLoading(false);
-        return;
+      if (!finalCoordinates) {
+        console.log('Geocoding area:', area);
+        finalCoordinates = await geocodeAddress(area);
+
+        if (!finalCoordinates) {
+          Alert.alert(
+            'Ogiltigt område',
+            'Det angivna området kunde inte hittas. Vänligen välj en plats från förslagen eller ange en giltig plats (t.ex. "Vasastan, Stockholm" eller "Göteborg").'
+          );
+          setLoading(false);
+          return;
+        }
+
+        console.log('Area geocoded successfully:', finalCoordinates);
+        setCoordinates(finalCoordinates);
+      } else {
+        console.log('Using coordinates from autocomplete:', finalCoordinates);
       }
-
-      console.log('Area geocoded successfully:', geocodedCoordinates);
-      setCoordinates(geocodedCoordinates);
 
       // startDate and endDate are guaranteed to be non-null after validation
       if (!startDate || !endDate) {
@@ -129,7 +135,7 @@ export default function CreateEventScreen() {
       console.log('Creating event with data:', {
         name: eventName,
         area: area,
-        coordinates: geocodedCoordinates,
+        coordinates: finalCoordinates,
         startDate: startDate,
         endDate: endDate,
         organizerId: user.id,
@@ -140,7 +146,7 @@ export default function CreateEventScreen() {
       const createdEvent = await eventsService.createEvent({
         name: eventName,
         area: area,
-        coordinates: geocodedCoordinates,
+        coordinates: finalCoordinates,
         startDate: startDate,
         endDate: endDate,
         organizerId: user.id,
@@ -211,7 +217,12 @@ export default function CreateEventScreen() {
               value={area}
               onChangeText={(text) => {
                 setArea(text);
-                setCoordinates(null); // Clear coordinates when text changes
+                setCoordinates(null); // Clear coordinates when text changes manually
+                setErrors({ ...errors, area: '' });
+              }}
+              onLocationSelect={(location) => {
+                setArea(location.description);
+                setCoordinates({ lat: location.lat, lng: location.lng });
                 setErrors({ ...errors, area: '' });
               }}
               error={errors.area}
