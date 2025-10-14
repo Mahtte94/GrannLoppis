@@ -38,8 +38,12 @@ export async function joinEvent(
       joinedAt: Timestamp.now(),
     };
 
+    console.log('Saving participant to Firestore:', participantData);
+
     // Add participant to the participants collection
     const docRef = await addDoc(collection(db, PARTICIPANTS_COLLECTION), participantData);
+
+    console.log('Participant saved with ID:', docRef.id);
 
     // Increment the participants count on the event
     const eventRef = doc(db, EVENTS_COLLECTION, eventId);

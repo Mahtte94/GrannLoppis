@@ -58,6 +58,7 @@ export function EventMapScreen() {
       // Fetch participants from Firebase
       const participantsData = await participantsService.getEventParticipants(eventId);
       console.log(`Loaded ${participantsData.length} participants for event ${eventId}`);
+      console.log('Participants data:', participantsData);
       setParticipants(participantsData);
 
       // If there are participants, adjust region to show all markers
