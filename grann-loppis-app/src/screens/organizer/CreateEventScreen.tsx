@@ -161,10 +161,10 @@ export default function CreateEventScreen() {
       setStartDate(null);
       setEndDate(null);
 
-      // Show success message with event code
+      // Show success message
       Alert.alert(
         'Evenemang skapat!',
-        `Ditt evenemang "${createdEvent.name}" har skapats!\n\nEvenemangskod: ${createdEvent.eventCode}\n\n${numDays > 1 ? `Längd: ${numDays} dagar\n\n` : ''}Dela denna kod med säljare så att de kan gå med i ditt evenemang.`,
+        `Ditt evenemang "${createdEvent.name}" har skapats!\n\n${numDays > 1 ? `Längd: ${numDays} dagar\n\n` : ''}Säljare kan nu ansöka om att delta i ditt evenemang. Du kan godkänna eller avslå ansökningar från deltagarlistan.`,
         [
           {
             text: 'OK',
@@ -252,7 +252,7 @@ export default function CreateEventScreen() {
 
             <View style={styles.infoBox}>
               <Text style={styles.infoText}>
-                Ditt evenemang kan vara mellan 1 och 7 dagar långt. Efter att du skapat eventet får du en unik kod som säljare kan använda för att gå med.
+                Ditt evenemang kan vara mellan 1 och 7 dagar långt. Efter att du skapat eventet kan säljare ansöka om att delta. Du kommer att kunna granska och godkänna eller avslå varje ansökan.
               </Text>
             </View>
 

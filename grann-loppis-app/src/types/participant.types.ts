@@ -3,6 +3,12 @@ export interface Coordinates {
   lng: number;
 }
 
+export enum ParticipantStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected'
+}
+
 export interface Participant {
   id: string;
   eventId: string;
@@ -11,12 +17,15 @@ export interface Participant {
   coordinates: Coordinates;
   displayName: string;
   description: string;
-  joinedAt: Date;
+  status: ParticipantStatus;
+  appliedAt: Date;
+  reviewedAt?: Date;
+  reviewedBy?: string; // Organizer user ID who reviewed the application
+  joinedAt?: Date; // Only set when status is APPROVED
+  phoneNumber?: string;
 }
 
-export interface JoinEventInput {
-  eventCode: string;
-  address: string;
-  coordinates: Coordinates;
-  description: string;
+export interface ApplyToEventInput {
+  eventId: string;
+  description?: string;
 }

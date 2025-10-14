@@ -15,18 +15,6 @@ import { Event, EventStatus, Coordinates } from '../../types';
 
 const EVENTS_COLLECTION = 'events';
 
-/**
- * Generate a random 6-character event code
- */
-function generateEventCode(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
-}
-
 export interface CreateEventInput {
   name: string;
   startDate: Date;
@@ -50,15 +38,12 @@ export interface UpdateEventInput {
  */
 export async function createEvent(input: CreateEventInput): Promise<Event> {
   try {
-    const eventCode = generateEventCode();
-
     const eventData = {
       name: input.name,
       startDate: Timestamp.fromDate(input.startDate),
       endDate: Timestamp.fromDate(input.endDate),
       area: input.area,
       coordinates: input.coordinates,
-      eventCode,
       organizerId: input.organizerId,
       status: EventStatus.UPCOMING,
       participants: 0,
@@ -74,7 +59,6 @@ export async function createEvent(input: CreateEventInput): Promise<Event> {
       endDate: input.endDate,
       area: input.area,
       coordinates: input.coordinates,
-      eventCode,
       organizerId: input.organizerId,
       status: EventStatus.UPCOMING,
       participants: 0,
@@ -106,7 +90,6 @@ export async function getEventById(eventId: string): Promise<Event | null> {
       endDate: data.endDate.toDate(),
       area: data.area,
       coordinates: data.coordinates,
-      eventCode: data.eventCode,
       organizerId: data.organizerId,
       status: data.status,
       participants: data.participants || 0,
@@ -134,7 +117,6 @@ export async function getAllEvents(): Promise<Event[]> {
         endDate: data.endDate.toDate(),
         area: data.area,
         coordinates: data.coordinates,
-        eventCode: data.eventCode,
         organizerId: data.organizerId,
         status: data.status,
         participants: data.participants || 0,
@@ -171,7 +153,6 @@ export async function getOrganizerEvents(organizerId: string): Promise<Event[]> 
         endDate: data.endDate.toDate(),
         area: data.area,
         coordinates: data.coordinates,
-        eventCode: data.eventCode,
         organizerId: data.organizerId,
         status: data.status,
         participants: data.participants || 0,
@@ -256,7 +237,6 @@ export async function searchEvents(searchTerm: string): Promise<Event[]> {
         endDate: data.endDate.toDate(),
         area: data.area,
         coordinates: data.coordinates,
-        eventCode: data.eventCode,
         organizerId: data.organizerId,
         status: data.status,
         participants: data.participants || 0,
@@ -269,8 +249,7 @@ export async function searchEvents(searchTerm: string): Promise<Event[]> {
     return events.filter(
       (event) =>
         event.name.toLowerCase().includes(lowerSearchTerm) ||
-        event.area.toLowerCase().includes(lowerSearchTerm) ||
-        event.eventCode.toLowerCase().includes(lowerSearchTerm)
+        event.area.toLowerCase().includes(lowerSearchTerm)
     );
   } catch (error) {
     console.error('Error searching events:', error);

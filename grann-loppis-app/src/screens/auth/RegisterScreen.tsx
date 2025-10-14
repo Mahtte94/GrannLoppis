@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { AuthStackParamList, UserRole } from '../../types';
+import { AuthStackParamList, UserRole, Coordinates } from '../../types';
 import { Input } from '../../components/common/Input';
+import { LocationInput } from '../../components/common/LocationInput';
 import { Button } from '../../components/common/Button';
 import { authService } from '../../services/firebase';
+import { geocodeAddress } from '../../utils/helpers';
 import { theme } from '../../styles/theme';
 
 type RegisterScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Register'>;
@@ -17,11 +19,18 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.ORGANIZER);
+
+  // Seller-specific fields
+  const [address, setAddress] = useState('');
+  const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
+  const [phoneNumber, setPhoneNumber] = useState('');
+
   const [errors, setErrors] = useState({
     displayName: '',
     email: '',
     password: '',
     confirmPassword: '',
+    address: '',
   });
   const [loading, setLoading] = useState(false);
 
@@ -31,6 +40,7 @@ export default function RegisterScreen() {
       email: '',
       password: '',
       confirmPassword: '',
+      address: '',
     };
     let isValid = true;
 
@@ -63,6 +73,14 @@ export default function RegisterScreen() {
       isValid = false;
     }
 
+    // Validate seller-specific fields
+    if (selectedRole === UserRole.SELLER) {
+      if (!address.trim()) {
+        newErrors.address = 'Adress krävs för säljare';
+        isValid = false;
+      }
+    }
+
     setErrors(newErrors);
     return isValid;
   };
@@ -72,12 +90,43 @@ export default function RegisterScreen() {
 
     setLoading(true);
     try {
-      await authService.register({
+      const registerInput: any = {
         email: email.trim(),
         password: password,
         displayName: displayName.trim(),
         role: selectedRole,
-      });
+      };
+
+      // Add seller profile if role is SELLER
+      if (selectedRole === UserRole.SELLER) {
+        // If coordinates were set from LocationInput autocomplete, use them
+        // Otherwise, try to geocode the manually entered address
+        let finalCoordinates = coordinates;
+
+        if (!finalCoordinates) {
+          console.log('Geocoding address:', address.trim());
+          finalCoordinates = await geocodeAddress(address.trim());
+
+          if (!finalCoordinates) {
+            Alert.alert(
+              'Ogiltig adress',
+              'Kunde inte hitta adressen. Vänligen välj en adress från förslagen eller ange en mer specifik adress (t.ex. "Drottninggatan 1, Stockholm").'
+            );
+            setLoading(false);
+            return;
+          }
+
+          console.log('Address geocoded to:', finalCoordinates);
+        }
+
+        registerInput.sellerProfile = {
+          address: address.trim(),
+          coordinates: finalCoordinates,
+          ...(phoneNumber && { phoneNumber: phoneNumber.trim() }),
+        };
+      }
+
+      await authService.register(registerInput);
 
       console.log('Registration successful! AuthContext will update automatically.');
       // Don't set loading to false here - let AuthContext handle navigation
@@ -171,6 +220,35 @@ export default function RegisterScreen() {
               />
             </View>
 
+            {selectedRole === UserRole.SELLER && (
+              <View style={styles.sellerFields}>
+                <Text style={styles.sectionLabel}>Säljare information</Text>
+                <LocationInput
+                  label="Adress"
+                  placeholder="T.ex. Drottninggatan 1, Stockholm"
+                  value={address}
+                  onChangeText={(text) => {
+                    setAddress(text);
+                    setCoordinates(null); // Clear coordinates when text changes
+                    setErrors({ ...errors, address: '' });
+                  }}
+                  onLocationSelect={(location) => {
+                    setAddress(location.description);
+                    setCoordinates({ lat: location.lat, lng: location.lng });
+                    setErrors({ ...errors, address: '' });
+                  }}
+                  error={errors.address}
+                />
+                <Input
+                  label="Telefonnummer (valfritt)"
+                  placeholder="070-123 45 67"
+                  value={phoneNumber}
+                  onChangeText={setPhoneNumber}
+                  keyboardType="phone-pad"
+                />
+              </View>
+            )}
+
             <Button
               title="Registrera"
               onPress={handleRegister}
@@ -239,6 +317,20 @@ const styles = StyleSheet.create({
   },
   registerButton: {
     marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+  },
+  sellerFields: {
+    marginTop: theme.spacing.lg,
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  sectionLabel: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: '600',
+    color: theme.colors.text,
     marginBottom: theme.spacing.md,
   },
 });

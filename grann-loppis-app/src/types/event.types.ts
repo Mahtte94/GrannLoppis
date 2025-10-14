@@ -13,7 +13,6 @@ export interface Event {
   endDate: Date;
   area: string;
   coordinates: Coordinates;
-  eventCode: string;
   organizerId: string;
   createdAt: Date;
   status: EventStatus;

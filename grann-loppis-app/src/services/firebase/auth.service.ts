@@ -7,7 +7,7 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
 import { auth, db } from '../../../firebase.config';
-import { UserRole, User } from '../../types';
+import { UserRole, User, SellerProfile } from '../../types';
 
 const USERS_COLLECTION = 'users';
 
@@ -16,6 +16,7 @@ export interface RegisterInput {
   password: string;
   displayName: string;
   role: UserRole;
+  sellerProfile?: SellerProfile; // Required when role is SELLER
 }
 
 export interface LoginInput {
@@ -46,6 +47,7 @@ export async function register(input: RegisterInput): Promise<User> {
       displayName: input.displayName,
       role: input.role,
       createdAt: new Date(),
+      ...(input.sellerProfile && { sellerProfile: input.sellerProfile }),
     };
 
     const firestoreData = {
@@ -53,6 +55,7 @@ export async function register(input: RegisterInput): Promise<User> {
       displayName: input.displayName,
       role: input.role,
       createdAt: Timestamp.now(),
+      ...(input.sellerProfile && { sellerProfile: input.sellerProfile }),
     };
 
     // Wait for Firestore write to complete

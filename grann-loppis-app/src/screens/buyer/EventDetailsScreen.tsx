@@ -1,18 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
-import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
+import { RouteProp, useRoute, useNavigation, CompositeNavigationProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { BuyerStackParamList, Event, EventStatus } from '../../types';
 import { theme } from '../../styles/theme';
 import { eventsService } from '../../services/firebase';
 import { getEventStatus, getStatusText, formatDateRange, getDaysBetween } from '../../utils/helpers';
+import { useAuth } from '../../context/AuthContext';
 
 type EventDetailsScreenRouteProp = RouteProp<BuyerStackParamList, 'EventDetails'>;
-type EventDetailsScreenNavigationProp = StackNavigationProp<BuyerStackParamList, 'EventDetails'>;
+type EventDetailsScreenNavigationProp = CompositeNavigationProp<
+  StackNavigationProp<BuyerStackParamList, 'EventDetails'>,
+  BottomTabNavigationProp<any>
+>;
 
 export default function EventDetailsScreen() {
   const route = useRoute<EventDetailsScreenRouteProp>();
   const navigation = useNavigation<EventDetailsScreenNavigationProp>();
+  const { user } = useAuth();
   const { eventId } = route.params;
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
@@ -117,6 +123,17 @@ export default function EventDetailsScreen() {
         >
           <Text style={styles.mapButtonText}>Visa säljare på karta</Text>
         </TouchableOpacity>
+
+        {!user && (
+          <TouchableOpacity
+            style={styles.sellerButton}
+            onPress={() => navigation.navigate('AuthTab', { screen: 'Register' })}
+          >
+            <Text style={styles.sellerButtonText}>
+              Vill vara med och sälja? Registrera dig här som säljare
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -222,6 +239,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.white,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
+    gap: theme.spacing.md,
   },
   mapButton: {
     backgroundColor: theme.colors.primary,
@@ -233,5 +251,19 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     fontSize: theme.fontSize.md,
     fontWeight: '600',
+  },
+  sellerButton: {
+    backgroundColor: theme.colors.secondary,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    alignItems: 'center',
+  },
+  sellerButtonText: {
+    color: theme.colors.white,
+    fontSize: theme.fontSize.sm,
+    fontWeight: '600',
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

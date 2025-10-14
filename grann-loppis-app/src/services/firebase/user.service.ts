@@ -23,6 +23,7 @@ export async function getUserProfile(userId: string): Promise<User | null> {
       displayName: data.displayName,
       role: data.role,
       createdAt: data.createdAt.toDate(),
+      ...(data.sellerProfile && { sellerProfile: data.sellerProfile }),
     };
   } catch (error) {
     console.error('Error fetching user profile:', error);
@@ -51,6 +52,9 @@ export async function updateUserProfile(
     if (updates.email !== undefined) {
       updateData.email = updates.email;
     }
+    if (updates.sellerProfile !== undefined) {
+      updateData.sellerProfile = updates.sellerProfile;
+    }
 
     await updateDoc(docRef, updateData);
   } catch (error) {
@@ -69,12 +73,16 @@ export async function createOrUpdateUserProfile(
   try {
     const docRef = doc(db, USERS_COLLECTION, userId);
 
-    const data = {
+    const data: any = {
       email: userData.email,
       displayName: userData.displayName,
       role: userData.role,
       createdAt: Timestamp.now(),
     };
+
+    if (userData.sellerProfile) {
+      data.sellerProfile = userData.sellerProfile;
+    }
 
     await setDoc(docRef, data, { merge: true });
 
