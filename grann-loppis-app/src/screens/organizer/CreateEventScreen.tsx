@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Ale
 import { useNavigation } from '@react-navigation/native';
 import { Input } from '../../components/common/Input';
 import { LocationInput } from '../../components/common/LocationInput';
+import { DatePickerInput } from '../../components/common/DatePickerInput';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../context/AuthContext';
 import { eventsService, authService } from '../../services/firebase';
@@ -17,8 +18,8 @@ export default function CreateEventScreen() {
   const [eventName, setEventName] = useState('');
   const [area, setArea] = useState('');
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [errors, setErrors] = useState({ eventName: '', area: '', startDate: '', endDate: '' });
   const [loading, setLoading] = useState(false);
 
@@ -60,42 +61,27 @@ export default function CreateEventScreen() {
       isValid = false;
     }
 
-    if (!startDate.trim()) {
+    if (!startDate) {
       newErrors.startDate = 'Startdatum krävs';
       isValid = false;
     }
 
-    if (!endDate.trim()) {
+    if (!endDate) {
       newErrors.endDate = 'Slutdatum krävs';
       isValid = false;
     }
 
     // Validate date range if both dates are provided
-    if (startDate.trim() && endDate.trim()) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-
-      if (isNaN(start.getTime())) {
-        newErrors.startDate = 'Ogiltigt datum format';
+    if (startDate && endDate) {
+      if (endDate < startDate) {
+        newErrors.endDate = 'Slutdatum måste vara efter startdatum';
         isValid = false;
       }
 
-      if (isNaN(end.getTime())) {
-        newErrors.endDate = 'Ogiltigt datum format';
+      const numDays = getDaysBetween(startDate, endDate);
+      if (numDays > 7) {
+        newErrors.endDate = 'Evenemang kan max vara 7 dagar';
         isValid = false;
-      }
-
-      if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
-        if (end < start) {
-          newErrors.endDate = 'Slutdatum måste vara efter startdatum';
-          isValid = false;
-        }
-
-        const numDays = getDaysBetween(start, end);
-        if (numDays > 7) {
-          newErrors.endDate = 'Evenemang kan max vara 7 dagar';
-          isValid = false;
-        }
       }
     }
 
@@ -133,18 +119,15 @@ export default function CreateEventScreen() {
       console.log('Area geocoded successfully:', geocodedCoordinates);
       setCoordinates(geocodedCoordinates);
 
-      // Parse the date strings to Date objects
-      const eventStartDate = new Date(startDate);
-      const eventEndDate = new Date(endDate);
-
-      const numDays = getDaysBetween(eventStartDate, eventEndDate);
+      // startDate and endDate are already Date objects
+      const numDays = getDaysBetween(startDate, endDate);
 
       console.log('Creating event with data:', {
         name: eventName,
         area: area,
         coordinates: geocodedCoordinates,
-        startDate: eventStartDate,
-        endDate: eventEndDate,
+        startDate: startDate,
+        endDate: endDate,
         organizerId: user.id,
         numDays: numDays,
       });
@@ -154,8 +137,8 @@ export default function CreateEventScreen() {
         name: eventName,
         area: area,
         coordinates: geocodedCoordinates,
-        startDate: eventStartDate,
-        endDate: eventEndDate,
+        startDate: startDate,
+        endDate: endDate,
         organizerId: user.id,
       });
 
@@ -165,8 +148,8 @@ export default function CreateEventScreen() {
       setEventName('');
       setArea('');
       setCoordinates(null);
-      setStartDate('');
-      setEndDate('');
+      setStartDate(null);
+      setEndDate(null);
 
       // Show success message with event code
       Alert.alert(
@@ -230,26 +213,26 @@ export default function CreateEventScreen() {
               error={errors.area}
             />
 
-            <Input
+            <DatePickerInput
               label="Startdatum"
-              placeholder="YYYY-MM-DD (t.ex. 2025-10-15)"
               value={startDate}
-              onChangeText={(text) => {
-                setStartDate(text);
+              onChange={(date) => {
+                setStartDate(date);
                 setErrors({ ...errors, startDate: '' });
               }}
               error={errors.startDate}
+              minimumDate={new Date()}
             />
 
-            <Input
+            <DatePickerInput
               label="Slutdatum"
-              placeholder="YYYY-MM-DD (t.ex. 2025-10-20)"
               value={endDate}
-              onChangeText={(text) => {
-                setEndDate(text);
+              onChange={(date) => {
+                setEndDate(date);
                 setErrors({ ...errors, endDate: '' });
               }}
               error={errors.endDate}
+              minimumDate={startDate || new Date()}
             />
 
             <View style={styles.infoBox}>
