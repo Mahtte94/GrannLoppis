@@ -119,7 +119,11 @@ export default function CreateEventScreen() {
       console.log('Area geocoded successfully:', geocodedCoordinates);
       setCoordinates(geocodedCoordinates);
 
-      // startDate and endDate are already Date objects
+      // startDate and endDate are guaranteed to be non-null after validation
+      if (!startDate || !endDate) {
+        throw new Error('Start date and end date are required');
+      }
+
       const numDays = getDaysBetween(startDate, endDate);
 
       console.log('Creating event with data:', {
