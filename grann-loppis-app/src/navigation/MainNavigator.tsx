@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { UserRole, OrganizerStackParamList, SellerStackParamList, BuyerStackParamList } from '../types';
+import { UserRole, OrganizerStackParamList, SellerStackParamList, BuyerStackParamList, MapStackParamList, MainTabParamList } from '../types';
 import { useAuth } from '../context/AuthContext';
 import AuthNavigator from './AuthNavigator';
 
@@ -20,12 +20,14 @@ import AddItemScreen from '../screens/seller/AddItemScreen';
 import BrowseEventsScreen from '../screens/buyer/BrowseEventsScreen';
 import EventDetailsScreen from '../screens/buyer/EventDetailsScreen';
 import { EventMapScreen } from '../screens/buyer/EventMapScreen';
+import { AllEventsMapScreen } from '../screens/buyer/AllEventsMapScreen';
 import SellerDetailsScreen from '../screens/buyer/SellerDetailsScreen';
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<MainTabParamList>();
 const OrganizerStack = createStackNavigator<OrganizerStackParamList>();
 const SellerStack = createStackNavigator<SellerStackParamList>();
 const BuyerStack = createStackNavigator<BuyerStackParamList>();
+const MapStack = createStackNavigator<MapStackParamList>();
 
 function OrganizerNavigator() {
   return (
@@ -103,17 +105,44 @@ function BuyerNavigator() {
   );
 }
 
+function MapNavigator() {
+  return (
+    <MapStack.Navigator>
+      <MapStack.Screen
+        name="AllEventsMap"
+        component={AllEventsMapScreen}
+        options={{ title: 'Karta' }}
+      />
+      <MapStack.Screen
+        name="EventDetails"
+        component={EventDetailsScreen}
+        options={{ title: 'Event Details' }}
+      />
+      <MapStack.Screen
+        name="EventMap"
+        component={EventMapScreen}
+        options={{ title: 'Event Map' }}
+      />
+      <MapStack.Screen
+        name="SellerDetails"
+        component={SellerDetailsScreen}
+        options={{ title: 'Seller Details' }}
+      />
+    </MapStack.Navigator>
+  );
+}
+
 export default function MainNavigator() {
   const { user } = useAuth();
   const [forceUpdate, setForceUpdate] = useState(0);
 
   // Force re-render when user changes
   useEffect(() => {
-    console.log('👤 User changed in MainNavigator:', user ? `${user.displayName} (${user.role})` : 'null');
+    console.log(' User changed in MainNavigator:', user ? `${user.displayName} (${user.role})` : 'null');
     setForceUpdate(prev => prev + 1);
   }, [user]);
 
-  console.log('🔄 MainNavigator rendering, user:', user ? `${user.displayName} (${user.role})` : 'null', 'forceUpdate:', forceUpdate);
+  console.log(' MainNavigator rendering, user:', user ? `${user.displayName} (${user.role})` : 'null', 'forceUpdate:', forceUpdate);
 
   // Determine initial route based on user state
   const getInitialRoute = () => {
@@ -126,13 +155,23 @@ export default function MainNavigator() {
   // Create screens array based on user state
   const screens = [];
 
-  // Browse tab - always visible
+  // Home tab (Browse) - always visible
   screens.push(
     <Tab.Screen
       key="BuyerTab"
       name="BuyerTab"
       component={BuyerNavigator}
-      options={{ title: 'Bläddra' }}
+      options={{ title: 'Hem' }}
+    />
+  );
+
+  // Map tab - always visible
+  screens.push(
+    <Tab.Screen
+      key="MapTab"
+      name="MapTab"
+      component={MapNavigator}
+      options={{ title: 'Karta' }}
     />
   );
 

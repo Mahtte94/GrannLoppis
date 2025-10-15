@@ -125,7 +125,7 @@ export default function EventDetailsScreen() {
             onPress={() => navigation.navigate('AuthTab', { screen: 'Register' })}
           >
             <Text style={styles.sellerButtonText}>
-              Vill vara med och sälja? Registrera dig här som säljare
+              Vill du vara med och sälja? Registrera dig här som säljare
             </Text>
           </TouchableOpacity>
         )}

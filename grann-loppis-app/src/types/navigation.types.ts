@@ -31,6 +31,21 @@ export type BuyerStackParamList = {
   SellerDetails: { participantId: string };
 };
 
+export type MapStackParamList = {
+  AllEventsMap: undefined;
+  EventDetails: { eventId: string };
+  EventMap: { eventId: string };
+  SellerDetails: { participantId: string };
+};
+
+export type MainTabParamList = {
+  BuyerTab: undefined;
+  MapTab: undefined;
+  OrganizerTab?: undefined;
+  SellerTab?: undefined;
+  AuthTab?: undefined;
+};
+
 // Navigation props för screens
 export type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 export type ManageEventScreenNavigationProp = StackNavigationProp<OrganizerStackParamList, 'ManageEvent'>;
