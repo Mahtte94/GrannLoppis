@@ -85,7 +85,7 @@ export default function BrowseEventsScreen() {
   // Reload events whenever the screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      console.log('🔄 BrowseEventsScreen focused, reloading events...');
+      console.log('BrowseEventsScreen focused, reloading events...');
       loadEvents();
     }, [loadEvents])
   );
@@ -118,14 +118,6 @@ export default function BrowseEventsScreen() {
           >
             <Text style={[styles.toggleText, viewMode === 'list' && styles.toggleTextActive]}>
               Lista
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.toggleButton, viewMode === 'map' && styles.toggleButtonActive]}
-            onPress={() => setViewMode('map')}
-          >
-            <Text style={[styles.toggleText, viewMode === 'map' && styles.toggleTextActive]}>
-              Karta
             </Text>
           </TouchableOpacity>
         </View>
