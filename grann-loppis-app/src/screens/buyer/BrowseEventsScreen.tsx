@@ -14,7 +14,7 @@ type BrowseEventsScreenNavigationProp = StackNavigationProp<BuyerStackParamList,
 
 export default function BrowseEventsScreen() {
   const navigation = useNavigation<BrowseEventsScreenNavigationProp>();
-  const { setUser } = useAuth();
+  const { user, setUser } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('list');
@@ -25,8 +25,15 @@ export default function BrowseEventsScreen() {
     longitudeDelta: 0.1,
   });
 
-  const handleLogout = () => {
-    setUser(null);
+  const handleAuthAction = () => {
+    if (user) {
+      // User is logged in, so log them out
+      setUser(null);
+    } else {
+      // User is not logged in, navigate to login
+      // Note: The navigation structure will automatically show the Auth tab
+      setUser(null); // This will trigger the navigation to show Auth tab
+    }
   };
 
   const loadEvents = useCallback(async () => {
@@ -99,8 +106,8 @@ export default function BrowseEventsScreen() {
             <Text style={styles.title}>Bläddra evenemang</Text>
             <Text style={styles.subtitle}>{events.length} evenemang nära dig</Text>
           </View>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutText}>Byt roll</Text>
+          <TouchableOpacity style={styles.authButton} onPress={handleAuthAction}>
+            <Text style={styles.authText}>{user ? 'Logga ut' : 'Logga in'}</Text>
           </TouchableOpacity>
         </View>
 
@@ -200,7 +207,7 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.textLight,
   },
-  logoutButton: {
+  authButton: {
     backgroundColor: theme.colors.background,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
@@ -208,7 +215,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  logoutText: {
+  authText: {
     color: theme.colors.text,
     fontSize: theme.fontSize.sm,
     fontWeight: '600',
