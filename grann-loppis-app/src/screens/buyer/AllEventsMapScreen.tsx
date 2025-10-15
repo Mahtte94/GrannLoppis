@@ -6,7 +6,6 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { MapStackParamList, Event } from '../../types';
 import { eventsService } from '../../services/firebase';
 import { theme } from '../../styles/theme';
-import { formatDateRange } from '../../utils/helpers';
 
 type AllEventsMapScreenNavigationProp = StackNavigationProp<MapStackParamList, 'AllEventsMap'>;
 
@@ -70,7 +69,7 @@ export function AllEventsMapScreen() {
 
     } catch (error) {
       console.error('Error loading events:', error);
-      Alert.alert('Fel', 'Kunde inte ladda evenemang. Försök igen.');
+      Alert.alert('Fel', 'Kunde inte ladda loppis. Försök igen.');
     } finally {
       setLoading(false);
     }
@@ -116,7 +115,7 @@ export function AllEventsMapScreen() {
       {/* Info box */}
       <View style={styles.infoBox}>
         <Text style={styles.infoText}>
-          Alla evenemang
+          Alla loppmarknader
         </Text>
         <Text style={styles.infoSubtext}>
           {events.length} {events.length === 1 ? 'evenemang' : 'evenemang'} • Tryck på markörerna för mer info

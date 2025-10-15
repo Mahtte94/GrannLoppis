@@ -52,7 +52,7 @@ export default function CreateEventScreen() {
     let isValid = true;
 
     if (!eventName.trim()) {
-      newErrors.eventName = 'Evenemang namn krävs';
+      newErrors.eventName = 'Loppmarknads namn krävs';
       isValid = false;
     }
 
@@ -80,7 +80,7 @@ export default function CreateEventScreen() {
 
       const numDays = getDaysBetween(startDate, endDate);
       if (numDays > 7) {
-        newErrors.endDate = 'Evenemang kan max vara 7 dagar';
+        newErrors.endDate = 'Loppmarknad kan max vara 7 dagar';
         isValid = false;
       }
     }
@@ -93,7 +93,7 @@ export default function CreateEventScreen() {
     if (!validateForm()) return;
 
     if (!user) {
-      Alert.alert('Fel', 'Du måste vara inloggad för att skapa ett evenemang');
+      Alert.alert('Fel', 'Du måste vara inloggad för att skapa en loppmarknad.');
       return;
     }
 
@@ -163,8 +163,8 @@ export default function CreateEventScreen() {
 
       // Show success message
       Alert.alert(
-        'Evenemang skapat!',
-        `Ditt evenemang "${createdEvent.name}" har skapats!\n\n${numDays > 1 ? `Längd: ${numDays} dagar\n\n` : ''}Säljare kan nu ansöka om att delta i ditt evenemang. Du kan godkänna eller avslå ansökningar från deltagarlistan.`,
+        'Loppmarknad skapat!',
+        `Din loppmarknad "${createdEvent.name}" har skapats!\n\n${numDays > 1 ? `Längd: ${numDays} dagar\n\n` : ''}Säljare kan nu ansöka om att delta i din loppmarknad. Du kan godkänna eller avslå ansökningar från deltagarlistan.`,
         [
           {
             text: 'OK',
@@ -178,7 +178,7 @@ export default function CreateEventScreen() {
       );
     } catch (error: any) {
       console.error('Error creating event:', error);
-      Alert.alert('Fel', error.message || 'Kunde inte skapa evenemang. Försök igen.');
+      Alert.alert('Fel', error.message || 'Kunde inte skapa loppmarknad. Försök igen.');
     } finally {
       setLoading(false);
     }

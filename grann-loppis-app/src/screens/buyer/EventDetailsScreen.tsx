@@ -38,7 +38,7 @@ export default function EventDetailsScreen() {
       setEvent(fetchedEvent);
     } catch (error) {
       console.error('Error loading event:', error);
-      Alert.alert('Fel', 'Kunde inte ladda evenemang. Försök igen.');
+      Alert.alert('Fel', 'Kunde inte ladda loppis. Försök igen.');
     } finally {
       setLoading(false);
     }
@@ -61,7 +61,7 @@ export default function EventDetailsScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={styles.loadingText}>Laddar evenemang...</Text>
+        <Text style={styles.loadingText}>Laddar loppmarknaden...</Text>
       </View>
     );
   }
@@ -69,7 +69,7 @@ export default function EventDetailsScreen() {
   if (!event) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.errorText}>Evenemang hittades inte</Text>
+        <Text style={styles.errorText}>Loppmarknaden hittades inte</Text>
       </View>
     );
   }
@@ -102,7 +102,7 @@ export default function EventDetailsScreen() {
         </View>
 
         <View style={styles.descriptionSection}>
-          <Text style={styles.sectionTitle}>Om detta evenemang</Text>
+          <Text style={styles.sectionTitle}>Om loppmarknaden</Text>
           <Text style={styles.description}>
             Välkommen till en fantastisk dag av loppisshopping! Bläddra bland föremål från {event.participants} säljare i {event.area}.
             {'\n\n'}

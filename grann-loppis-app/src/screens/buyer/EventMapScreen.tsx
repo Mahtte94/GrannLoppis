@@ -114,7 +114,7 @@ export function EventMapScreen() {
   if (!event || !region) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.emptyText}>Evenemang hittades inte</Text>
+        <Text style={styles.emptyText}>Loppmarknader hittades inte</Text>
       </View>
     );
   }

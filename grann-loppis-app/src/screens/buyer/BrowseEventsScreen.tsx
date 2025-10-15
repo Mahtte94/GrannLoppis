@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert, ScrollView, ImageBackground } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { BuyerStackParamList, Event, EventStatus } from '../../types';
+import { BuyerStackParamList, Event } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { EventCard } from '../../components/EventCard';
 import { Loading } from '../../components/common/Loading';
 import { eventsService } from '../../services/firebase';
 import { theme } from '../../styles/theme';
+import { formatDateRange } from '../../utils/helpers';
 
 type BrowseEventsScreenNavigationProp = StackNavigationProp<BuyerStackParamList, 'BrowseEvents'>;
 
@@ -17,13 +17,6 @@ export default function BrowseEventsScreen() {
   const { user, setUser } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'map' | 'list'>('list');
-  const [region, setRegion] = useState<Region>({
-    latitude: 59.3293, // Default to Stockholm
-    longitude: 18.0686,
-    latitudeDelta: 0.1,
-    longitudeDelta: 0.1,
-  });
 
   const handleAuthAction = () => {
     if (user) {
@@ -45,35 +38,6 @@ export default function BrowseEventsScreen() {
       console.log('Fetched events:', fetchedEvents);
 
       setEvents(fetchedEvents);
-
-      // Calculate region to show all events
-      if (fetchedEvents.length > 0) {
-        const validEvents = fetchedEvents.filter(
-          (e) => e.coordinates && e.coordinates.lat && e.coordinates.lng
-        );
-
-        if (validEvents.length > 0) {
-          const lats = validEvents.map((e) => e.coordinates.lat);
-          const lngs = validEvents.map((e) => e.coordinates.lng);
-
-          const minLat = Math.min(...lats);
-          const maxLat = Math.max(...lats);
-          const minLng = Math.min(...lngs);
-          const maxLng = Math.max(...lngs);
-
-          const centerLat = (minLat + maxLat) / 2;
-          const centerLng = (minLng + maxLng) / 2;
-          const latDelta = (maxLat - minLat) * 1.5 || 0.1; // Add padding, or use default
-          const lngDelta = (maxLng - minLng) * 1.5 || 0.1;
-
-          setRegion({
-            latitude: centerLat,
-            longitude: centerLng,
-            latitudeDelta: Math.max(latDelta, 0.05), // Minimum zoom level
-            longitudeDelta: Math.max(lngDelta, 0.05),
-          });
-        }
-      }
     } catch (error) {
       console.error('Error loading events:', error);
       Alert.alert('Error', 'Failed to load events. Please try again.');
@@ -98,76 +62,127 @@ export default function BrowseEventsScreen() {
     return <Loading message="Laddar evenemang..." fullScreen />;
   }
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View>
-            <Text style={styles.title}>Bläddra evenemang</Text>
-            <Text style={styles.subtitle}>{events.length} evenemang nära dig</Text>
-          </View>
-          <TouchableOpacity style={styles.authButton} onPress={handleAuthAction}>
-            <Text style={styles.authText}>{user ? 'Logga ut' : 'Logga in'}</Text>
-          </TouchableOpacity>
-        </View>
+  // Get featured events (upcoming events)
+  const featuredEvents = events.slice(0, 3);
+  const upcomingEvents = events.filter(e => new Date(e.startDate) > new Date());
 
-        <View style={styles.viewToggle}>
-          <TouchableOpacity
-            style={[styles.toggleButton, viewMode === 'list' && styles.toggleButtonActive]}
-            onPress={() => setViewMode('list')}
-          >
-            <Text style={[styles.toggleText, viewMode === 'list' && styles.toggleTextActive]}>
-              Lista
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+      {/* Hero Section */}
+      <View style={styles.hero}>
+        <View style={styles.heroOverlay}>
+          <View style={styles.heroContent}>
+            <Text style={styles.heroTitle}>Upptäck loppmarknader nära dig</Text>
+            <Text style={styles.heroSubtitle}>
+              Hitta unika fynd och lokala skatter på loppmarknader i ditt område
             </Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.ctaButton}
+              onPress={() => navigation.navigate('EventDetails', { eventId: events[0]?.id })}
+            >
+              <Text style={styles.ctaButtonText}>Utforska nu</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
-      {viewMode === 'list' ? (
-        <FlatList
-          data={events}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <EventCard event={item} onPress={handleEventPress} />
-          )}
-          contentContainerStyle={styles.listContent}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>Inga evenemang hittades</Text>
-            </View>
-          }
-        />
-      ) : (
-        <MapView
-          style={styles.map}
-          provider={PROVIDER_GOOGLE}
-          initialRegion={region}
-          showsUserLocation={true}
-        >
-          {events.map((event) => {
-            // Skip events without valid coordinates
-            if (!event.coordinates || !event.coordinates.lat || !event.coordinates.lng) {
-              console.warn(`Event ${event.id} missing coordinates`);
-              return null;
-            }
+      {/* Stats Section */}
+      <View style={styles.statsSection}>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{events.length}</Text>
+          <Text style={styles.statLabel}>Loppisar</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{upcomingEvents.length}</Text>
+          <Text style={styles.statLabel}>Kommande</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{events.reduce((sum, e) => sum + e.participants, 0)}</Text>
+          <Text style={styles.statLabel}>Säljare</Text>
+        </View>
+      </View>
 
-            return (
-              <Marker
-                key={event.id}
-                coordinate={{
-                  latitude: event.coordinates.lat,
-                  longitude: event.coordinates.lng
-                }}
-                pinColor={event.status === EventStatus.ACTIVE ? theme.colors.success : theme.colors.secondary}
-                onPress={() => handleEventPress(event)}
-                title={event.name}
-                description={`${event.participants} sellers • ${event.area}`}
-              />
-            );
-          })}
-        </MapView>
+      {/* Featured Events Section */}
+      {featuredEvents.length > 0 && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Utvalda loppisar</Text>
+            <TouchableOpacity>
+              <Text style={styles.seeAllText}>Se alla</Text>
+            </TouchableOpacity>
+          </View>
+          {featuredEvents.map((event) => (
+            <EventCard key={event.id} event={event} onPress={handleEventPress} />
+          ))}
+        </View>
       )}
-    </View>
+
+      {/* How It Works Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Så fungerar det</Text>
+        <View style={styles.featureGrid}>
+          <View style={styles.featureCard}>
+            <View style={styles.featureIcon}>
+              <Text style={styles.featureEmoji}>🔍</Text>
+            </View>
+            <Text style={styles.featureTitle}>Hitta loppisar</Text>
+            <Text style={styles.featureDescription}>
+              Bläddra bland loppmarknader i ditt område
+            </Text>
+          </View>
+
+          <View style={styles.featureCard}>
+            <View style={styles.featureIcon}>
+              <Text style={styles.featureEmoji}>🗺️</Text>
+            </View>
+            <Text style={styles.featureTitle}>Visa på karta</Text>
+            <Text style={styles.featureDescription}>
+              Se exakt var säljarna finns
+            </Text>
+          </View>
+
+          <View style={styles.featureCard}>
+            <View style={styles.featureIcon}>
+              <Text style={styles.featureEmoji}>🛍️</Text>
+            </View>
+            <Text style={styles.featureTitle}>Handla lokalt</Text>
+            <Text style={styles.featureDescription}>
+              Besök säljare och hitta unika fynd
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* All Events Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Alla loppmarknader</Text>
+        {events.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Inga loppmarknader hittades</Text>
+          </View>
+        ) : (
+          events.map((event) => (
+            <EventCard key={event.id} event={event} onPress={handleEventPress} />
+          ))
+        )}
+      </View>
+
+      {/* Footer CTA */}
+      <View style={styles.footerCTA}>
+        <Text style={styles.footerTitle}>Vill du arrangera en loppmarknad?</Text>
+        <Text style={styles.footerSubtitle}>
+          Skapa och hantera dina egna loppmarknader
+        </Text>
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={handleAuthAction}
+        >
+          <Text style={styles.secondaryButtonText}>
+            {user ? 'Gå till Min Loppis' : 'Kom igång'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -176,68 +191,181 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  header: {
-    padding: theme.spacing.xl,
+  scrollContent: {
+    flexGrow: 1,
+  },
+  // Hero Section
+  hero: {
+    height: 300,
+    backgroundColor: theme.colors.primary,
+    position: 'relative',
+  },
+  heroOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 107, 107, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.xl,
+  },
+  heroContent: {
+    alignItems: 'center',
+    maxWidth: 600,
+  },
+  heroTitle: {
+    fontSize: theme.fontSize.xxl + 8,
+    fontWeight: 'bold',
+    color: theme.colors.white,
+    textAlign: 'center',
+    marginBottom: theme.spacing.md,
+    lineHeight: 48,
+  },
+  heroSubtitle: {
+    fontSize: theme.fontSize.lg,
+    color: theme.colors.white,
+    textAlign: 'center',
+    marginBottom: theme.spacing.xl,
+    opacity: 0.95,
+    lineHeight: 26,
+  },
+  ctaButton: {
+    backgroundColor: theme.colors.white,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.xl,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  ctaButtonText: {
+    color: theme.colors.primary,
+    fontSize: theme.fontSize.lg,
+    fontWeight: 'bold',
+  },
+  // Stats Section
+  statsSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.md,
     backgroundColor: theme.colors.white,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
-    zIndex: 10,
   },
-  headerTop: {
+  statCard: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: theme.fontSize.xxl,
+    fontWeight: 'bold',
+    color: theme.colors.primary,
+    marginBottom: theme.spacing.xs,
+  },
+  statLabel: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textLight,
+    fontWeight: '600',
+  },
+  // Section Styles
+  section: {
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.xl,
+    backgroundColor: theme.colors.white,
+    marginBottom: theme.spacing.md,
+  },
+  sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
   },
-  title: {
-    fontSize: theme.fontSize.xxl,
+  sectionTitle: {
+    fontSize: theme.fontSize.xl,
     fontWeight: 'bold',
     color: theme.colors.text,
+    marginBottom: theme.spacing.lg,
+  },
+  seeAllText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.primary,
+    fontWeight: '600',
+  },
+  // Feature Grid
+  featureGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: theme.spacing.md,
+  },
+  featureCard: {
+    width: '30%',
+    alignItems: 'center',
+    marginBottom: theme.spacing.lg,
+  },
+  featureIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: theme.colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  featureEmoji: {
+    fontSize: 32,
+  },
+  featureTitle: {
+    fontSize: theme.fontSize.md,
+    fontWeight: '600',
+    color: theme.colors.text,
+    textAlign: 'center',
     marginBottom: theme.spacing.xs,
   },
-  subtitle: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.textLight,
-  },
-  authButton: {
-    backgroundColor: theme.colors.background,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.sm,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  authText: {
-    color: theme.colors.text,
+  featureDescription: {
     fontSize: theme.fontSize.sm,
-    fontWeight: '600',
+    color: theme.colors.textLight,
+    textAlign: 'center',
+    lineHeight: 18,
   },
-  viewToggle: {
-    flexDirection: 'row',
-    backgroundColor: theme.colors.background,
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.xs,
-  },
-  toggleButton: {
-    flex: 1,
-    paddingVertical: theme.spacing.sm,
+  // Footer CTA
+  footerCTA: {
+    backgroundColor: theme.colors.secondary,
+    padding: theme.spacing.xl,
     alignItems: 'center',
-    borderRadius: theme.borderRadius.sm,
+    marginTop: theme.spacing.xl,
   },
-  toggleButtonActive: {
-    backgroundColor: theme.colors.primary,
-  },
-  toggleText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: '600',
-    color: theme.colors.textLight,
-  },
-  toggleTextActive: {
+  footerTitle: {
+    fontSize: theme.fontSize.xl,
+    fontWeight: 'bold',
     color: theme.colors.white,
+    textAlign: 'center',
+    marginBottom: theme.spacing.sm,
   },
-  listContent: {
-    padding: theme.spacing.md,
+  footerSubtitle: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.white,
+    textAlign: 'center',
+    marginBottom: theme.spacing.lg,
+    opacity: 0.9,
   },
+  secondaryButton: {
+    backgroundColor: theme.colors.white,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.xl,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  secondaryButtonText: {
+    color: theme.colors.secondary,
+    fontSize: theme.fontSize.md,
+    fontWeight: 'bold',
+  },
+  // Empty State
   emptyContainer: {
     padding: theme.spacing.xl,
     alignItems: 'center',
@@ -245,8 +373,5 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: theme.fontSize.md,
     color: theme.colors.textLight,
-  },
-  map: {
-    flex: 1,
   },
 });
