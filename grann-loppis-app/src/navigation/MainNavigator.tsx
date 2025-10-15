@@ -35,17 +35,17 @@ function OrganizerNavigator() {
       <OrganizerStack.Screen
         name="ManageEvent"
         component={ManageEventScreen}
-        options={{ title: 'My Events' }}
+        options={{ title: 'Loppis Rundan' }}
       />
       <OrganizerStack.Screen
         name="CreateEvent"
         component={CreateEventScreen}
-        options={{ title: 'Create Event' }}
+        options={{ title: 'Skapa loppmarknad' }}
       />
       <OrganizerStack.Screen
         name="ParticipantsList"
         component={ParticipantsListScreen}
-        options={{ title: 'Participants' }}
+        options={{ title: 'Säljare' }}
       />
     </OrganizerStack.Navigator>
   );
@@ -84,22 +84,22 @@ function BuyerNavigator() {
       <BuyerStack.Screen
         name="BrowseEvents"
         component={BrowseEventsScreen}
-        options={{ title: 'Browse Events' }}
+        options={{ title: 'Loppis Rundan' }}
       />
       <BuyerStack.Screen
         name="EventDetails"
         component={EventDetailsScreen}
-        options={{ title: 'Event Details' }}
+        options={{ title: 'Loppis Rundan' }}
       />
       <BuyerStack.Screen
         name="EventMap"
         component={EventMapScreen}
-        options={{ title: 'Event Map' }}
+        options={{ title: 'Loppis Rundan' }}
       />
       <BuyerStack.Screen
         name="SellerDetails"
         component={SellerDetailsScreen}
-        options={{ title: 'Seller Details' }}
+        options={{ title: 'Loppis Rundan' }}
       />
     </BuyerStack.Navigator>
   );
@@ -111,22 +111,22 @@ function MapNavigator() {
       <MapStack.Screen
         name="AllEventsMap"
         component={AllEventsMapScreen}
-        options={{ title: 'Karta' }}
+        options={{ title: 'Loppis Rundan' }}
       />
       <MapStack.Screen
         name="EventDetails"
         component={EventDetailsScreen}
-        options={{ title: 'Event Details' }}
+        options={{ title: 'Loppis Rundan' }}
       />
       <MapStack.Screen
         name="EventMap"
         component={EventMapScreen}
-        options={{ title: 'Event Map' }}
+        options={{ title: 'Loppis Rundan' }}
       />
       <MapStack.Screen
         name="SellerDetails"
         component={SellerDetailsScreen}
-        options={{ title: 'Seller Details' }}
+        options={{ title: 'Loppis Rundan' }}
       />
     </MapStack.Navigator>
   );
@@ -182,7 +182,7 @@ export default function MainNavigator() {
         key="OrganizerTab"
         name="OrganizerTab"
         component={OrganizerNavigator}
-        options={{ title: 'Mina event' }}
+        options={{ title: 'Min Loppis' }}
       />
     );
   }
@@ -212,7 +212,7 @@ export default function MainNavigator() {
   }
 
   const initialRoute = getInitialRoute();
-  console.log('🎯 Initial route will be:', initialRoute);
+  console.log('Initial route will be:', initialRoute);
 
   // Always show browse tab, conditionally show others based on user role
   return (

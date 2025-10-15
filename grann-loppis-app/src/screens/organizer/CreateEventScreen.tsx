@@ -194,7 +194,7 @@ export default function CreateEventScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.container}>
-          <Text style={styles.title}>Skapa ett nytt evenemang</Text>
+          <Text style={styles.title}>Skapa en ny loppmarknad</Text>
           <Text style={styles.subtitle}>
             Fyll i informationen nedan för att skapa ditt loppis-evenemang
           </Text>
@@ -252,7 +252,7 @@ export default function CreateEventScreen() {
 
             <View style={styles.infoBox}>
               <Text style={styles.infoText}>
-                Ditt evenemang kan vara mellan 1 och 7 dagar långt. Efter att du skapat eventet kan säljare ansöka om att delta. Du kommer att kunna granska och godkänna eller avslå varje ansökan.
+                Din loppmarknad kan vara mellan 1 och 7 dagar långt. Efter att du skapat eventet kan säljare ansöka om att delta. Du kommer att kunna granska och godkänna eller avslå varje ansökan.
               </Text>
             </View>
 
