@@ -96,11 +96,6 @@ export default function EventDetailsScreen() {
 
         <View style={styles.infoSection}>
           <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Evenemangskod</Text>
-            <Text style={styles.infoValue}>{event.eventCode}</Text>
-          </View>
-
-          <View style={styles.infoCard}>
             <Text style={styles.infoLabel}>Säljare</Text>
             <Text style={styles.infoValue}>{event.participants}</Text>
           </View>

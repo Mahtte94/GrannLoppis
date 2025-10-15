@@ -8,9 +8,10 @@ import { getEventStatus, getStatusText, formatDateRange, getDaysBetween } from '
 interface EventCardProps {
   event: Event;
   onPress?: (event: Event) => void;
+  onDelete?: (event: Event) => void;
 }
 
-export function EventCard({ event, onPress }: EventCardProps) {
+export function EventCard({ event, onPress, onDelete }: EventCardProps) {
   // Calculate the actual status based on the event date range
   const actualStatus = getEventStatus(event.startDate, event.endDate);
   const statusText = getStatusText(actualStatus);
@@ -51,15 +52,15 @@ export function EventCard({ event, onPress }: EventCardProps) {
         <Text style={styles.infoValue}>{event.area}</Text>
       </View>
 
-      <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>Kod:</Text>
-        <Text style={styles.eventCode}>{event.eventCode}</Text>
-      </View>
-
       <View style={styles.footer}>
         <Text style={styles.participantCount}>
           {event.participants} {event.participants === 1 ? 'deltagare' : 'deltagare'}
         </Text>
+        {onDelete && (
+          <TouchableOpacity onPress={() => onDelete(event)} style={styles.deleteButton}>
+            <Text style={styles.deleteButtonText}>Ta bort</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -136,10 +137,25 @@ const styles = StyleSheet.create({
     paddingTop: theme.spacing.sm,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   participantCount: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.textLight,
     fontStyle: 'italic',
+    flex: 1,
+  },
+  deleteButton: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.sm,
+    backgroundColor: theme.colors.error || '#ff4444',
+  },
+  deleteButtonText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.white,
+    fontWeight: '600',
   },
 });

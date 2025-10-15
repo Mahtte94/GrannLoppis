@@ -5,6 +5,7 @@ import {
   getDoc,
   getDocs,
   updateDoc,
+  deleteDoc,
   increment,
   query,
   where,
@@ -289,6 +290,38 @@ export async function getUserParticipations(userId: string): Promise<Array<Parti
   }
 }
 
+/**
+ * Remove a participant from an event (organizer can remove sellers)
+ */
+export async function removeParticipant(participantId: string): Promise<void> {
+  try {
+    const participantRef = doc(db, PARTICIPANTS_COLLECTION, participantId);
+    const participantSnap = await getDoc(participantRef);
+
+    if (!participantSnap.exists()) {
+      throw new Error('Participant not found');
+    }
+
+    const participantData = participantSnap.data();
+
+    // If the participant was approved, decrement the event's participant count
+    if (participantData.status === ParticipantStatus.APPROVED) {
+      const eventRef = doc(db, EVENTS_COLLECTION, participantData.eventId);
+      await updateDoc(eventRef, {
+        participants: increment(-1),
+      });
+    }
+
+    // Delete the participant
+    await deleteDoc(participantRef);
+
+    console.log('Participant removed:', participantId);
+  } catch (error) {
+    console.error('Error removing participant:', error);
+    throw new Error('Failed to remove participant');
+  }
+}
+
 export const participantsService = {
   applyToEvent,
   approveApplication,
@@ -297,4 +330,5 @@ export const participantsService = {
   getEventApplications,
   getParticipantById,
   getUserParticipations,
+  removeParticipant,
 };

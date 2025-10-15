@@ -108,6 +108,35 @@ export default function ParticipantsListScreen() {
     );
   };
 
+  const handleRemove = async (participant: Participant) => {
+    if (!user) return;
+
+    Alert.alert(
+      'Ta bort säljare',
+      `Är du säker på att du vill ta bort ${participant.displayName} från evenemanget?\n\nDetta går inte att ångra.`,
+      [
+        { text: 'Avbryt', style: 'cancel' },
+        {
+          text: 'Ta bort',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setActionLoading(participant.id);
+              await participantsService.removeParticipant(participant.id);
+              Alert.alert('Borttagen', `${participant.displayName} har tagits bort från evenemanget.`);
+              loadParticipants();
+            } catch (error) {
+              console.error('Error removing participant:', error);
+              Alert.alert('Fel', 'Kunde inte ta bort säljare. Försök igen.');
+            } finally {
+              setActionLoading(null);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const renderApplicationCard = (participant: Participant) => {
     const isProcessing = actionLoading === participant.id;
 
@@ -158,10 +187,21 @@ export default function ParticipantsListScreen() {
           </View>
         )}
 
-        {activeTab === 'approved' && participant.joinedAt && (
-          <Text style={styles.statusText}>
-            Godkänd: {new Date(participant.joinedAt).toLocaleDateString('sv-SE')}
-          </Text>
+        {activeTab === 'approved' && (
+          <View style={styles.approvedFooter}>
+            {participant.joinedAt && (
+              <Text style={styles.statusText}>
+                Godkänd: {new Date(participant.joinedAt).toLocaleDateString('sv-SE')}
+              </Text>
+            )}
+            <TouchableOpacity
+              onPress={() => handleRemove(participant)}
+              disabled={isProcessing}
+              style={styles.removeButton}
+            >
+              <Text style={styles.removeButtonText}>Ta bort</Text>
+            </TouchableOpacity>
+          </View>
         )}
 
         {activeTab === 'rejected' && participant.reviewedAt && (
@@ -337,6 +377,23 @@ const styles = StyleSheet.create({
     color: theme.colors.textLight,
     fontStyle: 'italic',
     marginTop: theme.spacing.sm,
+  },
+  approvedFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: theme.spacing.sm,
+  },
+  removeButton: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.sm,
+    backgroundColor: theme.colors.error || '#ff4444',
+  },
+  removeButtonText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.white,
+    fontWeight: '600',
   },
   emptyContainer: {
     flex: 1,

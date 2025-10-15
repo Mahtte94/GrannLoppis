@@ -54,6 +54,30 @@ export default function ManageEventScreen() {
     navigation.navigate('CreateEvent');
   };
 
+  const handleDeleteEvent = (event: Event) => {
+    Alert.alert(
+      'Ta bort evenemang',
+      `Är du säker på att du vill ta bort "${event.name}"?\n\nDetta kommer att ta bort evenemanget och alla relaterade ansökningar. Detta går inte att ångra.`,
+      [
+        { text: 'Avbryt', style: 'cancel' },
+        {
+          text: 'Ta bort',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await eventsService.deleteEvent(event.id);
+              Alert.alert('Borttaget', 'Evenemanget har tagits bort.');
+              loadEvents(); // Reload the list
+            } catch (error) {
+              console.error('Error deleting event:', error);
+              Alert.alert('Fel', 'Kunde inte ta bort evenemanget. Försök igen.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   if (loading) {
     return <Loading message="Laddar dina evenemang..." fullScreen />;
   }
@@ -71,7 +95,7 @@ export default function ManageEventScreen() {
         data={events}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <EventCard event={item} onPress={handleEventPress} />
+          <EventCard event={item} onPress={handleEventPress} onDelete={handleDeleteEvent} />
         )}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
