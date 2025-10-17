@@ -24,29 +24,31 @@ export function Card({ children, style, elevation = 'medium' }: CardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.surfaceLight,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   elevationLow: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
     elevation: 2,
   },
   elevationMedium: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
     elevation: 4,
   },
   elevationHigh: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
     elevation: 8,
   },
 });

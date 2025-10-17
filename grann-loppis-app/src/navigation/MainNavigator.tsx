@@ -5,6 +5,7 @@ import { UserRole, OrganizerStackParamList, SellerStackParamList, BuyerStackPara
 import { useAuth } from '../context/AuthContext';
 import AuthNavigator from './AuthNavigator';
 import { AuthButton } from '../components/common/AuthButton';
+import { theme } from '../styles/theme';
 
 // Organizer screens
 import CreateEventScreen from '../screens/organizer/CreateEventScreen';
@@ -35,6 +36,13 @@ function OrganizerNavigator() {
     <OrganizerStack.Navigator
       screenOptions={{
         headerRight: () => <AuthButton />,
+        headerStyle: {
+          backgroundColor: theme.colors.surface,
+        },
+        headerTintColor: theme.colors.text,
+        headerTitleStyle: {
+          fontWeight: '700',
+        },
       }}
     >
       <OrganizerStack.Screen
@@ -61,6 +69,13 @@ function SellerNavigator() {
     <SellerStack.Navigator
       screenOptions={{
         headerRight: () => <AuthButton />,
+        headerStyle: {
+          backgroundColor: theme.colors.surface,
+        },
+        headerTintColor: theme.colors.text,
+        headerTitleStyle: {
+          fontWeight: '700',
+        },
       }}
     >
       <SellerStack.Screen
@@ -92,6 +107,13 @@ function BuyerNavigator() {
     <BuyerStack.Navigator
       screenOptions={{
         headerRight: () => <AuthButton />,
+        headerStyle: {
+          backgroundColor: theme.colors.surface,
+        },
+        headerTintColor: theme.colors.text,
+        headerTitleStyle: {
+          fontWeight: '700',
+        },
       }}
     >
       <BuyerStack.Screen
@@ -123,6 +145,13 @@ function MapNavigator() {
     <MapStack.Navigator
       screenOptions={{
         headerRight: () => <AuthButton />,
+        headerStyle: {
+          backgroundColor: theme.colors.surface,
+        },
+        headerTintColor: theme.colors.text,
+        headerTitleStyle: {
+          fontWeight: '700',
+        },
       }}
     >
       <MapStack.Screen
@@ -237,6 +266,17 @@ export default function MainNavigator() {
       initialRouteName={initialRoute}
       screenOptions={{
         headerShown: false,
+        tabBarStyle: {
+          backgroundColor: theme.colors.surface,
+          borderTopColor: theme.colors.border,
+          borderTopWidth: 1,
+        },
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.textLight,
+        tabBarLabelStyle: {
+          fontWeight: '600',
+          fontSize: 12,
+        },
       }}
     >
       {screens}

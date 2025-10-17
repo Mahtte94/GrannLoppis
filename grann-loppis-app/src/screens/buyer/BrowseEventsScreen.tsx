@@ -180,35 +180,41 @@ export default function BrowseEventsScreen() {
       {/* How It Works Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Så fungerar det</Text>
-        <View style={styles.featureGrid}>
-          <View style={styles.featureCard}>
+        <View style={styles.howItWorksCard}>
+          <View style={styles.featureRow}>
             <View style={styles.featureIcon}>
               <Text style={styles.featureEmoji}>🔍</Text>
             </View>
-            <Text style={styles.featureTitle}>Hitta loppisar</Text>
-            <Text style={styles.featureDescription}>
-              Bläddra bland loppmarknader i ditt område
-            </Text>
+            <View style={styles.featureContent}>
+              <Text style={styles.featureTitle}>Hitta loppisar</Text>
+              <Text style={styles.featureDescription}>
+                Bläddra bland loppmarknader i ditt område
+              </Text>
+            </View>
           </View>
 
-          <View style={styles.featureCard}>
+          <View style={styles.featureRow}>
             <View style={styles.featureIcon}>
               <Text style={styles.featureEmoji}>🗺️</Text>
             </View>
-            <Text style={styles.featureTitle}>Visa på karta</Text>
-            <Text style={styles.featureDescription}>
-              Se exakt var säljarna finns
-            </Text>
+            <View style={styles.featureContent}>
+              <Text style={styles.featureTitle}>Visa på karta</Text>
+              <Text style={styles.featureDescription}>
+                Se exakt var säljarna finns
+              </Text>
+            </View>
           </View>
 
-          <View style={styles.featureCard}>
+          <View style={styles.featureRow}>
             <View style={styles.featureIcon}>
               <Text style={styles.featureEmoji}>🛍️</Text>
             </View>
-            <Text style={styles.featureTitle}>Handla lokalt</Text>
-            <Text style={styles.featureDescription}>
-              Besök säljare och hitta unika fynd
-            </Text>
+            <View style={styles.featureContent}>
+              <Text style={styles.featureTitle}>Handla lokalt</Text>
+              <Text style={styles.featureDescription}>
+                Besök säljare och hitta unika fynd
+              </Text>
+            </View>
           </View>
         </View>
       </View>
@@ -242,13 +248,14 @@ const styles = StyleSheet.create({
   },
   // Hero Section
   hero: {
-    height: 300,
-    backgroundColor: theme.colors.primary,
+    height: 320,
+    backgroundColor: theme.colors.surface,
     position: 'relative',
+    overflow: 'hidden',
   },
   heroOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(255, 107, 107, 0.9)',
+    backgroundColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: theme.spacing.xl,
@@ -258,36 +265,39 @@ const styles = StyleSheet.create({
     maxWidth: 600,
   },
   heroTitle: {
-    fontSize: theme.fontSize.xxl + 8,
-    fontWeight: 'bold',
+    fontSize: theme.fontSize.xxl + 4,
+    fontWeight: '700',
     color: theme.colors.white,
     textAlign: 'center',
     marginBottom: theme.spacing.md,
-    lineHeight: 48,
+    lineHeight: 44,
+    letterSpacing: -0.5,
   },
   heroSubtitle: {
-    fontSize: theme.fontSize.lg,
+    fontSize: theme.fontSize.md,
     color: theme.colors.white,
     textAlign: 'center',
     marginBottom: theme.spacing.xl,
-    opacity: 0.95,
-    lineHeight: 26,
+    opacity: 0.85,
+    lineHeight: 24,
+    fontWeight: '400',
   },
   ctaButton: {
     backgroundColor: theme.colors.white,
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.xl,
-    shadowColor: '#000',
+    paddingHorizontal: theme.spacing.xl + 8,
+    paddingVertical: theme.spacing.md + 2,
+    borderRadius: theme.borderRadius.lg,
+    shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   ctaButtonText: {
     color: theme.colors.primary,
-    fontSize: theme.fontSize.lg,
-    fontWeight: 'bold',
+    fontSize: theme.fontSize.md,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   // Stats Section
   statsSection: {
@@ -295,30 +305,32 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingVertical: theme.spacing.xl,
     paddingHorizontal: theme.spacing.md,
-    backgroundColor: theme.colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
   },
   statCard: {
     alignItems: 'center',
+    backgroundColor: theme.colors.surfaceLight,
+    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
+    minWidth: 100,
   },
   statNumber: {
     fontSize: theme.fontSize.xxl,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: theme.colors.primary,
     marginBottom: theme.spacing.xs,
   },
   statLabel: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.textLight,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   // Section Styles
   section: {
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.xl,
-    backgroundColor: theme.colors.white,
-    marginBottom: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -328,88 +340,96 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: theme.fontSize.xl,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: theme.colors.text,
     marginBottom: theme.spacing.lg,
+    letterSpacing: -0.5,
   },
   seeAllText: {
-    fontSize: theme.fontSize.md,
+    fontSize: theme.fontSize.sm,
     color: theme.colors.primary,
     fontWeight: '600',
+    letterSpacing: 0.3,
   },
-  // Feature Grid
-  featureGrid: {
+  // How It Works Card
+  howItWorksCard: {
+    backgroundColor: theme.colors.surfaceLight,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  featureRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginTop: theme.spacing.md,
-  },
-  featureCard: {
-    width: '30%',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: theme.spacing.lg,
   },
   featureIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: theme.colors.background,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
+    marginRight: theme.spacing.md,
+    opacity: 0.9,
   },
   featureEmoji: {
-    fontSize: 32,
+    fontSize: 28,
+  },
+  featureContent: {
+    flex: 1,
+    justifyContent: 'center',
   },
   featureTitle: {
     fontSize: theme.fontSize.md,
-    fontWeight: '600',
+    fontWeight: '700',
     color: theme.colors.text,
-    textAlign: 'center',
     marginBottom: theme.spacing.xs,
   },
   featureDescription: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.textLight,
-    textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: 20,
   },
   // Footer CTA
   footerCTA: {
-    backgroundColor: theme.colors.secondary,
+    backgroundColor: theme.colors.surfaceLight,
     padding: theme.spacing.xl,
     alignItems: 'center',
-    marginTop: theme.spacing.xl,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
   },
   footerTitle: {
     fontSize: theme.fontSize.xl,
-    fontWeight: 'bold',
-    color: theme.colors.white,
+    fontWeight: '700',
+    color: theme.colors.text,
     textAlign: 'center',
     marginBottom: theme.spacing.sm,
+    letterSpacing: -0.5,
   },
   footerSubtitle: {
     fontSize: theme.fontSize.md,
-    color: theme.colors.white,
+    color: theme.colors.textLight,
     textAlign: 'center',
-    marginBottom: theme.spacing.lg,
-    opacity: 0.9,
+    marginBottom: theme.spacing.xl,
   },
   secondaryButton: {
-    backgroundColor: theme.colors.white,
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.xl,
-    shadowColor: '#000',
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: theme.spacing.xl + 8,
+    paddingVertical: theme.spacing.md + 2,
+    borderRadius: theme.borderRadius.lg,
+    shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   secondaryButtonText: {
-    color: theme.colors.secondary,
+    color: theme.colors.white,
     fontSize: theme.fontSize.md,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   // Empty State
   emptyContainer: {

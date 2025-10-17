@@ -4,6 +4,7 @@ import { AuthStackParamList } from '../types';
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import { AuthButton } from '../components/common/AuthButton';
+import { theme } from '../styles/theme';
 
 const Stack = createStackNavigator<AuthStackParamList>();
 
@@ -13,6 +14,9 @@ export default function AuthNavigator() {
       initialRouteName="Register"
       screenOptions={{
         headerShown: false,
+        cardStyle: {
+          backgroundColor: theme.colors.background,
+        },
       }}
     >
       <Stack.Screen
