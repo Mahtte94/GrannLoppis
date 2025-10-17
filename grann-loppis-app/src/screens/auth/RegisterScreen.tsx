@@ -322,8 +322,8 @@ const styles = StyleSheet.create({
   sellerFields: {
     marginTop: theme.spacing.lg,
     padding: theme.spacing.md,
-    backgroundColor: theme.colors.white,
-    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.surfaceLight,
+    borderRadius: theme.borderRadius.lg,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },

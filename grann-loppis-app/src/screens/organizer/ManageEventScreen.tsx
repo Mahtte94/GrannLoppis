@@ -132,13 +132,11 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: theme.spacing.xl,
-    backgroundColor: theme.colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
   },
   title: {
     fontSize: theme.fontSize.xxl,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: theme.colors.text,
     marginBottom: theme.spacing.xs,
   },
@@ -158,7 +156,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: theme.fontSize.xl,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: theme.colors.text,
     marginBottom: theme.spacing.sm,
   },
@@ -173,7 +171,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: theme.spacing.xl,
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.surfaceLight,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
   },

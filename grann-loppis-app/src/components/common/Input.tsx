@@ -64,12 +64,12 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: theme.colors.border,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.lg,
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.md,
     fontSize: theme.fontSize.md,
     color: theme.colors.text,
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.surfaceLight,
   },
   inputWithIcon: {
     paddingRight: 60,

@@ -59,28 +59,34 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.lg,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 48,
   },
   primaryButton: {
     backgroundColor: theme.colors.primary,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   secondaryButton: {
     backgroundColor: theme.colors.secondary,
   },
   outlineButton: {
     backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: theme.colors.primary,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   disabledButton: {
     opacity: 0.5,
   },
   text: {
     fontSize: theme.fontSize.md,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   primaryText: {
     color: theme.colors.white,
@@ -89,7 +95,7 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
   },
   outlineText: {
-    color: theme.colors.primary,
+    color: theme.colors.text,
   },
   disabledText: {
     color: theme.colors.textLight,
