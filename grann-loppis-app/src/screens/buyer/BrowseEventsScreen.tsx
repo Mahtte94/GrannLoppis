@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert, ScrollView, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, RefreshControl } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { BuyerStackParamList, Event } from '../../types';
@@ -8,15 +8,23 @@ import { EventCard } from '../../components/EventCard';
 import { Loading } from '../../components/common/Loading';
 import { eventsService } from '../../services/firebase';
 import { theme } from '../../styles/theme';
-import { formatDateRange } from '../../utils/helpers';
+import { getUserLocation, calculateDistance } from '../../utils/helpers';
 
 type BrowseEventsScreenNavigationProp = StackNavigationProp<BuyerStackParamList, 'BrowseEvents'>;
+
+// Type for event with pre-calculated distance
+type EventWithDistance = Event & { distance?: number };
+
+// Cache duration in milliseconds (5 minutes)
+const CACHE_DURATION = 5 * 60 * 1000;
 
 export default function BrowseEventsScreen() {
   const navigation = useNavigation<BrowseEventsScreenNavigationProp>();
   const { user, setUser } = useAuth();
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<EventWithDistance[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastLoadTime, setLastLoadTime] = useState<number>(0);
 
   const handleAuthAction = () => {
     if (user) {
@@ -29,22 +37,52 @@ export default function BrowseEventsScreen() {
     }
   };
 
-  const loadEvents = useCallback(async () => {
+  const loadEvents = useCallback(async (forceRefresh = false) => {
     try {
+      // Check if cache is still valid
+      const now = Date.now();
+      const isCacheValid = events.length > 0 && (now - lastLoadTime) < CACHE_DURATION;
+
+      if (isCacheValid && !forceRefresh) {
+        console.log('Using cached events');
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
+      console.log('Fetching fresh events from Firebase');
+
+      // Get user's location
+      const location = await getUserLocation();
 
       // Fetch real events from Firebase
       const fetchedEvents = await eventsService.getAllEvents();
       console.log('Fetched events:', fetchedEvents);
 
-      setEvents(fetchedEvents);
+      // Calculate distances once and add to events
+      const eventsWithDistance: EventWithDistance[] = fetchedEvents.map(event => ({
+        ...event,
+        distance: location ? calculateDistance(location, event.coordinates) : undefined,
+      }));
+
+      // Sort events by distance if user location is available
+      if (location) {
+        eventsWithDistance.sort((a, b) => {
+          const distanceA = a.distance ?? Infinity;
+          const distanceB = b.distance ?? Infinity;
+          return distanceA - distanceB;
+        });
+      }
+
+      setEvents(eventsWithDistance);
+      setLastLoadTime(Date.now());
     } catch (error) {
       console.error('Error loading events:', error);
       Alert.alert('Error', 'Failed to load events. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [events.length, lastLoadTime]);
 
   // Reload events whenever the screen comes into focus
   useFocusEffect(
@@ -58,6 +96,12 @@ export default function BrowseEventsScreen() {
     navigation.navigate('EventDetails', { eventId: event.id });
   };
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadEvents(true); // Force refresh
+    setRefreshing(false);
+  }, [loadEvents]);
+
   if (loading) {
     return <Loading message="Laddar evenemang..." fullScreen />;
   }
@@ -67,7 +111,18 @@ export default function BrowseEventsScreen() {
   const upcomingEvents = events.filter(e => new Date(e.startDate) > new Date());
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={theme.colors.primary}
+          colors={[theme.colors.primary]}
+        />
+      }
+    >
       {/* Hero Section */}
       <View style={styles.hero}>
         <View style={styles.heroOverlay}>
@@ -106,13 +161,18 @@ export default function BrowseEventsScreen() {
       {featuredEvents.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Utvalda loppisar</Text>
+            <Text style={styles.sectionTitle}>Loppisar i närheten</Text>
             <TouchableOpacity>
               <Text style={styles.seeAllText}>Se alla</Text>
             </TouchableOpacity>
           </View>
           {featuredEvents.map((event) => (
-            <EventCard key={event.id} event={event} onPress={handleEventPress} />
+            <EventCard
+              key={event.id}
+              event={event}
+              onPress={handleEventPress}
+              distance={event.distance}
+            />
           ))}
         </View>
       )}
@@ -151,20 +211,6 @@ export default function BrowseEventsScreen() {
             </Text>
           </View>
         </View>
-      </View>
-
-      {/* All Events Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Alla loppmarknader</Text>
-        {events.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Inga loppmarknader hittades</Text>
-          </View>
-        ) : (
-          events.map((event) => (
-            <EventCard key={event.id} event={event} onPress={handleEventPress} />
-          ))
-        )}
       </View>
 
       {/* Footer CTA */}

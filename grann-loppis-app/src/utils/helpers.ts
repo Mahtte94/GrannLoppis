@@ -215,3 +215,78 @@ export async function reverseGeocode(coordinates: Coordinates): Promise<string |
     return null;
   }
 }
+
+/**
+ * Calculate the distance between two coordinates using the Haversine formula
+ * @param coord1 - First coordinate
+ * @param coord2 - Second coordinate
+ * @returns Distance in kilometers
+ */
+export function calculateDistance(coord1: Coordinates, coord2: Coordinates): number {
+  const R = 6371; // Radius of the Earth in kilometers
+  const dLat = toRadians(coord2.lat - coord1.lat);
+  const dLng = toRadians(coord2.lng - coord1.lng);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(coord1.lat)) *
+      Math.cos(toRadians(coord2.lat)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c;
+
+  return distance;
+}
+
+/**
+ * Convert degrees to radians
+ */
+function toRadians(degrees: number): number {
+  return degrees * (Math.PI / 180);
+}
+
+/**
+ * Get the user's current location
+ * @returns Coordinates object with user's current position, or null if unable to get location
+ */
+export async function getUserLocation(): Promise<Coordinates | null> {
+  try {
+    // Request location permissions
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      console.warn('Location permission not granted');
+      return null;
+    }
+
+    // Get current position
+    const location = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Balanced,
+    });
+
+    return {
+      lat: location.coords.latitude,
+      lng: location.coords.longitude,
+    };
+  } catch (error) {
+    console.error('Error getting user location:', error);
+    return null;
+  }
+}
+
+/**
+ * Format distance in a user-friendly way
+ * - Less than 1km: show in meters (e.g., "500 m")
+ * - 1km or more: show in kilometers with 1 decimal (e.g., "2.5 km")
+ * @param distanceInKm - Distance in kilometers
+ * @returns Formatted distance string
+ */
+export function formatDistance(distanceInKm: number): string {
+  if (distanceInKm < 1) {
+    const meters = Math.round(distanceInKm * 1000);
+    return `${meters} m`;
+  } else {
+    return `${distanceInKm.toFixed(1)} km`;
+  }
+}

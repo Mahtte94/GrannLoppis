@@ -3,15 +3,16 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Event, EventStatus } from '../types';
 import { Card } from './common/Card';
 import { theme } from '../styles/theme';
-import { getEventStatus, getStatusText, formatDateRange, getDaysBetween } from '../utils/helpers';
+import { getEventStatus, getStatusText, formatDateRange, getDaysBetween, formatDistance } from '../utils/helpers';
 
 interface EventCardProps {
   event: Event;
   onPress?: (event: Event) => void;
   onDelete?: (event: Event) => void;
+  distance?: number; // Distance in kilometers
 }
 
-export function EventCard({ event, onPress, onDelete }: EventCardProps) {
+export function EventCard({ event, onPress, onDelete, distance }: EventCardProps) {
   // Calculate the actual status based on the event date range
   const actualStatus = getEventStatus(event.startDate, event.endDate);
   const statusText = getStatusText(actualStatus);
@@ -51,6 +52,13 @@ export function EventCard({ event, onPress, onDelete }: EventCardProps) {
         <Text style={styles.infoLabel}>Plats:</Text>
         <Text style={styles.infoValue}>{event.area}</Text>
       </View>
+
+      {distance !== undefined && (
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Avstånd:</Text>
+          <Text style={styles.distanceValue}>{formatDistance(distance)}</Text>
+        </View>
+      )}
 
       <View style={styles.footer}>
         <Text style={styles.participantCount}>
@@ -124,6 +132,12 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.text,
+    flex: 1,
+  },
+  distanceValue: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primary,
+    fontWeight: '600',
     flex: 1,
   },
   eventCode: {
