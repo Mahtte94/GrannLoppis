@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { UserRole, OrganizerStackParamList, SellerStackParamList, BuyerStackParamList, MapStackParamList, MainTabParamList } from '../types';
 import { useAuth } from '../context/AuthContext';
 import AuthNavigator from './AuthNavigator';
+import { AuthButton } from '../components/common/AuthButton';
 
 // Organizer screens
 import CreateEventScreen from '../screens/organizer/CreateEventScreen';
@@ -31,7 +32,11 @@ const MapStack = createStackNavigator<MapStackParamList>();
 
 function OrganizerNavigator() {
   return (
-    <OrganizerStack.Navigator>
+    <OrganizerStack.Navigator
+      screenOptions={{
+        headerRight: () => <AuthButton />,
+      }}
+    >
       <OrganizerStack.Screen
         name="ManageEvent"
         component={ManageEventScreen}
@@ -53,7 +58,11 @@ function OrganizerNavigator() {
 
 function SellerNavigator() {
   return (
-    <SellerStack.Navigator>
+    <SellerStack.Navigator
+      screenOptions={{
+        headerRight: () => <AuthButton />,
+      }}
+    >
       <SellerStack.Screen
         name="JoinEvent"
         component={JoinEventScreen}
@@ -80,7 +89,11 @@ function SellerNavigator() {
 
 function BuyerNavigator() {
   return (
-    <BuyerStack.Navigator>
+    <BuyerStack.Navigator
+      screenOptions={{
+        headerRight: () => <AuthButton />,
+      }}
+    >
       <BuyerStack.Screen
         name="BrowseEvents"
         component={BrowseEventsScreen}
@@ -107,7 +120,11 @@ function BuyerNavigator() {
 
 function MapNavigator() {
   return (
-    <MapStack.Navigator>
+    <MapStack.Navigator
+      screenOptions={{
+        headerRight: () => <AuthButton />,
+      }}
+    >
       <MapStack.Screen
         name="AllEventsMap"
         component={AllEventsMapScreen}

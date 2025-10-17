@@ -1,4 +1,4 @@
-import { Coordinates } from './participant.types';
+import { Coordinates } from './user.types';
 
 export enum EventStatus {
   UPCOMING = 'upcoming',

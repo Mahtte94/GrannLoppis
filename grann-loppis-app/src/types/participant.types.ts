@@ -1,7 +1,4 @@
-export interface Coordinates {
-  lat: number;
-  lng: number;
-}
+import { Coordinates } from './user.types';
 
 export enum ParticipantStatus {
   PENDING = 'pending',
