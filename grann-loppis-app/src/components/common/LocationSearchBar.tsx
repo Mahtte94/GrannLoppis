@@ -86,7 +86,7 @@ export const LocationSearchBar: React.FC<LocationSearchBarProps> = ({
 
     searchTimeoutRef.current = setTimeout(() => {
       searchPlaces(text);
-    }, 300); // Wait 300ms after user stops typing
+    }, 800); // Wait 800ms after user stops typing
   };
 
   const getPlaceDetails = async (placeId: string): Promise<{ lat: number; lng: number } | null> => {
@@ -173,7 +173,6 @@ export const LocationSearchBar: React.FC<LocationSearchBarProps> = ({
                 style={styles.predictionItem}
                 onPress={() => handleSelectLocation(item)}
               >
-                
                 <Text style={styles.predictionText}>{item.description}</Text>
               </TouchableOpacity>
             ))}
@@ -243,11 +242,12 @@ const styles = StyleSheet.create({
       width: 0,
       height: 4,
     },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 5,
+    elevation: 10,
     borderWidth: 1,
     borderColor: theme.colors.border,
+    zIndex: 10000,
   },
   predictionItem: {
     flexDirection: 'row',

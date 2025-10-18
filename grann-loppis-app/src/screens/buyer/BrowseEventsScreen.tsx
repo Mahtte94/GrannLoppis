@@ -277,10 +277,8 @@ const styles = StyleSheet.create({
   },
   // Hero Section
   hero: {
-    height: 320,
+    minHeight: 420,
     backgroundColor: theme.colors.surface,
-    position: 'relative',
-    overflow: 'hidden',
   },
   heroOverlay: {
     flex: 1,
@@ -288,10 +286,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.xl * 2,
   },
   heroContent: {
     alignItems: 'center',
     maxWidth: 600,
+    width: '100%',
   },
   heroTitle: {
     fontSize: theme.fontSize.xxl + 4,
@@ -315,6 +315,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: theme.spacing.lg,
     paddingHorizontal: theme.spacing.xs,
+    zIndex: 1000,
   },
   ctaButton: {
     backgroundColor: theme.colors.white,
