@@ -7,6 +7,7 @@ import { BuyerStackParamList, MainTabParamList, Event } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { EventCard } from '../../components/EventCard';
 import { Loading } from '../../components/common/Loading';
+import { LocationSearchBar, LocationResult } from '../../components/common/LocationSearchBar';
 import { eventsService } from '../../services/firebase';
 import { theme } from '../../styles/theme';
 import { getUserLocation, calculateDistance } from '../../utils/helpers';
@@ -100,6 +101,21 @@ export default function BrowseEventsScreen() {
     navigation.navigate('EventDetails', { eventId: event.id });
   };
 
+  const handleLocationSelect = (location: LocationResult) => {
+    console.log('Location selected:', location);
+
+    if (location.coordinates) {
+      // Navigate to map tab with the selected location
+      navigation.navigate('MapTab', {
+        screen: 'AllEventsMap',
+        params: {
+          location: location.coordinates,
+          locationName: location.description,
+        },
+      });
+    }
+  };
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadEvents(true); // Force refresh
@@ -135,6 +151,15 @@ export default function BrowseEventsScreen() {
             <Text style={styles.heroSubtitle}>
               Hitta unika fynd och lokala skatter på loppmarknader i ditt område
             </Text>
+
+            {/* Location Search Bar */}
+            <View style={styles.searchBarContainer}>
+              <LocationSearchBar
+                onLocationSelect={handleLocationSelect}
+                placeholder="Sök efter plats..."
+              />
+            </View>
+
             <TouchableOpacity
               style={styles.ctaButton}
               onPress={() => navigation.navigate('MapTab')}
@@ -281,10 +306,15 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.white,
     textAlign: 'center',
-    marginBottom: theme.spacing.xl,
+    marginBottom: theme.spacing.lg,
     opacity: 0.85,
     lineHeight: 24,
     fontWeight: '400',
+  },
+  searchBarContainer: {
+    width: '100%',
+    marginBottom: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.xs,
   },
   ctaButton: {
     backgroundColor: theme.colors.white,

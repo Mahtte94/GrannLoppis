@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Region, Marker } from 'react-native-maps';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { MapStackParamList, Event } from '../../types';
 import { eventsService } from '../../services/firebase';
@@ -9,9 +9,11 @@ import { theme } from '../../styles/theme';
 import { getUserLocation } from '../../utils/helpers';
 
 type AllEventsMapScreenNavigationProp = StackNavigationProp<MapStackParamList, 'AllEventsMap'>;
+type AllEventsMapScreenRouteProp = RouteProp<MapStackParamList, 'AllEventsMap'>;
 
 export function AllEventsMapScreen() {
   const navigation = useNavigation<AllEventsMapScreenNavigationProp>();
+  const route = useRoute<AllEventsMapScreenRouteProp>();
   const mapRef = useRef<MapView>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,6 +23,10 @@ export function AllEventsMapScreen() {
     latitudeDelta: 0.5,
     longitudeDelta: 0.5,
   });
+
+  // Extract location from route params if provided
+  const searchLocation = route.params?.location;
+  const searchLocationName = route.params?.locationName;
 
   const loadEvents = useCallback(async () => {
     try {
@@ -40,7 +46,17 @@ export function AllEventsMapScreen() {
       // Determine the region to show
       let targetRegion: Region;
 
-      if (userLocation) {
+      if (searchLocation) {
+        // If a search location was provided, zoom to that location
+        // latitudeDelta/longitudeDelta of ~0.05 shows about 5km radius
+        targetRegion = {
+          latitude: searchLocation.lat,
+          longitude: searchLocation.lng,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        };
+        console.log('Zooming to search location:', searchLocationName);
+      } else if (userLocation) {
         // If we have user location, zoom in on the user's location
         // latitudeDelta/longitudeDelta of ~0.05 shows about 5km radius
         targetRegion = {
@@ -93,7 +109,7 @@ export function AllEventsMapScreen() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [searchLocation, searchLocationName]);
 
   // Reload map whenever the screen comes into focus
   useFocusEffect(
@@ -143,7 +159,7 @@ export function AllEventsMapScreen() {
       {/* Info box */}
       <View style={styles.infoBox}>
         <Text style={styles.infoText}>
-          Alla loppmarknader
+          {searchLocationName ? `📍 ${searchLocationName}` : 'Alla loppmarknader'}
         </Text>
         <Text style={styles.infoSubtext}>
           {events.length} {events.length === 1 ? 'evenemang' : 'evenemang'} • Tryck på markörerna för mer info

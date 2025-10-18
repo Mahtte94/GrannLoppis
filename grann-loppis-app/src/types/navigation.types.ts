@@ -1,5 +1,5 @@
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RouteProp } from '@react-navigation/native';
+import { RouteProp, NavigatorScreenParams } from '@react-navigation/native';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -32,17 +32,20 @@ export type BuyerStackParamList = {
 };
 
 export type MapStackParamList = {
-  AllEventsMap: undefined;
+  AllEventsMap: {
+    location?: { lat: number; lng: number };
+    locationName?: string;
+  } | undefined;
   EventDetails: { eventId: string };
   EventMap: { eventId: string };
   SellerDetails: { participantId: string };
 };
 
 export type MainTabParamList = {
-  BuyerTab: undefined;
-  MapTab: undefined;
-  OrganizerTab?: undefined;
-  SellerTab?: undefined;
+  BuyerTab: NavigatorScreenParams<BuyerStackParamList> | undefined;
+  MapTab: NavigatorScreenParams<MapStackParamList> | undefined;
+  OrganizerTab?: NavigatorScreenParams<OrganizerStackParamList> | undefined;
+  SellerTab?: NavigatorScreenParams<SellerStackParamList> | undefined;
   AuthTab?: undefined;
 };
 
