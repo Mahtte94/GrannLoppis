@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, RefreshControl } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, CompositeNavigationProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { BuyerStackParamList, Event } from '../../types';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { BuyerStackParamList, MainTabParamList, Event } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { EventCard } from '../../components/EventCard';
 import { Loading } from '../../components/common/Loading';
@@ -10,7 +11,10 @@ import { eventsService } from '../../services/firebase';
 import { theme } from '../../styles/theme';
 import { getUserLocation, calculateDistance } from '../../utils/helpers';
 
-type BrowseEventsScreenNavigationProp = StackNavigationProp<BuyerStackParamList, 'BrowseEvents'>;
+type BrowseEventsScreenNavigationProp = CompositeNavigationProp<
+  StackNavigationProp<BuyerStackParamList, 'BrowseEvents'>,
+  BottomTabNavigationProp<MainTabParamList>
+>;
 
 // Type for event with pre-calculated distance
 type EventWithDistance = Event & { distance?: number };
@@ -133,7 +137,7 @@ export default function BrowseEventsScreen() {
             </Text>
             <TouchableOpacity
               style={styles.ctaButton}
-              onPress={() => navigation.navigate('EventDetails', { eventId: events[0]?.id })}
+              onPress={() => navigation.navigate('MapTab')}
             >
               <Text style={styles.ctaButtonText}>Utforska nu</Text>
             </TouchableOpacity>

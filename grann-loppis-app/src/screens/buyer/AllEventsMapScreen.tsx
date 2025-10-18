@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Region, Marker } from 'react-native-maps';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { MapStackParamList, Event } from '../../types';
 import { eventsService } from '../../services/firebase';
 import { theme } from '../../styles/theme';
+import { getUserLocation } from '../../utils/helpers';
 
 type AllEventsMapScreenNavigationProp = StackNavigationProp<MapStackParamList, 'AllEventsMap'>;
 
@@ -21,13 +22,12 @@ export function AllEventsMapScreen() {
     longitudeDelta: 0.5,
   });
 
-  useEffect(() => {
-    loadEvents();
-  }, []);
-
-  const loadEvents = async () => {
+  const loadEvents = useCallback(async () => {
     try {
       setLoading(true);
+
+      // Get user's current location first
+      const userLocation = await getUserLocation();
 
       // Fetch all events
       const eventsData = await eventsService.getAllEvents();
@@ -37,8 +37,20 @@ export function AllEventsMapScreen() {
       const eventsWithCoordinates = eventsData.filter(e => e.coordinates);
       setEvents(eventsWithCoordinates);
 
-      // If there are events, adjust region to show all markers
-      if (eventsWithCoordinates.length > 0) {
+      // Determine the region to show
+      let targetRegion: Region;
+
+      if (userLocation) {
+        // If we have user location, zoom in on the user's location
+        // latitudeDelta/longitudeDelta of ~0.05 shows about 5km radius
+        targetRegion = {
+          latitude: userLocation.lat,
+          longitude: userLocation.lng,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        };
+      } else if (eventsWithCoordinates.length > 0) {
+        // If no user location but we have events, show all events
         const allLats = eventsWithCoordinates.map(e => e.coordinates!.lat);
         const allLngs = eventsWithCoordinates.map(e => e.coordinates!.lng);
 
@@ -52,20 +64,28 @@ export function AllEventsMapScreen() {
         const latDelta = Math.max((maxLat - minLat) * 1.5, 0.1);
         const lngDelta = Math.max((maxLng - minLng) * 1.5, 0.1);
 
-        const allEventsRegion = {
+        targetRegion = {
           latitude: centerLat,
           longitude: centerLng,
           latitudeDelta: latDelta,
           longitudeDelta: lngDelta,
         };
-
-        setRegion(allEventsRegion);
-
-        // Animate to show all events
-        setTimeout(() => {
-          mapRef.current?.animateToRegion(allEventsRegion, 1000);
-        }, 500);
+      } else {
+        // Default to Stockholm if nothing else available
+        targetRegion = {
+          latitude: 59.3293,
+          longitude: 18.0686,
+          latitudeDelta: 0.5,
+          longitudeDelta: 0.5,
+        };
       }
+
+      setRegion(targetRegion);
+
+      // Animate to the target region
+      setTimeout(() => {
+        mapRef.current?.animateToRegion(targetRegion, 1000);
+      }, 500);
 
     } catch (error) {
       console.error('Error loading events:', error);
@@ -73,7 +93,15 @@ export function AllEventsMapScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // Reload map whenever the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      console.log('AllEventsMapScreen focused, reloading map...');
+      loadEvents();
+    }, [loadEvents])
+  );
 
   const handleMarkerPress = (event: Event) => {
     console.log('Marker pressed for event:', event.name);
