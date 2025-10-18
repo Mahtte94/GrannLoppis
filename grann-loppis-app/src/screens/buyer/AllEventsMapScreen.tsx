@@ -138,7 +138,7 @@ export function AllEventsMapScreen() {
       <MapView
         ref={mapRef}
         style={styles.map}
-        provider={PROVIDER_GOOGLE}
+        provider= {PROVIDER_GOOGLE}
         initialRegion={region}
         showsUserLocation={true}
         showsMyLocationButton={true}
@@ -159,7 +159,7 @@ export function AllEventsMapScreen() {
       {/* Info box */}
       <View style={styles.infoBox}>
         <Text style={styles.infoText}>
-          {searchLocationName ? `📍 ${searchLocationName}` : 'Alla loppmarknader'}
+          {searchLocationName ? `${searchLocationName}` : 'Alla loppmarknader'}
         </Text>
         <Text style={styles.infoSubtext}>
           {events.length} {events.length === 1 ? 'evenemang' : 'evenemang'} • Tryck på markörerna för mer info

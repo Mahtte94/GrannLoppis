@@ -188,7 +188,6 @@ const styles = StyleSheet.create({
     position: 'relative',
     zIndex: 1000,
     width: '100%',
-    maxWidth: 500,
     alignSelf: 'center',
   },
   searchBar: {
@@ -200,7 +199,7 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.sm,
     shadowColor: '#000',
     width: '100%',
-    maxWidth: 300,
+    maxWidth: 900,
     shadowOffset: {
       width: 0,
       height: 2,

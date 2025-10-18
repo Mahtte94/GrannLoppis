@@ -207,7 +207,7 @@ export default function MainNavigator() {
       key="BuyerTab"
       name="BuyerTab"
       component={BuyerNavigator}
-      options={{ title: 'Hem' }}
+      options={{ title: 'Hem', tabBarIcon: () => null }}
     />
   );
 
@@ -217,7 +217,7 @@ export default function MainNavigator() {
       key="MapTab"
       name="MapTab"
       component={MapNavigator}
-      options={{ title: 'Karta' }}
+      options={{ title: 'Karta', tabBarIcon: () => null }}
     />
   );
 
@@ -228,7 +228,7 @@ export default function MainNavigator() {
         key="OrganizerTab"
         name="OrganizerTab"
         component={OrganizerNavigator}
-        options={{ title: 'Min Loppis' }}
+        options={{ title: 'Min Loppis', tabBarIcon: () => null }}
       />
     );
   }
@@ -240,7 +240,7 @@ export default function MainNavigator() {
         key="SellerTab"
         name="SellerTab"
         component={SellerNavigator}
-        options={{ title: 'Sälj' }}
+        options={{ title: 'Sälj', tabBarIcon: () => null }}
       />
     );
   }
@@ -252,7 +252,7 @@ export default function MainNavigator() {
         key="AuthTab"
         name="AuthTab"
         component={AuthNavigator}
-        options={{ title: 'Konto' }}
+        options={{ title: 'Konto', tabBarIcon: () => null }}
       />
     );
   }

@@ -281,6 +281,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.xl * 2,
+    borderTopEndRadius: 24,
+    borderTopStartRadius: 24,
   },
   heroContent: {
     alignItems: 'center',
