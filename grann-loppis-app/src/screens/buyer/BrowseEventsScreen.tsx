@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, RefreshCon
 import { useNavigation, useFocusEffect, CompositeNavigationProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { BuyerStackParamList, MainTabParamList, Event, UserRole } from '../../types';
+import { BuyerStackParamList, MainTabParamList, Event } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { EventCard } from '../../components/EventCard';
 import { Loading } from '../../components/common/Loading';
@@ -25,17 +25,15 @@ const CACHE_DURATION = 5 * 60 * 1000;
 
 export default function BrowseEventsScreen() {
   const navigation = useNavigation<BrowseEventsScreenNavigationProp>();
-  const { user, setUser } = useAuth();
+  const { user } = useAuth();
   const [events, setEvents] = useState<EventWithDistance[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastLoadTime, setLastLoadTime] = useState<number>(0);
 
   const handleRegisterNavigation = () => {
-    // Navigate to the Auth tab and then to Register screen
-    navigation.navigate('AuthTab', {
-      screen: 'Register',
-    });
+    // Navigate to the Auth tab (which defaults to Register screen)
+    navigation.navigate('AuthTab');
   };
 
   const loadEvents = useCallback(async (forceRefresh = false) => {
