@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, RefreshCon
 import { useNavigation, useFocusEffect, CompositeNavigationProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { BuyerStackParamList, MainTabParamList, Event } from '../../types';
+import { BuyerStackParamList, MainTabParamList, Event, UserRole } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { EventCard } from '../../components/EventCard';
 import { Loading } from '../../components/common/Loading';
@@ -31,15 +31,11 @@ export default function BrowseEventsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [lastLoadTime, setLastLoadTime] = useState<number>(0);
 
-  const handleAuthAction = () => {
-    if (user) {
-      // User is logged in, so log them out
-      setUser(null);
-    } else {
-      // User is not logged in, navigate to login
-      // Note: The navigation structure will automatically show the Auth tab
-      setUser(null); // This will trigger the navigation to show Auth tab
-    }
+  const handleRegisterNavigation = () => {
+    // Navigate to the Auth tab and then to Register screen
+    navigation.navigate('AuthTab', {
+      screen: 'Register',
+    });
   };
 
   const loadEvents = useCallback(async (forceRefresh = false) => {
@@ -248,21 +244,21 @@ export default function BrowseEventsScreen() {
         </View>
       </View>
 
-      {/* Footer CTA */}
-      <View style={styles.footerCTA}>
-        <Text style={styles.footerTitle}>Vill du arrangera en loppmarknad?</Text>
-        <Text style={styles.footerSubtitle}>
-          Skapa och hantera dina egna loppmarknader
-        </Text>
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          onPress={handleAuthAction}
-        >
-          <Text style={styles.secondaryButtonText}>
-            {user ? 'Gå till Min Loppis' : 'Kom igång'}
+      {/* Footer CTA - Only show for logged out users */}
+      {!user && (
+        <View style={styles.footerCTA}>
+          <Text style={styles.footerTitle}>Vill du arrangera en loppmarknad?</Text>
+          <Text style={styles.footerSubtitle}>
+            Skapa och hantera dina egna loppmarknader
           </Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={handleRegisterNavigation}
+          >
+            <Text style={styles.secondaryButtonText}>Kom igång</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </ScrollView>
   );
 }
