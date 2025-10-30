@@ -270,12 +270,23 @@ export default function MainNavigator() {
           backgroundColor: theme.colors.surface,
           borderTopColor: theme.colors.border,
           borderTopWidth: 1,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 15,
         },
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textLight,
         tabBarLabelStyle: {
           fontWeight: '600',
-          fontSize: 12,
+          fontSize: 16,
+          marginTop: 0,
+          marginBottom: 0,
+        },
+        tabBarIconStyle: {
+          display: 'none',
+        },
+        tabBarItemStyle: {
+          justifyContent: 'center',
         },
       }}
     >
