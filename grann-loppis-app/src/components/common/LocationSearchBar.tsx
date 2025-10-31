@@ -58,7 +58,7 @@ export const LocationSearchBar: React.FC<LocationSearchBarProps> = ({
 
       if (data.status === 'OK' && data.predictions) {
         const results: LocationResult[] = data.predictions.map((prediction: any) => ({
-          description: prediction.description,
+          description: prediction.description.replace(/, Sverige$/, ''),
           placeId: prediction.place_id,
         }));
         setPredictions(results);
@@ -111,7 +111,9 @@ export const LocationSearchBar: React.FC<LocationSearchBarProps> = ({
   };
 
   const handleSelectLocation = async (location: LocationResult) => {
-    setSearchText(location.description);
+    // Remove ", Sverige" suffix from description
+    const cleanDescription = location.description.replace(/, Sverige$/, '');
+    setSearchText(cleanDescription);
     setShowPredictions(false);
     Keyboard.dismiss();
 
@@ -121,12 +123,16 @@ export const LocationSearchBar: React.FC<LocationSearchBarProps> = ({
     if (coordinates) {
       onLocationSelect({
         ...location,
+        description: cleanDescription,
         coordinates,
       });
     } else {
       // If we can't get coordinates, still pass the location
       // The map screen can handle this case
-      onLocationSelect(location);
+      onLocationSelect({
+        ...location,
+        description: cleanDescription,
+      });
     }
   };
 

@@ -168,7 +168,7 @@ export default function BrowseEventsScreen() {
       <View style={styles.hero}>
         <View style={styles.heroOverlay}>
           <View style={styles.heroContent}>
-            <Text style={styles.heroTitle}>Upptäck loppmarknader nära dig</Text>
+            <Text style={styles.heroTitle}>Upptäck loppmarknader{"\n"}nära dig!</Text>
             <Text style={styles.heroSubtitle}>
               Hitta unika fynd och lokala skatter på loppmarknader i ditt område
             </Text>
@@ -322,15 +322,15 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.xxl + 4,
     fontWeight: "700",
     color: theme.colors.white,
-    textAlign: "center",
+    textAlign: "left",
     marginBottom: theme.spacing.md,
     lineHeight: 44,
-    letterSpacing: -0.5,
+    letterSpacing: 0.5,
   },
   heroSubtitle: {
     fontSize: theme.fontSize.md,
     color: theme.colors.white,
-    textAlign: "center",
+    textAlign: "left",
     marginBottom: theme.spacing.lg,
     opacity: 0.85,
     lineHeight: 24,

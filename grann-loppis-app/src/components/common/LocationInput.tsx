@@ -66,7 +66,9 @@ export function LocationInput({
   }, [value]);
 
   const handleSelectPrediction = async (prediction: Prediction) => {
-    onChangeText(prediction.description);
+    // Remove ", Sverige" suffix from description
+    const cleanDescription = prediction.description.replace(/, Sverige$/, '');
+    onChangeText(cleanDescription);
     setShowPredictions(false);
     setPredictions([]);
 
@@ -80,7 +82,7 @@ export function LocationInput({
 
         if (data.result?.geometry?.location) {
           onLocationSelect({
-            description: prediction.description,
+            description: cleanDescription,
             lat: data.result.geometry.location.lat,
             lng: data.result.geometry.location.lng,
           });
@@ -120,7 +122,7 @@ export function LocationInput({
                 style={styles.predictionItem}
                 onPress={() => handleSelectPrediction(item)}
               >
-                <Text style={styles.predictionText}>{item.description}</Text>
+                <Text style={styles.predictionText}>{item.description.replace(/, Sverige$/, '')}</Text>
               </TouchableOpacity>
               {index < predictions.length - 1 && <View style={styles.separator} />}
             </React.Fragment>
