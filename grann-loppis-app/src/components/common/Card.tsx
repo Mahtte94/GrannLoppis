@@ -31,24 +31,12 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
   },
   elevationLow: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 2,
+    boxShadow: '-2px 4px 4px 0px rgba(0, 0, 0, 0.2), inset -1px 1px 2px -2px rgba(255, 255, 255, 1)',
   },
   elevationMedium: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 4,
+    boxShadow: '-4px 8px 8px 0px rgba(0, 0, 0, 0.3), inset -2px 2px 4px -4px rgba(255, 255, 255, 1)',
   },
   elevationHigh: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 8,
+    boxShadow: '-6px 12px 12px 0px rgba(0, 0, 0, 0.4), inset -3px 3px 6px -6px rgba(255, 255, 255, 1)',
   },
 });

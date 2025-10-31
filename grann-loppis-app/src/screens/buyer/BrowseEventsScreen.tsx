@@ -318,11 +318,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xl + 8,
     paddingVertical: theme.spacing.md + 2,
     borderRadius: theme.borderRadius.lg,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
+    boxShadow: '-4px 8px 8px 0px rgba(0, 0, 0, 0.3), inset -2px 2px 4px -4px rgba(255, 255, 255, 1)',
   },
   ctaButtonText: {
     color: theme.colors.primary,
@@ -345,6 +341,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.md,
     borderRadius: theme.borderRadius.lg,
     minWidth: 100,
+    boxShadow: '-4px 8px 8px 0px rgba(0, 0, 0, 0.3), inset -2px 2px 4px -4px rgba(255, 255, 255, 1)',
   },
   statNumber: {
     fontSize: theme.fontSize.xxl,
@@ -389,6 +386,7 @@ const styles = StyleSheet.create({
     padding: theme.spacing.lg,
     borderWidth: 1,
     borderColor: theme.colors.border,
+    boxShadow: '-4px 8px 8px 0px rgba(0, 0, 0, 0.3), inset -2px 2px 4px -4px rgba(255, 255, 255, 1)',
   },
   featureRow: {
     flexDirection: 'row',
@@ -404,6 +402,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: theme.spacing.md,
     opacity: 0.9,
+    boxShadow: '-4px 8px 8px 0px rgba(0, 0, 0, 0.3), inset -2px 2px 4px -4px rgba(255, 255, 255, 1)',
   },
   featureEmoji: {
     fontSize: 28,
@@ -450,11 +449,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xl + 8,
     paddingVertical: theme.spacing.md + 2,
     borderRadius: theme.borderRadius.lg,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
+    boxShadow: '-4px 8px 8px 0px rgba(0, 0, 0, 0.3), inset -2px 2px 4px -4px rgba(255, 255, 255, 1)',
   },
   secondaryButtonText: {
     color: theme.colors.white,
