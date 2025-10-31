@@ -95,7 +95,7 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.container}>
-          <Text style={styles.title}>Välkommen tillbaka!</Text>
+          <Text style={styles.title}>Välkommen!</Text>
           <Text style={styles.subtitle}>Logga in på ditt konto</Text>
 
           <View style={styles.form}>

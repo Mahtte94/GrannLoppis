@@ -24,7 +24,7 @@ export function Card({ children, style, elevation = 'medium' }: CardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: theme.colors.surfaceLight,
+    backgroundColor: theme.colors.surfaceLightest,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
     borderWidth: 1,

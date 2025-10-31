@@ -155,7 +155,7 @@ export function EventMapScreen() {
       {/* Info box */}
       <View style={styles.infoBox}>
         <Text style={styles.infoText}>
-          📍 {event.name}
+           {event.name}
         </Text>
         <Text style={styles.infoSubtext}>
           {participants.length} {participants.length === 1 ? 'säljare' : 'säljare'} • Tryck på markörerna för mer info

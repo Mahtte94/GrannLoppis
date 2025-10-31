@@ -62,7 +62,7 @@ export function EventCard({ event, onPress, onDelete, distance }: EventCardProps
 
       <View style={styles.footer}>
         <Text style={styles.participantCount}>
-          {event.participants} {event.participants === 1 ? 'deltagare' : 'deltagare'}
+          {event.participants} {event.participants === 1 ? 'säljare' : 'säljare'}
         </Text>
         {onDelete && (
           <TouchableOpacity onPress={() => onDelete(event)} style={styles.deleteButton}>

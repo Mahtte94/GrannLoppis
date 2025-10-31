@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     paddingVertical: theme.spacing.xl,
     paddingHorizontal: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
+    gap: theme.spacing.md,
   },
   statCard: {
     alignItems: "center",
@@ -387,9 +387,15 @@ const styles = StyleSheet.create({
   },
   // Section Styles
   section: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.xl,
-    backgroundColor: theme.colors.surface,
+    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.md,
+    backgroundColor: theme.colors.surfaceLight,
+    borderRadius: theme.borderRadius.lg,
+    marginBottom: theme.spacing.xl,
+  boxShadow:
+      "-4px 8px 8px 0px rgba(0, 0, 0, 0.3), inset -2px 2px 4px -4px rgba(255, 255, 255, 1)",
+    marginVertical: theme.spacing.md,
+  marginHorizontal: theme.spacing.md,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -401,8 +407,8 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.xl,
     fontWeight: "700",
     color: theme.colors.text,
-    marginBottom: theme.spacing.lg,
     letterSpacing: -0.5,
+    paddingLeft: theme.spacing.sm,
   },
   seeAllText: {
     fontSize: theme.fontSize.sm,
@@ -413,12 +419,9 @@ const styles = StyleSheet.create({
   // How It Works Card
   howItWorksCard: {
     backgroundColor: theme.colors.surfaceLight,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    boxShadow:
-      "-4px 8px 8px 0px rgba(0, 0, 0, 0.3), inset -2px 2px 4px -4px rgba(255, 255, 255, 1)",
+    padding: theme.spacing.md,
+    marginTop: theme.spacing.md,
+
   },
   featureRow: {
     flexDirection: "row",

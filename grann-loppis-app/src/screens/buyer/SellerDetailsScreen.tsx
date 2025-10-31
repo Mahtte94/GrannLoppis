@@ -52,7 +52,7 @@ export default function SellerDetailsScreen() {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{participant.displayName}</Text>
-        <Text style={styles.address}>📍 {participant.address}</Text>
+        <Text style={styles.address}>{participant.address}</Text>
       </View>
 
       <View style={styles.content}>

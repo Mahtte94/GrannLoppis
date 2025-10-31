@@ -8,6 +8,7 @@ export const theme = {
     background: '#1A1A1A',
     surface: '#242424',
     surfaceLight: '#2E2E2E',
+    surfaceLightest: '#303030ff',
     white: '#FFFFFF',
     error: '#FF4757',
     success: '#2ED573',
