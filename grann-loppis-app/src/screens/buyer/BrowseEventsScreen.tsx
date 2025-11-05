@@ -390,17 +390,12 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.lg,
     paddingHorizontal: theme.spacing.md,
     backgroundColor: theme.colors.surfaceLight,
-    borderRadius: theme.borderRadius.lg,
-    marginBottom: theme.spacing.xl,
-  boxShadow:
-      "-4px 8px 8px 0px rgba(0, 0, 0, 0.3), inset -2px 2px 4px -4px rgba(255, 255, 255, 1)",
-    marginVertical: theme.spacing.md,
-  marginHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-end",
     marginBottom: theme.spacing.lg,
   },
   sectionTitle: {
@@ -415,6 +410,7 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     fontWeight: "600",
     letterSpacing: 0.3,
+    paddingRight: theme.spacing.sm,
   },
   // How It Works Card
   howItWorksCard: {

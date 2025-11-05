@@ -14,6 +14,18 @@ import { db } from '../../../firebase.config';
 import { Event, EventStatus, Coordinates } from '../../types';
 
 const EVENTS_COLLECTION = 'events';
+const DAYS_AFTER_END_TO_DELETE = 3;
+
+/**
+ * Check if an event should be removed (ended more than 3 days ago)
+ */
+function shouldRemoveEvent(endDate: Date): boolean {
+  const now = new Date();
+  const threeDaysAfterEnd = new Date(endDate);
+  threeDaysAfterEnd.setDate(threeDaysAfterEnd.getDate() + DAYS_AFTER_END_TO_DELETE);
+
+  return now > threeDaysAfterEnd;
+}
 
 export interface CreateEventInput {
   name: string;
@@ -124,8 +136,11 @@ export async function getAllEvents(): Promise<Event[]> {
       };
     });
 
+    // Filter out events that ended more than 3 days ago
+    const activeEvents = events.filter((event) => !shouldRemoveEvent(event.endDate));
+
     // Sort client-side by start date (descending)
-    return events.sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
+    return activeEvents.sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
   } catch (error) {
     console.error('Error fetching events:', error);
     throw new Error('Failed to load events');
@@ -160,8 +175,11 @@ export async function getOrganizerEvents(organizerId: string): Promise<Event[]> 
       };
     });
 
+    // Filter out events that ended more than 3 days ago
+    const activeEvents = events.filter((event) => !shouldRemoveEvent(event.endDate));
+
     // Sort client-side by start date (descending) to avoid needing composite index
-    return events.sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
+    return activeEvents.sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
   } catch (error) {
     console.error('Error fetching organizer events:', error);
     throw new Error('Failed to load your events');
@@ -244,9 +262,12 @@ export async function searchEvents(searchTerm: string): Promise<Event[]> {
       };
     });
 
-    // Filter client-side (not ideal for large datasets)
+    // Filter out events that ended more than 3 days ago
+    const activeEvents = events.filter((event) => !shouldRemoveEvent(event.endDate));
+
+    // Filter client-side by search term (not ideal for large datasets)
     const lowerSearchTerm = searchTerm.toLowerCase();
-    return events.filter(
+    return activeEvents.filter(
       (event) =>
         event.name.toLowerCase().includes(lowerSearchTerm) ||
         event.area.toLowerCase().includes(lowerSearchTerm)
@@ -254,6 +275,37 @@ export async function searchEvents(searchTerm: string): Promise<Event[]> {
   } catch (error) {
     console.error('Error searching events:', error);
     throw new Error('Failed to search events');
+  }
+}
+
+/**
+ * Clean up events that ended more than 3 days ago
+ * This function permanently deletes expired events from Firestore
+ * Returns the number of events deleted
+ */
+export async function cleanupExpiredEvents(): Promise<number> {
+  try {
+    const querySnapshot = await getDocs(collection(db, EVENTS_COLLECTION));
+    let deletedCount = 0;
+
+    // Find all expired events
+    const expiredEvents = querySnapshot.docs.filter((doc) => {
+      const data = doc.data();
+      const endDate = data.endDate.toDate();
+      return shouldRemoveEvent(endDate);
+    });
+
+    // Delete each expired event
+    for (const doc of expiredEvents) {
+      await deleteDoc(doc.ref);
+      deletedCount++;
+    }
+
+    console.log(`Cleaned up ${deletedCount} expired events`);
+    return deletedCount;
+  } catch (error) {
+    console.error('Error cleaning up expired events:', error);
+    throw new Error('Failed to cleanup expired events');
   }
 }
 
@@ -265,4 +317,5 @@ export const eventsService = {
   updateEvent,
   deleteEvent,
   searchEvents,
+  cleanupExpiredEvents,
 };
