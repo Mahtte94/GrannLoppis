@@ -8,7 +8,6 @@ import { MapMarker } from '../../components/MapMarker';
 import { participantsService } from '../../services/firebase/participants.service';
 import { eventsService } from '../../services/firebase';
 import { theme } from '../../styles/theme';
-import { formatDateRange } from '../../utils/helpers';
 
 type EventMapScreenRouteProp = RouteProp<BuyerStackParamList, 'EventMap'>;
 type EventMapScreenNavigationProp = StackNavigationProp<BuyerStackParamList, 'EventMap'>;
@@ -32,11 +31,18 @@ export function EventMapScreen() {
     try {
       setLoading(true);
 
-      // Fetch event details
-      const eventData = await eventsService.getEventById(eventId);
+      // Fetch event and participants in parallel for better performance
+      const [eventData, participantsData] = await Promise.all([
+        eventsService.getEventById(eventId),
+        participantsService.getEventParticipants(eventId)
+      ]);
+
       console.log('Loaded event:', eventData);
       console.log('Event coordinates:', eventData?.coordinates);
+      console.log(`Loaded ${participantsData.length} participants for event ${eventId}`);
+
       setEvent(eventData);
+      setParticipants(participantsData);
 
       // Set initial region to event location
       if (eventData?.coordinates) {
@@ -54,12 +60,6 @@ export function EventMapScreen() {
           mapRef.current?.animateToRegion(eventRegion, 1000);
         }, 500);
       }
-
-      // Fetch participants from Firebase
-      const participantsData = await participantsService.getEventParticipants(eventId);
-      console.log(`Loaded ${participantsData.length} participants for event ${eventId}`);
-      console.log('Participants data:', participantsData);
-      setParticipants(participantsData);
 
       // If there are participants, adjust region to show all markers
       if (participantsData.length > 0 && eventData?.coordinates) {

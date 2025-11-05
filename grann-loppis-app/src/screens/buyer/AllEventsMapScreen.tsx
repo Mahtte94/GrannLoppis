@@ -11,12 +11,16 @@ import { getUserLocation } from '../../utils/helpers';
 type AllEventsMapScreenNavigationProp = StackNavigationProp<MapStackParamList, 'AllEventsMap'>;
 type AllEventsMapScreenRouteProp = RouteProp<MapStackParamList, 'AllEventsMap'>;
 
+// Cache duration in milliseconds (5 minutes)
+const CACHE_DURATION = 5 * 60 * 1000;
+
 export function AllEventsMapScreen() {
   const navigation = useNavigation<AllEventsMapScreenNavigationProp>();
   const route = useRoute<AllEventsMapScreenRouteProp>();
   const mapRef = useRef<MapView>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastLoadTime, setLastLoadTime] = useState<number>(0);
   const [region, setRegion] = useState<Region>({
     latitude: 59.3293, // Stockholm default
     longitude: 18.0686,
@@ -28,20 +32,36 @@ export function AllEventsMapScreen() {
   const searchLocation = route.params?.location;
   const searchLocationName = route.params?.locationName;
 
-  const loadEvents = useCallback(async () => {
+  const loadEvents = useCallback(async (forceRefresh = false) => {
     try {
+      // Check if cache is still valid
+      const now = Date.now();
+      const isCacheValid = events.length > 0 && now - lastLoadTime < CACHE_DURATION;
+
+      if (isCacheValid && !forceRefresh) {
+        console.log('Using cached events for map');
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
+      console.log('Fetching fresh events for map');
 
-      // Get user's current location first
-      const userLocation = await getUserLocation();
+      // Fetch location and events in parallel for better performance
+      const [userLocation, eventsData] = await Promise.all([
+        getUserLocation().catch(err => {
+          console.log('Could not get user location, continuing without it:', err);
+          return null;
+        }),
+        eventsService.getAllEvents()
+      ]);
 
-      // Fetch all events
-      const eventsData = await eventsService.getAllEvents();
       console.log(`Loaded ${eventsData.length} events for map`);
 
       // Filter events that have coordinates
       const eventsWithCoordinates = eventsData.filter(e => e.coordinates);
       setEvents(eventsWithCoordinates);
+      setLastLoadTime(Date.now());
 
       // Determine the region to show
       let targetRegion: Region;
@@ -109,14 +129,29 @@ export function AllEventsMapScreen() {
     } finally {
       setLoading(false);
     }
-  }, [searchLocation, searchLocationName]);
+  }, [searchLocation, searchLocationName, events.length, lastLoadTime]);
 
-  // Reload map whenever the screen comes into focus
+  // Reload map when screen comes into focus, but respect cache
+  // Force refresh if search location changes
+  const prevSearchLocationRef = useRef(searchLocation);
+
   useFocusEffect(
     useCallback(() => {
-      console.log('AllEventsMapScreen focused, reloading map...');
-      loadEvents();
-    }, [loadEvents])
+      console.log('AllEventsMapScreen focused');
+
+      // Check if search location changed - if so, force refresh
+      const locationChanged =
+        JSON.stringify(prevSearchLocationRef.current) !== JSON.stringify(searchLocation);
+
+      if (locationChanged) {
+        console.log('Search location changed, forcing refresh');
+        prevSearchLocationRef.current = searchLocation;
+        loadEvents(true);
+      } else {
+        // Use cached data if available
+        loadEvents(false);
+      }
+    }, [loadEvents, searchLocation])
   );
 
   const handleMarkerPress = (event: Event) => {
