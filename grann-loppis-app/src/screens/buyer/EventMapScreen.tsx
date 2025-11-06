@@ -362,27 +362,13 @@ export function EventMapScreen() {
           {loadingRoute ? (
             <>
               <ActivityIndicator size="small" color={theme.colors.white} />
-              <Text style={styles.routeButtonText}>Skapar rutt...</Text>
             </>
           ) : (
             <>
-              <Text style={styles.routeButtonIcon}>🧭</Text>
-              <Text style={styles.routeButtonText}>Starta navigering</Text>
+              <Text style={styles.routeButtonText}>GPS</Text>
             </>
           )}
         </TouchableOpacity>
-      )}
-
-      {/* Route info box - show when route is displayed but not in navigation mode */}
-      {showRoute && optimizedRoute && !isNavigationMode && (
-        <View style={styles.routeInfoBox}>
-          <Text style={styles.routeInfoText}>
-            🟢 Startar från din plats
-          </Text>
-          <Text style={styles.routeInfoSubtext}>
-            📍 {googleMapsService.formatDistance(optimizedRoute.distance)} • ⏱️ {googleMapsService.formatDuration(optimizedRoute.duration)}
-          </Text>
-        </View>
       )}
     </View>
   );
@@ -441,64 +427,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: theme.spacing.xs,
   },
-  backLink: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.primary,
-    textAlign: 'center',
-    marginTop: theme.spacing.xs,
-    fontWeight: '600',
-  },
-  callout: {
-    width: 250,
-  },
-  calloutContent: {
-    padding: theme.spacing.sm,
-    width: 240,
-  },
-  calloutTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: 'bold',
-    color: theme.colors.text,
-    marginBottom: theme.spacing.xs,
-  },
-  calloutArea: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.textLight,
-    marginBottom: theme.spacing.xs,
-  },
-  calloutDate: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.xs,
-  },
-  calloutParticipants: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.primary,
-    fontWeight: '600',
-    marginBottom: theme.spacing.md,
-  },
-  calloutButton: {
-    backgroundColor: theme.colors.primary,
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    alignItems: 'center',
-  },
-  calloutButtonText: {
-    color: theme.colors.white,
-    fontSize: theme.fontSize.sm,
-    fontWeight: '600',
-  },
   routeButton: {
     position: 'absolute',
-    bottom: theme.spacing.xl,
-    left: theme.spacing.md,
-    right: theme.spacing.md,
+    bottom: theme.spacing.xxxl,
+    left: theme.spacing.xxxl,
     backgroundColor: theme.colors.primary,
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
     borderRadius: theme.borderRadius.lg,
-    flexDirection: 'row',
+    marginHorizontal: theme.spacing.xxxl,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -510,50 +447,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4.65,
     elevation: 8,
   },
-  routeButtonActive: {
-    backgroundColor: theme.colors.secondary,
-  },
   routeButtonLoading: {
     opacity: 0.7,
-  },
-  routeButtonIcon: {
-    fontSize: theme.fontSize.lg,
-    marginRight: theme.spacing.sm,
   },
   routeButtonText: {
     color: theme.colors.white,
     fontSize: theme.fontSize.md,
     fontWeight: '700',
-    marginLeft: theme.spacing.sm,
-  },
-  routeInfoBox: {
-    position: 'absolute',
-    bottom: theme.spacing.xl * 3,
-    left: theme.spacing.md,
-    right: theme.spacing.md,
-    backgroundColor: theme.colors.white,
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  routeInfoText: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: theme.spacing.xs,
-  },
-  routeInfoSubtext: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.textLight,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
+  }
 });
