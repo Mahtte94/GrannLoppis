@@ -320,6 +320,7 @@ const styles = StyleSheet.create({
   listContent: {
     padding: theme.spacing.md,
     flexGrow: 1,
+    paddingBottom: 100,
   },
   applicationCard: {
     backgroundColor: theme.colors.white,

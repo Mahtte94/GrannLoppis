@@ -81,7 +81,7 @@ export default function EventDetailsScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <View style={[styles.statusBadge, { backgroundColor: getStatusColor(actualStatus) }]}>
             <Text style={styles.statusText}>{statusText}</Text>
@@ -156,6 +156,9 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 180,
   },
   header: {
     padding: theme.spacing.xl,
@@ -235,6 +238,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
     gap: theme.spacing.md,
+    marginBottom: 100,
   },
   mapButton: {
     backgroundColor: theme.colors.primary,

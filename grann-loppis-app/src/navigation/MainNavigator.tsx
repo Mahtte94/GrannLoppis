@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
+import { MaterialIcons } from '@expo/vector-icons';
 import { UserRole, OrganizerStackParamList, SellerStackParamList, BuyerStackParamList, MapStackParamList, MainTabParamList } from '../types';
 import { useAuth } from '../context/AuthContext';
 import AuthNavigator from './AuthNavigator';
@@ -207,7 +208,12 @@ export default function MainNavigator() {
       key="BuyerTab"
       name="BuyerTab"
       component={BuyerNavigator}
-      options={{ title: 'Hem', tabBarIcon: () => null }}
+      options={{
+        title: 'Hem',
+        tabBarIcon: ({ color, size }) => (
+          <MaterialIcons name="home" size={size || 24} color={color} />
+        ),
+      }}
     />
   );
 
@@ -217,7 +223,12 @@ export default function MainNavigator() {
       key="MapTab"
       name="MapTab"
       component={MapNavigator}
-      options={{ title: 'Karta', tabBarIcon: () => null }}
+      options={{
+        title: 'Karta',
+        tabBarIcon: ({ color, size }) => (
+          <MaterialIcons name="map" size={size || 24} color={color} />
+        ),
+      }}
     />
   );
 
@@ -228,7 +239,12 @@ export default function MainNavigator() {
         key="OrganizerTab"
         name="OrganizerTab"
         component={OrganizerNavigator}
-        options={{ title: 'Min Loppis', tabBarIcon: () => null }}
+        options={{
+          title: 'Min Loppis',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="person" size={size || 24} color={color} />
+          ),
+        }}
       />
     );
   }
@@ -240,7 +256,12 @@ export default function MainNavigator() {
         key="SellerTab"
         name="SellerTab"
         component={SellerNavigator}
-        options={{ title: 'Sälj', tabBarIcon: () => null }}
+        options={{
+          title: 'Sälj',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="person" size={size || 24} color={color} />
+          ),
+        }}
       />
     );
   }
@@ -252,7 +273,12 @@ export default function MainNavigator() {
         key="AuthTab"
         name="AuthTab"
         component={AuthNavigator}
-        options={{ title: 'Konto', tabBarIcon: () => null }}
+        options={{
+          title: 'Konto',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="person" size={size || 24} color={color} />
+          ),
+        }}
       />
     );
   }
@@ -267,26 +293,27 @@ export default function MainNavigator() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
+          position: 'absolute',
+          bottom: 20,
+          marginHorizontal: 40,
           backgroundColor: theme.colors.surface,
-          borderTopColor: theme.colors.border,
-          borderTopWidth: 1,
+          borderRadius: 20,
           height: 60,
+          paddingHorizontal: 20,
           paddingBottom: 8,
-          paddingTop: 15,
+          paddingTop: 8,
+          borderTopWidth: 0,
+          elevation: 10,
         },
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textLight,
-        tabBarLabelStyle: {
-          fontWeight: '600',
-          fontSize: 16,
-          marginTop: 0,
-          marginBottom: 0,
-        },
+        tabBarShowLabel: false,
         tabBarIconStyle: {
-          display: 'none',
+          marginTop: 0,
         },
         tabBarItemStyle: {
           justifyContent: 'center',
+          paddingHorizontal: 12,
         },
       }}
     >

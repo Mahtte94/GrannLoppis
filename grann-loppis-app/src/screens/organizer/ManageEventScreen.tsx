@@ -147,6 +147,7 @@ const styles = StyleSheet.create({
   listContent: {
     padding: theme.spacing.md,
     flexGrow: 1,
+    paddingBottom: 100,
   },
   emptyContainer: {
     flex: 1,
@@ -174,5 +175,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surfaceLight,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
+    marginBottom: 100,
   },
 });
