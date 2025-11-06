@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
-import MapView, { PROVIDER_GOOGLE, Region, Marker } from 'react-native-maps';
+import { View, Text, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+import MapView, { PROVIDER_GOOGLE, Region, Marker, Polyline } from 'react-native-maps';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { BuyerStackParamList, Participant, Event } from '../../types';
+import { BuyerStackParamList, Participant, Event, Route, RouteWaypoint } from '../../types';
 import { MapMarker } from '../../components/MapMarker';
 import { participantsService } from '../../services/firebase/participants.service';
 import { eventsService } from '../../services/firebase';
+import { googleMapsService, navigationService, NavigationState } from '../../services/routing';
 import { theme } from '../../styles/theme';
 
 type EventMapScreenRouteProp = RouteProp<BuyerStackParamList, 'EventMap'>;
@@ -22,10 +23,42 @@ export function EventMapScreen() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [region, setRegion] = useState<Region | undefined>(undefined);
+  const [optimizedRoute, setOptimizedRoute] = useState<Route | null>(null);
+  const [showRoute, setShowRoute] = useState(false);
+  const [loadingRoute, setLoadingRoute] = useState(false);
+  const [navigationState, setNavigationState] = useState<NavigationState | null>(null);
+  const [isNavigationMode, setIsNavigationMode] = useState(false);
 
   useEffect(() => {
     loadEventAndParticipants();
   }, [eventId]);
+
+  // Cleanup navigation on unmount
+  useEffect(() => {
+    return () => {
+      if (navigationService.isNavigating()) {
+        navigationService.stopNavigation();
+      }
+    };
+  }, []);
+
+  // Auto-center camera on user location during navigation
+  useEffect(() => {
+    if (isNavigationMode && navigationState?.currentLocation && mapRef.current) {
+      mapRef.current.animateCamera(
+        {
+          center: {
+            latitude: navigationState.currentLocation.lat,
+            longitude: navigationState.currentLocation.lng,
+          },
+          heading: 0, // Can be updated based on user's heading
+          altitude: 500,
+          zoom: 16, // Closer zoom for navigation
+        },
+        { duration: 500 }
+      );
+    }
+  }, [navigationState?.currentLocation, isNavigationMode]);
 
   const loadEventAndParticipants = async () => {
     try {
@@ -102,6 +135,125 @@ export function EventMapScreen() {
     navigation.navigate('SellerDetails', { participantId: participant.id });
   };
 
+  const handleToggleRoute = async () => {
+    if (isNavigationMode) {
+      // Stop navigation
+      handleStopNavigation();
+      return;
+    }
+
+    // Start navigation - generate route and begin GPS tracking
+    await startNavigation();
+  };
+
+  const startNavigation = async () => {
+    const route = await generateRoute();
+    if (route) {
+      // Start GPS navigation service
+      const started = await navigationService.startNavigation(
+        route,
+        handleNavigationStateChange,
+        handleRecalculateRoute
+      );
+
+      if (started) {
+        setIsNavigationMode(true);
+        setShowRoute(true);
+      } else {
+        Alert.alert('Kunde inte starta navigering', 'Kontrollera att du har gett appen åtkomst till din plats.');
+      }
+    }
+  };
+
+  const handleStopNavigation = () => {
+    navigationService.stopNavigation();
+    setIsNavigationMode(false);
+    setNavigationState(null);
+    setShowRoute(false);
+  };
+
+  const handleNavigationStateChange = (state: NavigationState) => {
+    setNavigationState(state);
+  };
+
+  const handleRecalculateRoute = async () => {
+    console.log('🔄 Recalculating route due to off-route detection...');
+
+    // Generate new route from current location
+    const newRoute = await generateRoute();
+    if (newRoute) {
+      // Restart navigation with new route
+      navigationService.stopNavigation();
+      const started = await navigationService.startNavigation(
+        newRoute,
+        handleNavigationStateChange,
+        handleRecalculateRoute
+      );
+
+      if (started) {
+        Alert.alert('Rutt uppdaterad', 'En ny rutt har skapats från din nuvarande plats.');
+      }
+    }
+  };
+
+  const generateRoute = async (): Promise<Route | null> => {
+    try {
+      if (participants.length < 2) {
+        Alert.alert(
+          'Inte tillräckligt med säljare',
+          'Du behöver minst 2 säljare för att generera en rutt.'
+        );
+        return null;
+      }
+
+      setLoadingRoute(true);
+
+      // Get user's current location first
+      const { getUserLocation } = require('../../utils/helpers');
+      const userLocation = await getUserLocation();
+
+      if (!userLocation) {
+        Alert.alert(
+          'Kunde inte hämta din plats',
+          'Vi behöver din plats för att skapa en rutt. Kontrollera att du har gett appen åtkomst till din plats.'
+        );
+        setLoadingRoute(false);
+        return null;
+      }
+
+
+      // Convert participants to waypoints
+      const waypoints: RouteWaypoint[] = participants.map(participant => ({
+        coordinates: participant.coordinates,
+        name: participant.address,
+        participantId: participant.id,
+      }));
+
+      // Get optimized route from Google Maps
+      const generatedRoute = await googleMapsService.getOptimizedRoute(waypoints, {
+        includeUserLocation: true,
+        profile: 'foot-walking',
+      });
+
+      if (generatedRoute) {
+        setOptimizedRoute(generatedRoute);
+        return generatedRoute;
+      } else {
+        Alert.alert(
+          'Kunde inte skapa rutt',
+          'Det gick inte att generera en rutt. Kontrollera att du har en internetanslutning och försök igen.'
+        );
+        return null;
+      }
+    } catch (error) {
+      console.error('Error generating route:', error);
+      Alert.alert('Fel', 'Ett fel uppstod när rutten skulle skapas.');
+      return null;
+    } finally {
+      setLoadingRoute(false);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.centerContainer}>
@@ -127,7 +279,9 @@ export function EventMapScreen() {
         provider={PROVIDER_GOOGLE}
         initialRegion={region}
         showsUserLocation={true}
-        showsMyLocationButton={true}
+        showsMyLocationButton={!isNavigationMode}
+        pitchEnabled={true}
+        rotateEnabled={isNavigationMode}
       >
         {/* Show event location marker only when no participants */}
         {participants.length === 0 && event.coordinates && (
@@ -150,17 +304,86 @@ export function EventMapScreen() {
             onPress={handleMarkerPress}
           />
         ))}
+
+        {/* Show route polylines when enabled */}
+        {showRoute && optimizedRoute && (
+          <>
+            {/* Remaining route (full route or uncompleted portion) */}
+            <Polyline
+              coordinates={optimizedRoute.coordinates.map(coord => ({
+                latitude: coord.lat,
+                longitude: coord.lng,
+              }))}
+              strokeColor={theme.colors.primary}
+              strokeWidth={4}
+              lineCap="round"
+              lineJoin="round"
+            />
+
+            {/* Completed route portion (shown during navigation) */}
+            {isNavigationMode && navigationState?.completedCoordinates && navigationState.completedCoordinates.length > 1 && (
+              <Polyline
+                coordinates={navigationState.completedCoordinates.map(coord => ({
+                  latitude: coord.lat,
+                  longitude: coord.lng,
+                }))}
+                strokeColor="#34C759" // Green color for completed portion
+                strokeWidth={5}
+                lineCap="round"
+                lineJoin="round"
+              />
+            )}
+          </>
+        )}
       </MapView>
 
-      {/* Info box */}
-      <View style={styles.infoBox}>
-        <Text style={styles.infoText}>
-           {event.name}
-        </Text>
-        <Text style={styles.infoSubtext}>
-          {participants.length} {participants.length === 1 ? 'säljare' : 'säljare'} • Tryck på markörerna för mer info
-        </Text>
-      </View>
+      {/* Info box - hidden during navigation mode */}
+      {!isNavigationMode && (
+        <View style={styles.infoBox}>
+          <Text style={styles.infoText}>
+             {event.name}
+          </Text>
+          <Text style={styles.infoSubtext}>
+            {participants.length} {participants.length === 1 ? 'säljare' : 'säljare'} • Tryck på markörerna för mer info
+          </Text>
+        </View>
+      )}
+
+      {/* Navigation toggle button */}
+      {participants.length >= 2 && !isNavigationMode && (
+        <TouchableOpacity
+          style={[
+            styles.routeButton,
+            loadingRoute && styles.routeButtonLoading,
+          ]}
+          onPress={handleToggleRoute}
+          disabled={loadingRoute}
+        >
+          {loadingRoute ? (
+            <>
+              <ActivityIndicator size="small" color={theme.colors.white} />
+              <Text style={styles.routeButtonText}>Skapar rutt...</Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.routeButtonIcon}>🧭</Text>
+              <Text style={styles.routeButtonText}>Starta navigering</Text>
+            </>
+          )}
+        </TouchableOpacity>
+      )}
+
+      {/* Route info box - show when route is displayed but not in navigation mode */}
+      {showRoute && optimizedRoute && !isNavigationMode && (
+        <View style={styles.routeInfoBox}>
+          <Text style={styles.routeInfoText}>
+            🟢 Startar från din plats
+          </Text>
+          <Text style={styles.routeInfoSubtext}>
+            📍 {googleMapsService.formatDistance(optimizedRoute.distance)} • ⏱️ {googleMapsService.formatDuration(optimizedRoute.duration)}
+          </Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -265,5 +488,72 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     fontSize: theme.fontSize.sm,
     fontWeight: '600',
+  },
+  routeButton: {
+    position: 'absolute',
+    bottom: theme.spacing.xl,
+    left: theme.spacing.md,
+    right: theme.spacing.md,
+    backgroundColor: theme.colors.primary,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.borderRadius.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
+  },
+  routeButtonActive: {
+    backgroundColor: theme.colors.secondary,
+  },
+  routeButtonLoading: {
+    opacity: 0.7,
+  },
+  routeButtonIcon: {
+    fontSize: theme.fontSize.lg,
+    marginRight: theme.spacing.sm,
+  },
+  routeButtonText: {
+    color: theme.colors.white,
+    fontSize: theme.fontSize.md,
+    fontWeight: '700',
+    marginLeft: theme.spacing.sm,
+  },
+  routeInfoBox: {
+    position: 'absolute',
+    bottom: theme.spacing.xl * 3,
+    left: theme.spacing.md,
+    right: theme.spacing.md,
+    backgroundColor: theme.colors.white,
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  routeInfoText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: theme.spacing.xs,
+  },
+  routeInfoSubtext: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textLight,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });

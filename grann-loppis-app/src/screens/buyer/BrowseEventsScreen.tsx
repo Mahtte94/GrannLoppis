@@ -228,7 +228,7 @@ export default function BrowseEventsScreen() {
       )}
 
       {/* How It Works Section */}
-      <View style={styles.section}>
+      <View style={styles.howItWorksWrapper}>
         <Text style={styles.sectionTitle}>Så fungerar det</Text>
         <View style={styles.howItWorksCard}>
           <View style={styles.featureRow}>
@@ -390,7 +390,6 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.lg,
     paddingHorizontal: theme.spacing.md,
     backgroundColor: theme.colors.surfaceLight,
-    marginBottom: theme.spacing.md,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -413,8 +412,13 @@ const styles = StyleSheet.create({
     paddingRight: theme.spacing.sm,
   },
   // How It Works Card
+  howItWorksWrapper: {
+    padding: theme.spacing.md,
+    
+  },
+
+
   howItWorksCard: {
-    backgroundColor: theme.colors.surfaceLight,
     padding: theme.spacing.md,
     marginTop: theme.spacing.md,
 
