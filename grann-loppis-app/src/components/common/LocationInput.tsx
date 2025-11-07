@@ -148,6 +148,7 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     fontWeight: '600',
     color: theme.colors.text,
+    padding: theme.spacing.xs,
     marginBottom: theme.spacing.xs,
   },
   textInput: {
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.surfaceLight,
     paddingHorizontal: theme.spacing.md,
     fontSize: theme.fontSize.md,
     color: theme.colors.text,

@@ -111,6 +111,7 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     fontWeight: '600',
     color: theme.colors.text,
+    padding: theme.spacing.xs,
     marginBottom: theme.spacing.xs,
   },
   input: {

@@ -53,10 +53,11 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   label: {
-    fontSize: theme.fontSize.sm,
+    fontSize: theme.fontSize.md,
     fontWeight: '600',
     color: theme.colors.text,
     marginBottom: theme.spacing.xs,
+    padding: theme.spacing.xs,
   },
   inputWrapper: {
     position: 'relative',
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: theme.colors.border,
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: theme.borderRadius.md,
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.md,
     fontSize: theme.fontSize.md,

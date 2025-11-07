@@ -171,12 +171,12 @@ export default function CreateEventScreen() {
         <View style={styles.container}>
           <Text style={styles.title}>Skapa en ny loppmarknad</Text>
           <Text style={styles.subtitle}>
-            Fyll i informationen nedan för att skapa ditt loppis-evenemang
+            Fyll i informationen nedan för att skapa din loppmarknad
           </Text>
 
           <View style={styles.form}>
             <Input
-              label="Evenemang namn"
+              label="Loppis namn"
               placeholder="T.ex. Storloppiset i Vasastan"
               value={eventName}
               onChangeText={(text) => {
