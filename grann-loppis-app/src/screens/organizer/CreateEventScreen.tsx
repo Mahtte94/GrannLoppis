@@ -7,7 +7,6 @@ import { DatePickerInput } from '../../components/common/DatePickerInput';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../context/AuthContext';
 import { eventsService, authService } from '../../services/firebase';
-import { auth } from '../../../firebase.config';
 import { theme } from '../../styles/theme';
 import { getDaysBetween, geocodeAddress } from '../../utils/helpers';
 import { Coordinates } from '../../types';
@@ -22,30 +21,6 @@ export default function CreateEventScreen() {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [errors, setErrors] = useState({ eventName: '', area: '', startDate: '', endDate: '' });
   const [loading, setLoading] = useState(false);
-
-  const testFirebaseAuth = async () => {
-    console.log('=== FIREBASE AUTH TEST ===');
-    console.log('Firebase Auth instance:', auth);
-    console.log('Current Firebase user:', auth.currentUser);
-    console.log('Context user:', user);
-
-    if (auth.currentUser) {
-      try {
-        const token = await auth.currentUser.getIdToken();
-        console.log('Auth token exists:', !!token);
-        console.log('Token preview:', token.substring(0, 50) + '...');
-      } catch (error) {
-        console.error('Error getting token:', error);
-      }
-    } else {
-      console.log('NO FIREBASE USER - NOT AUTHENTICATED!');
-    }
-
-    Alert.alert(
-      'Debug Info',
-      `Firebase User: ${auth.currentUser ? 'YES' : 'NO'}\nContext User: ${user ? 'YES' : 'NO'}\nUser ID: ${user?.id || 'N/A'}\n\nCheck console for details`
-    );
-  };
 
   const validateForm = () => {
     const newErrors = { eventName: '', area: '', startDate: '', endDate: '' };
@@ -257,13 +232,6 @@ export default function CreateEventScreen() {
             </View>
 
             <Button
-              title="Debug: Test Auth"
-              onPress={testFirebaseAuth}
-              variant="outline"
-              style={styles.debugButton}
-            />
-
-            <Button
               title="Skapa evenemang"
               onPress={handleCreateEvent}
               loading={loading}
@@ -271,18 +239,6 @@ export default function CreateEventScreen() {
               style={styles.createButton}
             />
 
-            <Button
-              title="Logga ut"
-              onPress={async () => {
-                try {
-                  await authService.logout();
-                } catch (error) {
-                  console.error('Logout error:', error);
-                }
-              }}
-              variant="outline"
-              disabled={loading}
-            />
           </View>
         </View>
       </ScrollView>
@@ -328,10 +284,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     lineHeight: 20,
   },
-  debugButton: {
-    marginBottom: theme.spacing.md,
-  },
   createButton: {
-    marginBottom: theme.spacing.md,
-  },
+    marginBottom: theme.spacing.xxl,
+  }
 });

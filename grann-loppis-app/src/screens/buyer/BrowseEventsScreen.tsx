@@ -143,13 +143,23 @@ export default function BrowseEventsScreen() {
     return <Loading message="Laddar evenemang..." fullScreen />;
   }
 
-  // Get featured events (upcoming events)
-  const featuredEvents = events.slice(0, 3);
-  // Event status filters
-  const activeEvents = events.filter((e) => e.status === "active");
-  const upcomingEvents = events.filter(
-    (e) => e.status === "upcoming" && new Date(e.startDate) > new Date()
+  // Event status filters - only show events that haven't ended yet
+  const now = new Date();
+  const activeEvents = events.filter(
+    (e) => e.status === "active" && new Date(e.endDate) > now
   );
+  const upcomingEvents = events.filter(
+    (e) => e.status === "upcoming" && new Date(e.startDate) > now
+  );
+  // Get featured events (only active and upcoming events that haven't ended)
+  const featuredEvents = events
+    .filter((e) => {
+      const endDate = new Date(e.endDate);
+      return (
+        (e.status === "active" || e.status === "upcoming") && endDate > now
+      );
+    })
+    .slice(0, 3);
 
   return (
     <ScrollView
