@@ -27,6 +27,21 @@ function shouldRemoveEvent(endDate: Date): boolean {
   return now > threeDaysAfterEnd;
 }
 
+/**
+ * Calculate the current status of an event based on its dates
+ */
+function calculateEventStatus(startDate: Date, endDate: Date): EventStatus {
+  const now = new Date();
+
+  if (now < startDate) {
+    return EventStatus.UPCOMING;
+  } else if (now >= startDate && now <= endDate) {
+    return EventStatus.ACTIVE;
+  } else {
+    return EventStatus.COMPLETED;
+  }
+}
+
 export interface CreateEventInput {
   name: string;
   startDate: Date;
@@ -95,15 +110,18 @@ export async function getEventById(eventId: string): Promise<Event | null> {
     }
 
     const data = docSnap.data();
+    const startDate = data.startDate.toDate();
+    const endDate = data.endDate.toDate();
+
     return {
       id: docSnap.id,
       name: data.name,
-      startDate: data.startDate.toDate(),
-      endDate: data.endDate.toDate(),
+      startDate,
+      endDate,
       area: data.area,
       coordinates: data.coordinates,
       organizerId: data.organizerId,
-      status: data.status,
+      status: calculateEventStatus(startDate, endDate),
       participants: data.participants || 0,
       createdAt: data.createdAt.toDate(),
     };
@@ -122,15 +140,18 @@ export async function getAllEvents(): Promise<Event[]> {
 
     const events = querySnapshot.docs.map((doc) => {
       const data = doc.data();
+      const startDate = data.startDate.toDate();
+      const endDate = data.endDate.toDate();
+
       return {
         id: doc.id,
         name: data.name,
-        startDate: data.startDate.toDate(),
-        endDate: data.endDate.toDate(),
+        startDate,
+        endDate,
         area: data.area,
         coordinates: data.coordinates,
         organizerId: data.organizerId,
-        status: data.status,
+        status: calculateEventStatus(startDate, endDate),
         participants: data.participants || 0,
         createdAt: data.createdAt.toDate(),
       };
@@ -161,15 +182,18 @@ export async function getOrganizerEvents(organizerId: string): Promise<Event[]> 
 
     const events = querySnapshot.docs.map((doc) => {
       const data = doc.data();
+      const startDate = data.startDate.toDate();
+      const endDate = data.endDate.toDate();
+
       return {
         id: doc.id,
         name: data.name,
-        startDate: data.startDate.toDate(),
-        endDate: data.endDate.toDate(),
+        startDate,
+        endDate,
         area: data.area,
         coordinates: data.coordinates,
         organizerId: data.organizerId,
-        status: data.status,
+        status: calculateEventStatus(startDate, endDate),
         participants: data.participants || 0,
         createdAt: data.createdAt.toDate(),
       };
@@ -248,15 +272,18 @@ export async function searchEvents(searchTerm: string): Promise<Event[]> {
 
     const events = querySnapshot.docs.map((doc) => {
       const data = doc.data();
+      const startDate = data.startDate.toDate();
+      const endDate = data.endDate.toDate();
+
       return {
         id: doc.id,
         name: data.name,
-        startDate: data.startDate.toDate(),
-        endDate: data.endDate.toDate(),
+        startDate,
+        endDate,
         area: data.area,
         coordinates: data.coordinates,
         organizerId: data.organizerId,
-        status: data.status,
+        status: calculateEventStatus(startDate, endDate),
         participants: data.participants || 0,
         createdAt: data.createdAt.toDate(),
       };

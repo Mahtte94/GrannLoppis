@@ -6,7 +6,7 @@ import { LocationInput } from '../../components/common/LocationInput';
 import { DatePickerInput } from '../../components/common/DatePickerInput';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../context/AuthContext';
-import { eventsService, authService } from '../../services/firebase';
+import { eventsService } from '../../services/firebase';
 import { theme } from '../../styles/theme';
 import { getDaysBetween, geocodeAddress } from '../../utils/helpers';
 import { Coordinates } from '../../types';
