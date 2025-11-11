@@ -382,8 +382,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.md,
     borderRadius: theme.borderRadius.lg,
     minWidth: 100,
-    boxShadow:
-      "-4px 8px 8px 0px rgba(0, 0, 0, 0.3), inset -2px 2px 4px -4px rgba(255, 255, 255, 1)",
+    // boxShadow:
+    //   "-4px 8px 8px 0px rgba(0, 0, 0, 0.3), inset -2px 2px 4px -4px rgba(255, 255, 255, 1)",
   },
   statNumber: {
     fontSize: theme.fontSize.xxl,
@@ -400,7 +400,6 @@ const styles = StyleSheet.create({
   section: {
     paddingVertical: theme.spacing.lg,
     paddingHorizontal: theme.spacing.md,
-    backgroundColor: theme.colors.surfaceLight,
   },
   sectionHeader: {
     flexDirection: "row",
