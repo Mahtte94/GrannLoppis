@@ -110,12 +110,17 @@ export const LocationSearchBar: React.FC<LocationSearchBarProps> = ({
     }
   };
 
+  const closePredictions = () => {
+    setShowPredictions(false);
+    setPredictions([]);
+    Keyboard.dismiss();
+  };
+
   const handleSelectLocation = async (location: LocationResult) => {
     // Remove ", Sverige" suffix from description
     const cleanDescription = location.description.replace(/, Sverige$/, '');
     setSearchText(cleanDescription);
-    setShowPredictions(false);
-    Keyboard.dismiss();
+    closePredictions();
 
     // Get coordinates for the selected place
     const coordinates = await getPlaceDetails(location.placeId);
@@ -156,6 +161,12 @@ export const LocationSearchBar: React.FC<LocationSearchBarProps> = ({
             if (predictions.length > 0) {
               setShowPredictions(true);
             }
+          }}
+          onBlur={() => {
+            // Delay closing to allow tap on prediction to register
+            setTimeout(() => {
+              closePredictions();
+            }, 150);
           }}
         />
         {isLoading && <ActivityIndicator size="small" color={theme.colors.primary} />}

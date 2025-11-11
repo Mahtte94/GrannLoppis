@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Keyboard } from 'react-native';
 import { theme } from '../../styles/theme';
 
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
@@ -65,12 +65,17 @@ export function LocationInput({
     return () => clearTimeout(timeoutId);
   }, [value]);
 
+  const closePredictions = () => {
+    setShowPredictions(false);
+    setPredictions([]);
+    Keyboard.dismiss();
+  };
+
   const handleSelectPrediction = async (prediction: Prediction) => {
     // Remove ", Sverige" suffix from description
     const cleanDescription = prediction.description.replace(/, Sverige$/, '');
     onChangeText(cleanDescription);
-    setShowPredictions(false);
-    setPredictions([]);
+    closePredictions();
 
     // Fetch place details to get coordinates
     if (onLocationSelect) {
@@ -104,6 +109,12 @@ export function LocationInput({
         onChangeText={(text) => {
           onChangeText(text);
           setShowPredictions(true);
+        }}
+        onBlur={() => {
+          // Delay closing to allow tap on prediction to register
+          setTimeout(() => {
+            closePredictions();
+          }, 150);
         }}
         autoCapitalize="words"
       />
@@ -170,8 +181,8 @@ const styles = StyleSheet.create({
     top: 42,
   },
   predictionsContainer: {
-    backgroundColor: theme.colors.white,
-    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
     borderWidth: 1,
     borderColor: theme.colors.border,
     marginTop: 4,
@@ -179,7 +190,7 @@ const styles = StyleSheet.create({
   predictionItem: {
     paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.surface,
   },
   predictionText: {
     fontSize: theme.fontSize.md,
