@@ -153,6 +153,41 @@ export default function JoinEventScreen() {
         </Text>
       </View>
 
+      {/* Seller Profile Card */}
+      {user && (
+        <TouchableOpacity
+          style={styles.profileCard}
+          onPress={() => navigation.navigate('AddAddress')}
+        >
+          <View style={styles.profileCardContent}>
+            <View style={styles.profileCardLeft}>
+              <Text style={styles.profileCardTitle}>Din säljarprofil</Text>
+              {user.sellerProfile ? (
+                <>
+                  <Text style={styles.profileCardAddress}>
+                    {user.sellerProfile.address}
+                  </Text>
+                  {user.sellerProfile.phoneNumber && (
+                    <Text style={styles.profileCardPhone}>
+                      {user.sellerProfile.phoneNumber}
+                    </Text>
+                  )}
+                </>
+              ) : (
+                <Text style={styles.profileCardWarning}>
+                  ⚠️ Du behöver lägga till en adress
+                </Text>
+              )}
+            </View>
+            <View style={styles.profileCardRight}>
+              <Text style={styles.profileCardLink}>
+                {user.sellerProfile ? 'Ändra' : 'Lägg till'}
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      )}
+
       <View style={styles.searchContainer}>
         <Input
           placeholder="Sök evenemang eller område..."
@@ -381,5 +416,56 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginBottom: theme.spacing.md,
+  },
+  profileCard: {
+    backgroundColor: theme.colors.white,
+    marginHorizontal: theme.spacing.md,
+    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 2,
+    borderColor: theme.colors.primary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  profileCardContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  profileCardLeft: {
+    flex: 1,
+  },
+  profileCardTitle: {
+    fontSize: theme.fontSize.md,
+    fontWeight: '700',
+    color: theme.colors.primary,
+    marginBottom: theme.spacing.xs,
+  },
+  profileCardAddress: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.text,
+    marginBottom: 2,
+  },
+  profileCardPhone: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textLight,
+  },
+  profileCardWarning: {
+    fontSize: theme.fontSize.sm,
+    color: '#D97706',
+    fontWeight: '600',
+  },
+  profileCardRight: {
+    marginLeft: theme.spacing.md,
+  },
+  profileCardLink: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: '700',
+    color: theme.colors.primary,
   },
 });

@@ -322,6 +322,52 @@ export async function removeParticipant(participantId: string): Promise<void> {
   }
 }
 
+/**
+ * Check if a user has any active participations (approved or pending status)
+ * Returns the list of active participations and events
+ */
+export async function getActiveParticipations(userId: string): Promise<{
+  hasActiveParticipations: boolean;
+  participations: Array<Participant>;
+}> {
+  try {
+    const q = query(
+      collection(db, PARTICIPANTS_COLLECTION),
+      where('userId', '==', userId),
+      where('status', 'in', [ParticipantStatus.APPROVED, ParticipantStatus.PENDING])
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    const participations = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        eventId: data.eventId,
+        userId: data.userId,
+        displayName: data.displayName,
+        address: data.address,
+        coordinates: data.coordinates,
+        phoneNumber: data.phoneNumber,
+        description: data.description,
+        status: data.status as ParticipantStatus,
+        appliedAt: data.appliedAt.toDate(),
+        ...(data.reviewedAt && { reviewedAt: data.reviewedAt.toDate() }),
+        ...(data.reviewedBy && { reviewedBy: data.reviewedBy }),
+        ...(data.joinedAt && { joinedAt: data.joinedAt.toDate() }),
+      };
+    });
+
+    return {
+      hasActiveParticipations: participations.length > 0,
+      participations,
+    };
+  } catch (error) {
+    console.error('Error checking active participations:', error);
+    throw new Error('Failed to check active participations');
+  }
+}
+
 export const participantsService = {
   applyToEvent,
   approveApplication,
@@ -331,4 +377,5 @@ export const participantsService = {
   getParticipantById,
   getUserParticipations,
   removeParticipant,
+  getActiveParticipations,
 };

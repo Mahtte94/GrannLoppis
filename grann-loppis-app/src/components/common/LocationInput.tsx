@@ -29,10 +29,11 @@ export function LocationInput({
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [loading, setLoading] = useState(false);
   const [showPredictions, setShowPredictions] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     const fetchPredictions = async () => {
-      if (value.length < 2) {
+      if (value.length < 2 || !isFocused) {
         setPredictions([]);
         setShowPredictions(false);
         return;
@@ -63,7 +64,7 @@ export function LocationInput({
 
     const timeoutId = setTimeout(fetchPredictions, 300);
     return () => clearTimeout(timeoutId);
-  }, [value]);
+  }, [value, isFocused]);
 
   const closePredictions = () => {
     setShowPredictions(false);
@@ -110,9 +111,13 @@ export function LocationInput({
           onChangeText(text);
           setShowPredictions(true);
         }}
+        onFocus={() => {
+          setIsFocused(true);
+        }}
         onBlur={() => {
           // Delay closing to allow tap on prediction to register
           setTimeout(() => {
+            setIsFocused(false);
             closePredictions();
           }, 150);
         }}
