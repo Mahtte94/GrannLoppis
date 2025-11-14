@@ -66,7 +66,6 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     backgroundColor: theme.colors.primary,
-    shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

@@ -286,7 +286,8 @@ export default function BrowseEventsScreen() {
             Vill du arrangera en loppmarknad?
           </Text>
           <Text style={styles.footerSubtitle}>
-            Skapa och hantera dina egna loppmarknader
+            Skapa och hantera dina
+            egna loppmarknader
           </Text>
           <TouchableOpacity
             style={styles.secondaryButton}
@@ -470,24 +471,21 @@ const styles = StyleSheet.create({
   },
   // Footer CTA
   footerCTA: {
-    backgroundColor: theme.colors.surfaceLight,
     padding: theme.spacing.xl,
     alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
   },
   footerTitle: {
     fontSize: theme.fontSize.xl,
     fontWeight: "700",
     color: theme.colors.text,
-    textAlign: "center",
+    textAlign: "left",
     marginBottom: theme.spacing.sm,
     letterSpacing: -0.5,
   },
   footerSubtitle: {
     fontSize: theme.fontSize.md,
     color: theme.colors.textLight,
-    textAlign: "center",
+    textAlign: "left",
     marginBottom: theme.spacing.xl,
   },
   secondaryButton: {
@@ -495,8 +493,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xl + 8,
     paddingVertical: theme.spacing.md + 2,
     borderRadius: theme.borderRadius.lg,
-    boxShadow:
-      "-4px 8px 8px 0px rgba(0, 0, 0, 0.3), inset -2px 2px 4px -4px rgba(255, 255, 255, 1)",
+    
   },
   secondaryButtonText: {
     color: theme.colors.white,

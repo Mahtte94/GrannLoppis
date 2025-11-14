@@ -128,10 +128,6 @@ export default function RegisterScreen() {
       }
 
       await authService.register(registerInput);
-
-      console.log('Registration successful! AuthContext will update automatically.');
-      // Don't set loading to false here - let AuthContext handle navigation
-      // The loading state will persist until the user is fully logged in
     } catch (error: any) {
       console.error('Registration error:', error);
       Alert.alert('Registrering misslyckades', error.message || 'Kunde inte skapa konto');
@@ -241,13 +237,6 @@ export default function RegisterScreen() {
                   }}
                   error={errors.address}
                 />
-                <Input
-                  label="Telefonnummer (valfritt)"
-                  placeholder="070-123 45 67"
-                  value={phoneNumber}
-                  onChangeText={setPhoneNumber}
-                  keyboardType="phone-pad"
-                />
               </View>
             )}
 
@@ -263,7 +252,8 @@ export default function RegisterScreen() {
               title="Har du redan ett konto? Logga in"
               onPress={() => navigation.navigate('Login')}
               variant="outline"
-              disabled={loading}
+                disabled={loading}
+                style={styles.loginButton}
             />
           </View>
         </View>
@@ -276,7 +266,7 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   keyboardAvoid: {
     flex: 1,
@@ -338,5 +328,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: theme.colors.text,
     marginBottom: theme.spacing.md,
+  },
+
+  loginButton: {
+    marginBottom: theme.spacing.xxl,
   },
 });
