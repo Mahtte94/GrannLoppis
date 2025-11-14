@@ -202,7 +202,6 @@ export default function JoinEventScreen() {
                 <Text style={styles.profileText}>
                   Namn: {user.displayName}{'\n'}
                   Adress: {user.sellerProfile.address}
-                  {user.sellerProfile.phoneNumber && `\nTelefon: ${user.sellerProfile.phoneNumber}`}
                 </Text>
               </View>
             )}

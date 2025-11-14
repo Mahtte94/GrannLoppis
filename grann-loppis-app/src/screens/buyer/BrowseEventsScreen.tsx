@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,9 +7,6 @@ import {
   Alert,
   ScrollView,
   RefreshControl,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  Animated,
 } from "react-native";
 import {
   useNavigation,
@@ -29,6 +26,7 @@ import {
 import { eventsService } from "../../services/firebase";
 import { theme } from "../../styles/theme";
 import { getUserLocation, calculateDistance } from "../../utils/helpers";
+import { useAnimatedHeader } from "../../hooks";
 
 type BrowseEventsScreenNavigationProp = CompositeNavigationProp<
   StackNavigationProp<BuyerStackParamList, "BrowseEvents">,
@@ -48,31 +46,17 @@ export default function BrowseEventsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastLoadTime, setLastLoadTime] = useState<number>(0);
-  const headerOpacity = useRef(new Animated.Value(0)).current;
+
+  // Use animated header hook
+  const { handleScroll } = useAnimatedHeader({
+    startFadeAt: 20,
+    endFadeAt: 100,
+  });
 
   const handleRegisterNavigation = () => {
     // Navigate to the Auth tab (which defaults to Register screen)
     navigation.navigate("AuthTab");
   };
-
-  // Set up header with animated background
-  useEffect(() => {
-    navigation.setOptions({
-      headerTransparent: true,
-      headerStyle: {
-        backgroundColor: 'transparent',
-      },
-      headerBackground: () => (
-        <Animated.View
-          style={{
-            flex: 1,
-            backgroundColor: theme.colors.surface,
-            opacity: headerOpacity,
-          }}
-        />
-      ),
-    });
-  }, [navigation, headerOpacity]);
 
   const loadEvents = useCallback(
     async (forceRefresh = false) => {
@@ -161,20 +145,6 @@ export default function BrowseEventsScreen() {
     await loadEvents(true); // Force refresh
     setRefreshing(false);
   }, [loadEvents]);
-
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-
-    // Animate header opacity based on scroll position
-    // Starts fading in at 20px, fully opaque by 100px
-    const opacity = Math.min(Math.max((offsetY - 20) / 80, 0), 1);
-
-    Animated.timing(headerOpacity, {
-      toValue: opacity,
-      duration: 0,
-      useNativeDriver: true,
-    }).start();
-  };
 
   if (loading) {
     return <Loading message="Laddar evenemang..." fullScreen />;
