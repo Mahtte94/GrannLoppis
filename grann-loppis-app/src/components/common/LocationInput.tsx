@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   },
   predictionsContainer: {
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: theme.borderRadius.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
     marginTop: 4,
@@ -195,7 +195,6 @@ const styles = StyleSheet.create({
   predictionItem: {
     paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
   },
   predictionText: {
     fontSize: theme.fontSize.md,
