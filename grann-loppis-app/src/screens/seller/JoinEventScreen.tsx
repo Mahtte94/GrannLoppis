@@ -11,6 +11,7 @@ import { participantsService } from '../../services/firebase/participants.servic
 import { SellerStackParamList } from '../../types/navigation.types';
 import { Event } from '../../types';
 import { useAuth } from '../../context/AuthContext';
+import { useAnimatedHeader } from '../../hooks';
 
 type JoinEventScreenNavigationProp = StackNavigationProp<SellerStackParamList, 'JoinEvent'>;
 
@@ -24,6 +25,12 @@ export default function JoinEventScreen() {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+
+  // Use animated header hook
+  const { handleScroll } = useAnimatedHeader({
+    startFadeAt: 20,
+    endFadeAt: 100,
+  });
 
   useEffect(() => {
     loadEvents();
@@ -201,6 +208,8 @@ export default function JoinEventScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderEventCard}
         contentContainerStyle={styles.listContent}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyTitle}>Inga evenemang hittades</Text>
@@ -267,11 +276,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+    paddingTop: theme.spacing.xxl,
   },
   header: {
     padding: theme.spacing.xl,
     paddingBottom: theme.spacing.md,
-    backgroundColor: theme.colors.white,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },
@@ -288,7 +297,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     padding: theme.spacing.md,
-    backgroundColor: theme.colors.white,
+  
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },
@@ -418,14 +427,12 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   profileCard: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.surfaceLightest,
     marginHorizontal: theme.spacing.md,
     marginTop: theme.spacing.md,
     marginBottom: theme.spacing.sm,
     padding: theme.spacing.md,
     borderRadius: theme.borderRadius.md,
-    borderWidth: 2,
-    borderColor: theme.colors.primary,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
