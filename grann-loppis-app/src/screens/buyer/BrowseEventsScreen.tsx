@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,9 @@ import {
   Alert,
   ScrollView,
   RefreshControl,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Animated,
 } from "react-native";
 import {
   useNavigation,
@@ -45,11 +48,31 @@ export default function BrowseEventsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastLoadTime, setLastLoadTime] = useState<number>(0);
+  const headerOpacity = useRef(new Animated.Value(0)).current;
 
   const handleRegisterNavigation = () => {
     // Navigate to the Auth tab (which defaults to Register screen)
     navigation.navigate("AuthTab");
   };
+
+  // Set up header with animated background
+  useEffect(() => {
+    navigation.setOptions({
+      headerTransparent: true,
+      headerStyle: {
+        backgroundColor: 'transparent',
+      },
+      headerBackground: () => (
+        <Animated.View
+          style={{
+            flex: 1,
+            backgroundColor: theme.colors.surface,
+            opacity: headerOpacity,
+          }}
+        />
+      ),
+    });
+  }, [navigation, headerOpacity]);
 
   const loadEvents = useCallback(
     async (forceRefresh = false) => {
@@ -139,6 +162,20 @@ export default function BrowseEventsScreen() {
     setRefreshing(false);
   }, [loadEvents]);
 
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+
+    // Animate header opacity based on scroll position
+    // Starts fading in at 20px, fully opaque by 100px
+    const opacity = Math.min(Math.max((offsetY - 20) / 80, 0), 1);
+
+    Animated.timing(headerOpacity, {
+      toValue: opacity,
+      duration: 0,
+      useNativeDriver: true,
+    }).start();
+  };
+
   if (loading) {
     return <Loading message="Laddar evenemang..." fullScreen />;
   }
@@ -165,6 +202,8 @@ export default function BrowseEventsScreen() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.scrollContent}
+      onScroll={handleScroll}
+      scrollEventThrottle={16}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -314,6 +353,7 @@ const styles = StyleSheet.create({
   hero: {
     minHeight: 420,
     backgroundColor: theme.colors.surface,
+    paddingTop: 100,
   },
   heroOverlay: {
     flex: 1,

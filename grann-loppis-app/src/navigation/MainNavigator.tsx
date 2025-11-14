@@ -37,8 +37,9 @@ function OrganizerNavigator() {
     <OrganizerStack.Navigator
       screenOptions={{
         headerRight: () => <AuthButton />,
+        headerTransparent: true,
         headerStyle: {
-          backgroundColor: theme.colors.surface,
+          backgroundColor: 'transparent',
         },
         headerTintColor: theme.colors.text,
         headerTitleStyle: {
@@ -70,8 +71,9 @@ function SellerNavigator() {
     <SellerStack.Navigator
       screenOptions={{
         headerRight: () => <AuthButton />,
+        headerTransparent: true,
         headerStyle: {
-          backgroundColor: theme.colors.surface,
+          backgroundColor: 'transparent',
         },
         headerTintColor: theme.colors.text,
         headerTitleStyle: {
@@ -108,8 +110,9 @@ function BuyerNavigator() {
     <BuyerStack.Navigator
       screenOptions={{
         headerRight: () => <AuthButton />,
+        headerTransparent: true,
         headerStyle: {
-          backgroundColor: theme.colors.surface,
+          backgroundColor: 'transparent',
         },
         headerTintColor: theme.colors.text,
         headerTitleStyle: {
@@ -130,7 +133,13 @@ function BuyerNavigator() {
       <BuyerStack.Screen
         name="EventMap"
         component={EventMapScreen}
-        options={{ title: 'Loppis Rundan' }}
+        options={{
+          title: 'Loppis Rundan',
+          headerTransparent: false,
+          headerStyle: {
+            backgroundColor: theme.colors.surface,
+          },
+        }}
       />
       <BuyerStack.Screen
         name="SellerDetails"
@@ -146,8 +155,9 @@ function MapNavigator() {
     <MapStack.Navigator
       screenOptions={{
         headerRight: () => <AuthButton />,
+        headerTransparent: true,
         headerStyle: {
-          backgroundColor: theme.colors.surface,
+          backgroundColor: 'transparent',
         },
         headerTintColor: theme.colors.text,
         headerTitleStyle: {
@@ -158,7 +168,13 @@ function MapNavigator() {
       <MapStack.Screen
         name="AllEventsMap"
         component={AllEventsMapScreen}
-        options={{ title: 'Loppis Rundan' }}
+        options={{
+          title: 'Loppis Rundan',
+          headerTransparent: false,
+          headerStyle: {
+            backgroundColor: theme.colors.surface,
+          },
+        }}
       />
       <MapStack.Screen
         name="EventDetails"
@@ -168,7 +184,13 @@ function MapNavigator() {
       <MapStack.Screen
         name="EventMap"
         component={EventMapScreen}
-        options={{ title: 'Loppis Rundan' }}
+        options={{
+          title: 'Loppis Rundan',
+          headerTransparent: false,
+          headerStyle: {
+            backgroundColor: theme.colors.surface,
+          },
+        }}
       />
       <MapStack.Screen
         name="SellerDetails"
