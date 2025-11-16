@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, FlatList, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Input } from '../../components/common/Input';
@@ -70,6 +70,10 @@ export default function JoinEventScreen() {
     }
   };
 
+  const handleSelectEvent = (event: Event) => {
+    setSelectedEvent(event);
+  };
+
   const handleApplyToEvent = async () => {
     if (!user) {
       Alert.alert('Fel', 'Du måste vara inloggad');
@@ -126,7 +130,7 @@ export default function JoinEventScreen() {
       <View style={[styles.eventCardWrapper, isSelected && styles.selectedEventCard]}>
         <EventCard
           event={item}
-          onPress={() => setSelectedEvent(item)}
+          onPress={() => handleSelectEvent(item)}
         />
         {isSelected && (
           <View style={styles.selectedBadge}>
@@ -136,7 +140,7 @@ export default function JoinEventScreen() {
         {!isSelected && (
           <TouchableOpacity
             style={styles.joinButton}
-            onPress={() => setSelectedEvent(item)}
+            onPress={() => handleSelectEvent(item)}
             activeOpacity={0.8}
           >
             <Text style={styles.joinButtonText}>Gå med</Text>
@@ -147,87 +151,47 @@ export default function JoinEventScreen() {
   };
 
   if (loading) {
-    return <Loading message="Laddar evenemang..." fullScreen />;
+    return <Loading message="Laddar loppisar..." fullScreen />;
   }
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Ansök till evenemang</Text>
+        <Text style={styles.title}>Ansök till loppis</Text>
         <Text style={styles.subtitle}>
-          Välj ett evenemang du vill ansöka till
+          Välj en loppis du vill ansöka till
         </Text>
       </View>
 
-      {/* Seller Profile Card */}
-      {user && (
-        <TouchableOpacity
-          style={styles.profileCard}
-          onPress={() => navigation.navigate('AddAddress')}
+      {/* Expanded Application Form */}
+      {selectedEvent ? (
+        <ScrollView
+          style={styles.expandedContainer}
+          contentContainerStyle={styles.expandedContent}
+          keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.profileCardContent}>
-            <View style={styles.profileCardLeft}>
-              <Text style={styles.profileCardTitle}>Din säljarprofil</Text>
-              {user.sellerProfile ? (
-                <>
-                  <Text style={styles.profileCardAddress}>
-                    {user.sellerProfile.address}
-                  </Text>
-                  {user.sellerProfile.phoneNumber && (
-                    <Text style={styles.profileCardPhone}>
-                      {user.sellerProfile.phoneNumber}
-                    </Text>
-                  )}
-                </>
-              ) : (
-                <Text style={styles.profileCardWarning}>
-                  ⚠️ Du behöver lägga till en adress
+          <View style={styles.expandedForm}>
+            <Text style={styles.expandedFormTitle}>Ansökan till {selectedEvent.name}</Text>
+
+            {/* Event Details */}
+            <View style={styles.eventDetails}>
+              <View style={styles.eventDetailRow}>
+                <Text style={styles.eventDetailLabel}>Start:</Text>
+                <Text style={styles.eventDetailValue}>
+                  {new Date(selectedEvent.startDate).toLocaleDateString('sv-SE')}
                 </Text>
-              )}
+              </View>
+              <View style={styles.eventDetailRow}>
+                <Text style={styles.eventDetailLabel}>Slut:</Text>
+                <Text style={styles.eventDetailValue}>
+                  {new Date(selectedEvent.endDate).toLocaleDateString('sv-SE')}
+                </Text>
+              </View>
+              <View style={styles.eventDetailRow}>
+                <Text style={styles.eventDetailLabel}>Plats:</Text>
+                <Text style={styles.eventDetailValue}>{selectedEvent.area}</Text>
+              </View>
             </View>
-            <View style={styles.profileCardRight}>
-              <Text style={styles.profileCardLink}>
-                {user.sellerProfile ? 'Ändra' : 'Lägg till'}
-              </Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-      )}
-
-      <View style={styles.searchContainer}>
-        <Input
-          placeholder="Sök evenemang eller område..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-      </View>
-
-      <FlatList
-        data={filteredEvents}
-        keyExtractor={(item) => item.id}
-        renderItem={renderEventCard}
-        contentContainerStyle={styles.listContent}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>Inga evenemang hittades</Text>
-            <Text style={styles.emptyText}>
-              {searchQuery
-                ? 'Försök med en annan sökning'
-                : 'Det finns inga tillgängliga evenemang just nu'}
-            </Text>
-          </View>
-        }
-      />
-
-      {selectedEvent && (
-        <View style={styles.applicationForm}>
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.formContent}
-          >
-            <Text style={styles.formTitle}>Ansökan till {selectedEvent.name}</Text>
 
             <Input
               label="Meddelande till arrangören (valfritt)"
@@ -264,8 +228,72 @@ export default function JoinEventScreen() {
                 disabled={submitting}
               />
             </View>
-          </ScrollView>
-        </View>
+          </View>
+        </ScrollView>
+      ) : (
+        <>
+          {/* Seller Profile Card */}
+          {user && (
+            <TouchableOpacity
+              style={styles.profileCard}
+              onPress={() => navigation.navigate('AddAddress')}
+            >
+              <View style={styles.profileCardContent}>
+                <View style={styles.profileCardLeft}>
+                  <Text style={styles.profileCardTitle}>Din säljarprofil</Text>
+                  {user.sellerProfile ? (
+                    <>
+                      <Text style={styles.profileCardAddress}>
+                        {user.sellerProfile.address}
+                      </Text>
+                      {user.sellerProfile.phoneNumber && (
+                        <Text style={styles.profileCardPhone}>
+                          {user.sellerProfile.phoneNumber}
+                        </Text>
+                      )}
+                    </>
+                  ) : (
+                    <Text style={styles.profileCardWarning}>
+                      Du behöver lägga till en adress!
+                    </Text>
+                  )}
+                </View>
+                <View style={styles.profileCardRight}>
+                  <Text style={styles.profileCardLink}>
+                    {user.sellerProfile ? 'Ändra' : 'Lägg till'}
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          )}
+
+          <View style={styles.searchContainer}>
+            <Input
+              placeholder="Sök loppis eller område..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
+
+          <FlatList
+            data={filteredEvents}
+            keyExtractor={(item) => item.id}
+            renderItem={renderEventCard}
+            contentContainerStyle={styles.listContent}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyTitle}>Ingen loppmarknad hittades</Text>
+                <Text style={styles.emptyText}>
+                  {searchQuery
+                    ? 'Försök med en annan sökning'
+                    : 'Det finns inga tillgängliga loppisar just nu'}
+                </Text>
+              </View>
+            }
+          />
+        </>
       )}
     </View>
   );
@@ -363,30 +391,6 @@ const styles = StyleSheet.create({
     color: theme.colors.textLight,
     textAlign: 'center',
   },
-  applicationForm: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: theme.colors.white,
-    borderTopWidth: 2,
-    borderTopColor: theme.colors.primary,
-    maxHeight: '60%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  formContent: {
-    padding: theme.spacing.xl,
-  },
-  formTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: 'bold',
-    color: theme.colors.primary,
-    marginBottom: theme.spacing.md,
-  },
   descriptionInput: {
     height: 80,
     textAlignVertical: 'top',
@@ -465,5 +469,52 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.sm,
     fontWeight: '700',
     color: theme.colors.primary,
+  },
+  expandedContainer: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  expandedContent: {
+    padding: theme.spacing.lg,
+    paddingBottom: theme.spacing.xxxl,
+  },
+  expandedForm: {
+    backgroundColor: theme.colors.surfaceLight,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  expandedFormTitle: {
+    fontSize: theme.fontSize.xl,
+    fontWeight: 'bold',
+    color: theme.colors.primary,
+    marginBottom: theme.spacing.lg,
+    textAlign: 'center',
+  },
+  eventDetails: {
+    backgroundColor: theme.colors.accent,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.primary + '30',
+  },
+  eventDetailRow: {
+    marginBottom: theme.spacing.sm,
+  },
+  eventDetailLabel: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: '700',
+    color: theme.colors.primary,
+    marginBottom: theme.spacing.xs,
+  },
+  eventDetailValue: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text,
+    lineHeight: 22,
   },
 });
