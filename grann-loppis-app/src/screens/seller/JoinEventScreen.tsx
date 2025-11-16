@@ -26,6 +26,7 @@ export default function JoinEventScreen() {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
 
   // Use animated header hook
   const { handleScroll } = useAnimatedHeader({
@@ -72,6 +73,33 @@ export default function JoinEventScreen() {
 
   const handleSelectEvent = (event: Event) => {
     setSelectedEvent(event);
+    // Initialize with no dates selected - user must choose
+    setSelectedDates([]);
+  };
+
+  // Generate array of dates between event start and end
+  const getEventDates = (event: Event): string[] => {
+    const dates: string[] = [];
+    const start = new Date(event.startDate);
+    const end = new Date(event.endDate);
+
+    const current = new Date(start);
+    while (current <= end) {
+      dates.push(current.toISOString().split('T')[0]);
+      current.setDate(current.getDate() + 1);
+    }
+
+    return dates;
+  };
+
+  const toggleDate = (date: string) => {
+    setSelectedDates(prev => {
+      if (prev.includes(date)) {
+        return prev.filter(d => d !== date);
+      } else {
+        return [...prev, date].sort();
+      }
+    });
   };
 
   const handleApplyToEvent = async () => {
@@ -93,13 +121,24 @@ export default function JoinEventScreen() {
       return;
     }
 
+    if (selectedDates.length === 0) {
+      Alert.alert('Välj datum', 'Vänligen välj minst ett datum du vill sälja.');
+      return;
+    }
+
     setSubmitting(true);
     try {
       await participantsService.applyToEvent(
         selectedEvent.id,
         user.id,
-        description.trim()
+        description.trim(),
+        selectedDates
       );
+
+      // Reset form state
+      setSelectedEvent(null);
+      setDescription('');
+      setSelectedDates([]);
 
       Alert.alert(
         'Ansökan skickad!',
@@ -193,6 +232,55 @@ export default function JoinEventScreen() {
               </View>
             </View>
 
+            {/* Date Selection */}
+            <View style={styles.dateSelectionContainer}>
+              <Text style={styles.dateSelectionTitle}>Välj datum du vill sälja:</Text>
+              <Text style={styles.dateSelectionSubtitle}>
+                Välj de dagar du vill delta i evenemanget
+              </Text>
+              <View style={styles.datesContainer}>
+                {getEventDates(selectedEvent).map((date) => {
+                  const isSelected = selectedDates.includes(date);
+                  const dateObj = new Date(date + 'T12:00:00');
+                  const dayName = dateObj.toLocaleDateString('sv-SE', { weekday: 'short' });
+                  const dateStr = dateObj.toLocaleDateString('sv-SE', {
+                    day: 'numeric',
+                    month: 'short'
+                  });
+
+                  return (
+                    <TouchableOpacity
+                      key={date}
+                      style={[
+                        styles.dateChip,
+                        isSelected && styles.dateChipSelected
+                      ]}
+                      onPress={() => toggleDate(date)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[
+                        styles.dateChipDay,
+                        isSelected && styles.dateChipDaySelected
+                      ]}>
+                        {dayName}
+                      </Text>
+                      <Text style={[
+                        styles.dateChipDate,
+                        isSelected && styles.dateChipDateSelected
+                      ]}>
+                        {dateStr}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+              <Text style={styles.selectedDatesCount}>
+                {selectedDates.length === 0
+                  ? 'Inga datum valda'
+                  : `${selectedDates.length} ${selectedDates.length === 1 ? 'dag' : 'dagar'} vald${selectedDates.length === 1 ? '' : 'a'}`}
+              </Text>
+            </View>
+
             <Input
               label="Meddelande till arrangören (valfritt)"
               placeholder="Berätta lite om dig och dina föremål..."
@@ -223,7 +311,10 @@ export default function JoinEventScreen() {
               />
               <Button
                 title="Avbryt"
-                onPress={() => setSelectedEvent(null)}
+                onPress={() => {
+                  setSelectedEvent(null);
+                  setSelectedDates([]);
+                }}
                 variant="outline"
                 disabled={submitting}
               />
@@ -516,5 +607,64 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.text,
     lineHeight: 22,
+  },
+  dateSelectionContainer: {
+    marginTop: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
+  },
+  dateSelectionTitle: {
+    fontSize: theme.fontSize.md,
+    fontWeight: '700',
+    color: theme.colors.primary,
+    marginBottom: theme.spacing.xs,
+  },
+  dateSelectionSubtitle: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textLight,
+    marginBottom: theme.spacing.md,
+  },
+  datesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.sm,
+  },
+  dateChip: {
+    backgroundColor: theme.colors.surfaceLightest,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 2,
+    borderColor: theme.colors.border,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  dateChipSelected: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  dateChipDay: {
+    fontSize: theme.fontSize.xs,
+    fontWeight: '600',
+    color: theme.colors.textLight,
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  dateChipDaySelected: {
+    color: theme.colors.white,
+  },
+  dateChipDate: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: '700',
+    color: theme.colors.text,
+  },
+  dateChipDateSelected: {
+    color: theme.colors.white,
+  },
+  selectedDatesCount: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primary,
+    fontWeight: '600',
+    marginTop: theme.spacing.md,
+    textAlign: 'center',
   },
 });

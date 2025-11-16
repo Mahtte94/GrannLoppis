@@ -25,7 +25,8 @@ const USERS_COLLECTION = 'users';
 export async function applyToEvent(
   eventId: string,
   userId: string,
-  description?: string
+  description?: string,
+  participationDates?: string[]
 ): Promise<Participant> {
   try {
     // Fetch the user's profile to get their seller information
@@ -42,16 +43,23 @@ export async function applyToEvent(
       throw new Error('Seller profile not found. Please complete your profile first.');
     }
 
-    // Check if user already has an application for this event
+    // Check if user already has an active (pending or approved) application for this event
+    // Allow reapplication if previous application was rejected
     const existingApplicationQuery = query(
       collection(db, PARTICIPANTS_COLLECTION),
       where('eventId', '==', eventId),
-      where('userId', '==', userId)
+      where('userId', '==', userId),
+      where('status', 'in', [ParticipantStatus.PENDING, ParticipantStatus.APPROVED])
     );
     const existingApplications = await getDocs(existingApplicationQuery);
 
     if (!existingApplications.empty) {
-      throw new Error('Du har redan ansökt om att gå med i detta evenemang');
+      const status = existingApplications.docs[0].data().status;
+      if (status === ParticipantStatus.PENDING) {
+        throw new Error('Du har redan en pågående ansökan för detta evenemang');
+      } else {
+        throw new Error('Du är redan godkänd för detta evenemang');
+      }
     }
 
     const participantData = {
@@ -64,6 +72,7 @@ export async function applyToEvent(
       description: description || '',
       status: ParticipantStatus.PENDING,
       appliedAt: Timestamp.now(),
+      ...(participationDates && participationDates.length > 0 && { participationDates }),
     };
 
     console.log('Saving application to Firestore:', participantData);
@@ -176,6 +185,7 @@ export async function getEventParticipants(
         ...(data.reviewedAt && { reviewedAt: data.reviewedAt.toDate() }),
         ...(data.reviewedBy && { reviewedBy: data.reviewedBy }),
         ...(data.joinedAt && { joinedAt: data.joinedAt.toDate() }),
+        ...(data.participationDates && { participationDates: data.participationDates }),
       };
     });
   } catch (error) {
@@ -212,6 +222,7 @@ export async function getEventApplications(eventId: string): Promise<Array<Parti
         ...(data.reviewedAt && { reviewedAt: data.reviewedAt.toDate() }),
         ...(data.reviewedBy && { reviewedBy: data.reviewedBy }),
         ...(data.joinedAt && { joinedAt: data.joinedAt.toDate() }),
+        ...(data.participationDates && { participationDates: data.participationDates }),
       };
     });
   } catch (error) {
@@ -247,6 +258,7 @@ export async function getParticipantById(participantId: string): Promise<Partici
       ...(data.reviewedAt && { reviewedAt: data.reviewedAt.toDate() }),
       ...(data.reviewedBy && { reviewedBy: data.reviewedBy }),
       ...(data.joinedAt && { joinedAt: data.joinedAt.toDate() }),
+      ...(data.participationDates && { participationDates: data.participationDates }),
     };
   } catch (error) {
     console.error('Error fetching participant:', error);
@@ -282,6 +294,7 @@ export async function getUserParticipations(userId: string): Promise<Array<Parti
         ...(data.reviewedAt && { reviewedAt: data.reviewedAt.toDate() }),
         ...(data.reviewedBy && { reviewedBy: data.reviewedBy }),
         ...(data.joinedAt && { joinedAt: data.joinedAt.toDate() }),
+        ...(data.participationDates && { participationDates: data.participationDates }),
       };
     });
   } catch (error) {
@@ -355,6 +368,7 @@ export async function getActiveParticipations(userId: string): Promise<{
         ...(data.reviewedAt && { reviewedAt: data.reviewedAt.toDate() }),
         ...(data.reviewedBy && { reviewedBy: data.reviewedBy }),
         ...(data.joinedAt && { joinedAt: data.joinedAt.toDate() }),
+        ...(data.participationDates && { participationDates: data.participationDates }),
       };
     });
 
