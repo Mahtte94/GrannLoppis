@@ -5,6 +5,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Loading } from '../../components/common/Loading';
+import { EventCard } from '../../components/EventCard';
 import { theme } from '../../styles/theme';
 import { eventsService } from '../../services/firebase/events.service';
 import { participantsService } from '../../services/firebase/participants.service';
@@ -120,30 +121,28 @@ export default function JoinEventScreen() {
 
   const renderEventCard = ({ item }: { item: Event }) => {
     const isSelected = selectedEvent?.id === item.id;
-    const startDate = new Date(item.startDate).toLocaleDateString('sv-SE');
-    const endDate = new Date(item.endDate).toLocaleDateString('sv-SE');
 
     return (
-      <TouchableOpacity
-        style={[styles.eventCard, isSelected && styles.selectedEventCard]}
-        onPress={() => setSelectedEvent(item)}
-      >
-        <View style={styles.eventCardHeader}>
-          <Text style={styles.eventName}>{item.name}</Text>
-          {isSelected && (
-            <View style={styles.selectedBadge}>
-              <Text style={styles.selectedBadgeText}>Vald</Text>
-            </View>
-          )}
-        </View>
-        <Text style={styles.eventArea}>{item.area}</Text>
-        <Text style={styles.eventDate}>
-          {startDate === endDate ? startDate : `${startDate} - ${endDate}`}
-        </Text>
-        <Text style={styles.eventParticipants}>
-          {item.participants} {item.participants === 1 ? 'säljare' : 'säljare'}
-        </Text>
-      </TouchableOpacity>
+      <View style={[styles.eventCardWrapper, isSelected && styles.selectedEventCard]}>
+        <EventCard
+          event={item}
+          onPress={() => setSelectedEvent(item)}
+        />
+        {isSelected && (
+          <View style={styles.selectedBadge}>
+            <Text style={styles.selectedBadgeText}>✓ Vald</Text>
+          </View>
+        )}
+        {!isSelected && (
+          <TouchableOpacity
+            style={styles.joinButton}
+            onPress={() => setSelectedEvent(item)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.joinButtonText}>Gå med</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     );
   };
 
@@ -305,54 +304,46 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
     flexGrow: 1,
   },
-  eventCard: {
-    backgroundColor: theme.colors.white,
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    borderWidth: 2,
-    borderColor: theme.colors.border,
+  eventCardWrapper: {
+    position: 'relative',
   },
   selectedEventCard: {
+    borderWidth: 3,
     borderColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
     backgroundColor: theme.colors.accent,
   },
-  eventCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.xs,
-  },
-  eventName: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: 'bold',
-    color: theme.colors.text,
-    flex: 1,
-  },
   selectedBadge: {
+    position: 'absolute',
+    top: theme.spacing.md,
+    right: theme.spacing.md,
     backgroundColor: theme.colors.primary,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
     borderRadius: theme.borderRadius.sm,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
   },
   selectedBadgeText: {
     color: theme.colors.white,
-    fontSize: theme.fontSize.xs,
-    fontWeight: '600',
-  },
-  eventArea: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.textLight,
-    marginBottom: theme.spacing.xs,
-  },
-  eventDate: {
     fontSize: theme.fontSize.sm,
-    color: theme.colors.textLight,
-    marginBottom: theme.spacing.xs,
+    fontWeight: '700',
   },
-  eventParticipants: {
+  joinButton: {
+    position: 'absolute',
+    bottom: theme.spacing.lg,
+    right: theme.spacing.md,
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.sm,
+  },
+  joinButtonText: {
+    color: theme.colors.white,
     fontSize: theme.fontSize.sm,
-    color: theme.colors.primary,
     fontWeight: '600',
   },
   emptyContainer: {

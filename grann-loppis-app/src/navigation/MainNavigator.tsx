@@ -53,12 +53,18 @@ function OrganizerNavigator() {
       <OrganizerStack.Screen
         name="CreateEvent"
         component={CreateEventScreen}
-        options={{ title: 'Skapa loppmarknad' }}
+        options={{
+          title: 'Loppis Rundan',
+          headerBackTitle: '',
+        }}
       />
       <OrganizerStack.Screen
         name="ParticipantsList"
         component={ParticipantsListScreen}
-        options={{ title: 'Säljare' }}
+        options={{
+          title: 'Loppis Rundan',
+          headerBackTitle: '',
+        }}
       />
     </OrganizerStack.Navigator>
   );

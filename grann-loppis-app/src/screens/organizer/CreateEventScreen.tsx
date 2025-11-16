@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Input } from '../../components/common/Input';
 import { LocationInput } from '../../components/common/LocationInput';
 import { DatePickerInput } from '../../components/common/DatePickerInput';
@@ -14,6 +15,7 @@ import { Coordinates } from '../../types';
 export default function CreateEventScreen() {
   const navigation = useNavigation();
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   const [eventName, setEventName] = useState('');
   const [area, setArea] = useState('');
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
@@ -165,13 +167,13 @@ export default function CreateEventScreen() {
       style={styles.keyboardAvoid}
     >
       <ScrollView
-        contentContainerStyle={styles.scrollContainer}
+        contentContainerStyle={[styles.scrollContainer, { paddingTop: insets.top + 20 }]}
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.container}>
-          <Text style={styles.title}>Skapa en ny loppmarknad</Text>
+          <Text style={styles.title}>Skapa en ny loppis</Text>
           <Text style={styles.subtitle}>
-            Fyll i informationen nedan för att skapa din loppmarknad
+            Fyll i informationen nedan för att skapa din loppis
           </Text>
 
           <View style={styles.form}>
