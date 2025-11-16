@@ -129,10 +129,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+    paddingTop: theme.spacing.xxl,
   },
   header: {
     padding: theme.spacing.xl,
-    backgroundColor: theme.colors.surface,
+  
   },
   title: {
     fontSize: theme.fontSize.xxl,

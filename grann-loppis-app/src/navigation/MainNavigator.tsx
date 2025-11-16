@@ -82,12 +82,12 @@ function SellerNavigator() {
       <SellerStack.Screen
         name="JoinEvent"
         component={JoinEventScreen}
-        options={{ title: 'Join Event' }}
+        options={{ title: 'Loppis Rundan' }}
       />
       <SellerStack.Screen
         name="AddAddress"
         component={AddAddressScreen}
-        options={{ title: 'Add Address' }}
+        options={{ title: 'Loppis Rundan' }}
       />
     </SellerStack.Navigator>
   );

@@ -19,7 +19,7 @@ export type OrganizerStackParamList = {
 
 export type SellerStackParamList = {
   JoinEvent: undefined;
-  AddAddress: { event: { id: string; eventCode: string; name: string } };
+  AddAddress: { event?: { id: string; eventCode: string; name: string } } | undefined;
   MyItems: { participantId: string };
   AddItem: { participantId: string };
 };
