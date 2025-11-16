@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Alert } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OrganizerStackParamList, Event } from '../../types';
 import { EventCard } from '../../components/EventCard';
 import { Button } from '../../components/common/Button';
@@ -15,6 +16,7 @@ type ManageEventScreenNavigationProp = StackNavigationProp<OrganizerStackParamLi
 export default function ManageEventScreen() {
   const navigation = useNavigation<ManageEventScreenNavigationProp>();
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -83,7 +85,7 @@ export default function ManageEventScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + 20 }]}>
       <View style={styles.header}>
         <Text style={styles.title}>Mina evenemang</Text>
         <Text style={styles.subtitle}>
@@ -129,7 +131,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-    paddingTop: theme.spacing.xxl,
   },
   header: {
     padding: theme.spacing.xl,
@@ -173,9 +174,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: theme.spacing.xl,
-    backgroundColor: theme.colors.surfaceLight,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
     marginBottom: 100,
   },
 });

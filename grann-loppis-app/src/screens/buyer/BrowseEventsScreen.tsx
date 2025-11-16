@@ -15,6 +15,7 @@ import {
 } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BuyerStackParamList, MainTabParamList, Event } from "../../types";
 import { useAuth } from "../../context/AuthContext";
 import { EventCard } from "../../components/EventCard";
@@ -42,6 +43,7 @@ const CACHE_DURATION = 5 * 60 * 1000;
 export default function BrowseEventsScreen() {
   const navigation = useNavigation<BrowseEventsScreenNavigationProp>();
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   const [events, setEvents] = useState<EventWithDistance[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -184,7 +186,7 @@ export default function BrowseEventsScreen() {
       }
     >
       {/* Hero Section */}
-      <View style={styles.hero}>
+      <View style={[styles.hero, { paddingTop: insets.top + 60 }]}>
         <View style={styles.heroOverlay}>
           <View style={styles.heroContent}>
             <Text style={styles.heroTitle}>Upptäck loppmarknader{"\n"}nära dig!</Text>
@@ -322,8 +324,6 @@ const styles = StyleSheet.create({
   // Hero Section
   hero: {
     minHeight: 420,
-    backgroundColor: theme.colors.surface,
-    paddingTop: 100,
   },
   heroOverlay: {
     flex: 1,
