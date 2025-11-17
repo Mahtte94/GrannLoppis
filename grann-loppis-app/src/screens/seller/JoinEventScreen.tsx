@@ -10,7 +10,7 @@ import { theme } from '../../styles/theme';
 import { eventsService } from '../../services/firebase/events.service';
 import { participantsService } from '../../services/firebase/participants.service';
 import { SellerStackParamList } from '../../types/navigation.types';
-import { Event } from '../../types';
+import { Event, ParticipantStatus } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { useAnimatedHeader } from '../../hooks';
 
@@ -27,6 +27,7 @@ export default function JoinEventScreen() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [userParticipations, setUserParticipations] = useState<Map<string, ParticipantStatus>>(new Map());
 
   // Use animated header hook
   const { handleScroll } = useAnimatedHeader({
@@ -36,6 +37,7 @@ export default function JoinEventScreen() {
 
   useEffect(() => {
     loadEvents();
+    loadUserParticipations();
   }, []);
 
   useEffect(() => {
@@ -68,6 +70,24 @@ export default function JoinEventScreen() {
       Alert.alert('Fel', 'Kunde inte ladda evenemang. Försök igen.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadUserParticipations = async () => {
+    if (!user) return;
+
+    try {
+      const participations = await participantsService.getUserParticipations(user.id);
+      const participationsMap = new Map<string, ParticipantStatus>();
+
+      participations.forEach((participation) => {
+        participationsMap.set(participation.eventId, participation.status);
+      });
+
+      setUserParticipations(participationsMap);
+    } catch (error) {
+      console.error('Error loading user participations:', error);
+      // Don't show error alert, just log it
     }
   };
 
@@ -140,6 +160,9 @@ export default function JoinEventScreen() {
       setDescription('');
       setSelectedDates([]);
 
+      // Reload user participations to update the UI
+      await loadUserParticipations();
+
       Alert.alert(
         'Ansökan skickad!',
         'Din ansökan har skickats till arrangören. Du kommer att få besked när din ansökan har granskats.',
@@ -164,19 +187,22 @@ export default function JoinEventScreen() {
 
   const renderEventCard = ({ item }: { item: Event }) => {
     const isSelected = selectedEvent?.id === item.id;
+    const participationStatus = userParticipations.get(item.id);
+    const hasAppliedOrAccepted = participationStatus === ParticipantStatus.PENDING ||
+                                  participationStatus === ParticipantStatus.APPROVED;
 
     return (
       <View style={[styles.eventCardWrapper, isSelected && styles.selectedEventCard]}>
         <EventCard
           event={item}
-          onPress={() => handleSelectEvent(item)}
+          onPress={() => !hasAppliedOrAccepted ? handleSelectEvent(item) : undefined}
         />
         {isSelected && (
           <View style={styles.selectedBadge}>
             <Text style={styles.selectedBadgeText}>✓ Vald</Text>
           </View>
         )}
-        {!isSelected && (
+        {!isSelected && !hasAppliedOrAccepted && (
           <TouchableOpacity
             style={styles.joinButton}
             onPress={() => handleSelectEvent(item)}
@@ -184,6 +210,16 @@ export default function JoinEventScreen() {
           >
             <Text style={styles.joinButtonText}>Gå med</Text>
           </TouchableOpacity>
+        )}
+        {participationStatus === ParticipantStatus.PENDING && (
+          <View style={styles.pendingBadge}>
+            <Text style={styles.pendingBadgeText}>⏳ Väntar på svar</Text>
+          </View>
+        )}
+        {participationStatus === ParticipantStatus.APPROVED && (
+          <View style={styles.approvedBadge}>
+            <Text style={styles.approvedBadgeText}>✓ Godkänd</Text>
+          </View>
         )}
       </View>
     );
@@ -673,5 +709,43 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     marginTop: theme.spacing.md,
     textAlign: 'center',
+  },
+  pendingBadge: {
+    position: 'absolute',
+    bottom: theme.spacing.lg,
+    right: theme.spacing.md,
+    backgroundColor: '#F59E0B',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.sm,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  pendingBadgeText: {
+    fontFamily: theme.fonts.bodyMedium,
+    color: theme.colors.white,
+    fontSize: theme.fontSize.sm,
+  },
+  approvedBadge: {
+    position: 'absolute',
+    bottom: theme.spacing.lg,
+    right: theme.spacing.md,
+    backgroundColor: '#10B981',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.sm,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  approvedBadgeText: {
+    fontFamily: theme.fonts.bodyMedium,
+    color: theme.colors.white,
+    fontSize: theme.fontSize.sm,
   },
 });
