@@ -122,7 +122,10 @@ function BuyerNavigator() {
       <BuyerStack.Screen
         name="EventDetails"
         component={EventDetailsScreen}
-        options={{ title: 'Loppis Rundan' }}
+        options={{
+          title: 'Loppis Rundan',
+           headerBackTitle: '',
+         }}
       />
       <BuyerStack.Screen
         name="EventMap"
@@ -130,6 +133,7 @@ function BuyerNavigator() {
         options={{
           title: 'Loppis Rundan',
           headerTransparent: false,
+          headerBackTitle: '',
           headerStyle: {
             backgroundColor: theme.colors.surface,
           },
@@ -138,7 +142,10 @@ function BuyerNavigator() {
       <BuyerStack.Screen
         name="SellerDetails"
         component={SellerDetailsScreen}
-        options={{ title: 'Loppis Rundan' }}
+        options={{
+          title: 'Loppis Rundan',
+           headerBackTitle: '',
+         }}
       />
     </BuyerStack.Navigator>
   );
@@ -165,6 +172,7 @@ function MapNavigator() {
         options={{
           title: 'Loppis Rundan',
           headerTransparent: false,
+          headerBackTitle: '',
           headerStyle: {
             backgroundColor: theme.colors.surface,
           },
@@ -173,7 +181,10 @@ function MapNavigator() {
       <MapStack.Screen
         name="EventDetails"
         component={EventDetailsScreen}
-        options={{ title: 'Loppis Rundan' }}
+        options={{
+          title: 'Loppis Rundan',
+           headerBackTitle: '',
+         }}
       />
       <MapStack.Screen
         name="EventMap"
@@ -181,6 +192,7 @@ function MapNavigator() {
         options={{
           title: 'Loppis Rundan',
           headerTransparent: false,
+          headerBackTitle: '',
           headerStyle: {
             backgroundColor: theme.colors.surface,
           },

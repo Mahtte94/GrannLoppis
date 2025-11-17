@@ -19,8 +19,7 @@ export interface Participant {
   reviewedAt?: Date;
   reviewedBy?: string; // Organizer user ID who reviewed the application
   joinedAt?: Date; // Only set when status is APPROVED
-  phoneNumber?: string;
-  participationDates?: string[]; // ISO date strings for which dates the seller wants to participate
+  participationDates?: string[]; // date strings for which dates the seller wants to participate
 }
 
 export interface ApplyToEventInput {

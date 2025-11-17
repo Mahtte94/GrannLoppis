@@ -42,7 +42,7 @@ export default function ManageEventScreen() {
 
     } catch (error) {
       console.error('Error loading events:', error);
-      Alert.alert('Fel', 'Kunde inte ladda dina evenemang. Försök igen.');
+      Alert.alert('Fel', 'Kunde inte ladda din loppis. Försök igen.');
     } finally {
       setLoading(false);
     }
@@ -58,8 +58,8 @@ export default function ManageEventScreen() {
 
   const handleDeleteEvent = (event: Event) => {
     Alert.alert(
-      'Ta bort evenemang',
-      `Är du säker på att du vill ta bort "${event.name}"?\n\nDetta kommer att ta bort evenemanget och alla relaterade ansökningar. Detta går inte att ångra.`,
+      'Ta bort loppis',
+      `Är du säker på att du vill ta bort "${event.name}"?\n\nDetta kommer att ta bort loppisen och alla relaterade ansökningar. Detta går inte att ångra.`,
       [
         { text: 'Avbryt', style: 'cancel' },
         {
@@ -68,11 +68,11 @@ export default function ManageEventScreen() {
           onPress: async () => {
             try {
               await eventsService.deleteEvent(event.id);
-              Alert.alert('Borttaget', 'Evenemanget har tagits bort.');
+              Alert.alert('Borttaget', 'Loppisen har tagits bort.');
               loadEvents(); // Reload the list
             } catch (error) {
               console.error('Error deleting event:', error);
-              Alert.alert('Fel', 'Kunde inte ta bort evenemanget. Försök igen.');
+              Alert.alert('Fel', 'Kunde inte ta bort loppisen. Försök igen.');
             }
           },
         },
@@ -81,15 +81,15 @@ export default function ManageEventScreen() {
   };
 
   if (loading) {
-    return <Loading message="Laddar dina evenemang..." fullScreen />;
+    return <Loading message="Laddar..." fullScreen />;
   }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 20 }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Mina evenemang</Text>
+        <Text style={styles.title}>Min loppis</Text>
         <Text style={styles.subtitle}>
-          {events.length} {events.length === 1 ? 'evenemang' : 'evenemang'}
+          {events.length} {events.length === 1 ? 'loppis' : 'loppisar'}
         </Text>
       </View>
 
@@ -102,12 +102,12 @@ export default function ManageEventScreen() {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>Inga evenemang än</Text>
+            <Text style={styles.emptyTitle}>Ingen loppis än</Text>
             <Text style={styles.emptyText}>
-              Skapa ditt första loppis-evenemang och börja bjuda in säljare!
+              Skapa din första loppis!
             </Text>
             <Button
-              title="Skapa ditt första evenemang"
+              title="Skapa din första loppis"
               onPress={handleCreateEvent}
               style={styles.emptyButton}
             />
@@ -118,7 +118,7 @@ export default function ManageEventScreen() {
       {events.length > 0 && (
         <View style={styles.footer}>
           <Button
-            title="Skapa nytt evenemang"
+            title="Skapa ny loppis"
             onPress={handleCreateEvent}
           />
         </View>

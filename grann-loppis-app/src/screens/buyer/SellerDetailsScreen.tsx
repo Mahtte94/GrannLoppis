@@ -4,6 +4,7 @@ import { RouteProp, useRoute } from '@react-navigation/native';
 import { BuyerStackParamList, Participant } from '../../types';
 import { participantsService } from '../../services/firebase/participants.service';
 import { theme } from '../../styles/theme';
+import { useAnimatedHeader } from '../../hooks/useAnimatedHeader';
 
 type SellerDetailsScreenRouteProp = RouteProp<BuyerStackParamList, 'SellerDetails'>;
 
@@ -12,6 +13,12 @@ export default function SellerDetailsScreen() {
   const { participantId } = route.params;
   const [participant, setParticipant] = useState<Participant | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const { handleScroll } = useAnimatedHeader({
+    startFadeAt: 20,
+    endFadeAt: 100,
+    backgroundColor: theme.colors.surface,
+  });
 
   useEffect(() => {
     loadParticipant();
@@ -49,7 +56,11 @@ export default function SellerDetailsScreen() {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      onScroll={handleScroll}
+      scrollEventThrottle={16}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>{participant.displayName}</Text>
         <Text style={styles.address}>{participant.address}</Text>
@@ -60,18 +71,6 @@ export default function SellerDetailsScreen() {
           <Text style={styles.sectionTitle}>Om säljaren</Text>
           <Text style={styles.description}>{participant.description}</Text>
         </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Kontaktinformation</Text>
-          <Text style={styles.infoText}>Adress: {participant.address}</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Föremål till salu</Text>
-          <Text style={styles.placeholder}>
-            Föremål kommer snart att listas här...
-          </Text>
-        </View>
       </View>
     </ScrollView>
   );
@@ -81,6 +80,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+    paddingTop: theme.spacing.xxl
   },
   loadingContainer: {
     flex: 1,
@@ -99,9 +99,6 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: theme.spacing.xl,
-    backgroundColor: theme.colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
   },
   title: {
     fontSize: theme.fontSize.xxl,
@@ -117,7 +114,7 @@ const styles = StyleSheet.create({
     padding: theme.spacing.xl,
   },
   section: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.surfaceLightest,
     padding: theme.spacing.lg,
     borderRadius: theme.borderRadius.md,
     marginBottom: theme.spacing.md,

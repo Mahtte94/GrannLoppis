@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
     top: theme.spacing.md,
     left: theme.spacing.md,
     right: theme.spacing.md,
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.surface,
     padding: theme.spacing.md,
     borderRadius: theme.borderRadius.md,
     shadowColor: '#000',

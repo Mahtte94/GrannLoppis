@@ -1,17 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
-import { RouteProp, useRoute, useNavigation, CompositeNavigationProp } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { BuyerStackParamList, Event, EventStatus } from '../../types';
-import { theme } from '../../styles/theme';
-import { eventsService } from '../../services/firebase';
-import { getEventStatus, getStatusText, formatDateRange, getDaysBetween } from '../../utils/helpers';
-import { useAuth } from '../../context/AuthContext';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
+import {
+  RouteProp,
+  useRoute,
+  useNavigation,
+  CompositeNavigationProp,
+} from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { BuyerStackParamList, Event, EventStatus } from "../../types";
+import { theme } from "../../styles/theme";
+import { eventsService } from "../../services/firebase";
+import {
+  getEventStatus,
+  getStatusText,
+  formatDateRange,
+  getDaysBetween,
+} from "../../utils/helpers";
+import { useAuth } from "../../context/AuthContext";
+import { useAnimatedHeader } from "../../hooks/useAnimatedHeader";
 
-type EventDetailsScreenRouteProp = RouteProp<BuyerStackParamList, 'EventDetails'>;
+type EventDetailsScreenRouteProp = RouteProp<
+  BuyerStackParamList,
+  "EventDetails"
+>;
 type EventDetailsScreenNavigationProp = CompositeNavigationProp<
-  StackNavigationProp<BuyerStackParamList, 'EventDetails'>,
+  StackNavigationProp<BuyerStackParamList, "EventDetails">,
   BottomTabNavigationProp<any>
 >;
 
@@ -22,6 +44,11 @@ export default function EventDetailsScreen() {
   const { eventId } = route.params;
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
+  // Use animated header hook
+  const { handleScroll } = useAnimatedHeader({
+    startFadeAt: 20,
+    endFadeAt: 50,
+  });
 
   useEffect(() => {
     loadEvent();
@@ -33,12 +60,12 @@ export default function EventDetailsScreen() {
 
       // Fetch real event from Firebase
       const fetchedEvent = await eventsService.getEventById(eventId);
-      console.log('Fetched event:', fetchedEvent);
+      console.log("Fetched event:", fetchedEvent);
 
       setEvent(fetchedEvent);
     } catch (error) {
-      console.error('Error loading event:', error);
-      Alert.alert('Fel', 'Kunde inte ladda loppis. Försök igen.');
+      console.error("Error loading event:", error);
+      Alert.alert("Fel", "Kunde inte ladda loppis. Försök igen.");
     } finally {
       setLoading(false);
     }
@@ -81,9 +108,19 @@ export default function EventDetailsScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         <View style={styles.header}>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(actualStatus) }]}>
+          <View
+            style={[
+              styles.statusBadge,
+              { backgroundColor: getStatusColor(actualStatus) },
+            ]}
+          >
             <Text style={styles.statusText}>{statusText}</Text>
           </View>
           <Text style={styles.title}>{event.name}</Text>
@@ -104,32 +141,37 @@ export default function EventDetailsScreen() {
         <View style={styles.descriptionSection}>
           <Text style={styles.sectionTitle}>Om loppmarknaden</Text>
           <Text style={styles.description}>
-            Välkommen till en fantastisk dag av loppisshopping! Bläddra bland föremål från {event.participants} säljare i {event.area}.
-            {'\n\n'}
-            Hitta vintagekläder, möbler, böcker, elektronik och mycket mer till fantastiska priser.
+            Välkommen till en fantastisk dag av loppisshopping! Bläddra bland
+            föremål från {event.participants} säljare i {event.area}.{"\n\n"}
+            Hitta vintagekläder, möbler, böcker, elektronik och mycket mer till
+            fantastiska priser.
           </Text>
         </View>
-      </ScrollView>
 
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.mapButton}
-          onPress={() => navigation.navigate('EventMap', { eventId: event.id })}
-        >
-          <Text style={styles.mapButtonText}>Visa säljare på karta</Text>
-        </TouchableOpacity>
-
-        {!user && (
+        <View style={styles.footer}>
           <TouchableOpacity
-            style={styles.sellerButton}
-            onPress={() => navigation.navigate('AuthTab', { screen: 'Register' })}
+            style={styles.mapButton}
+            onPress={() =>
+              navigation.navigate("EventMap", { eventId: event.id })
+            }
           >
-            <Text style={styles.sellerButtonText}>
-              Vill du vara med och sälja? Registrera dig här som säljare
-            </Text>
+            <Text style={styles.mapButtonText}>Visa säljare på karta</Text>
           </TouchableOpacity>
-        )}
-      </View>
+
+          {!user && (
+            <TouchableOpacity
+              style={styles.sellerButton}
+              onPress={() =>
+                navigation.navigate("AuthTab", { screen: "Register" })
+              }
+            >
+              <Text style={styles.sellerButtonText}>
+                Vill du vara med och sälja? Registrera dig här som säljare
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -138,12 +180,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-    paddingTop: theme.spacing.xxl,
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: theme.colors.background,
   },
   loadingText: {
@@ -157,16 +198,16 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    paddingTop: theme.spacing.xxl,
   },
   scrollContent: {
-    paddingBottom: 180,
+    paddingBottom: theme.spacing.xxxl,
   },
   header: {
     padding: theme.spacing.xl,
-    backgroundColor: theme.colors.surface,
   },
   statusBadge: {
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.xs,
     borderRadius: theme.borderRadius.sm,
@@ -175,11 +216,11 @@ const styles = StyleSheet.create({
   statusText: {
     color: theme.colors.white,
     fontSize: theme.fontSize.sm,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   title: {
     fontSize: theme.fontSize.xxl,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: theme.colors.text,
     marginBottom: theme.spacing.xs,
   },
@@ -191,20 +232,19 @@ const styles = StyleSheet.create({
   date: {
     fontSize: theme.fontSize.md,
     color: theme.colors.text,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   infoSection: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: theme.spacing.xl,
     gap: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
   },
   infoCard: {
     flex: 1,
-    backgroundColor: theme.colors.surfaceLight,
+    backgroundColor: theme.colors.surface,
     padding: theme.spacing.lg,
     borderRadius: theme.borderRadius.lg,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -215,16 +255,15 @@ const styles = StyleSheet.create({
   },
   infoValue: {
     fontSize: theme.fontSize.xl,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: theme.colors.primary,
   },
   descriptionSection: {
     padding: theme.spacing.xl,
-    backgroundColor: theme.colors.surface,
   },
   sectionTitle: {
     fontSize: theme.fontSize.lg,
-    fontWeight: '700',
+    fontWeight: "700",
     color: theme.colors.text,
     marginBottom: theme.spacing.md,
   },
@@ -235,18 +274,14 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: theme.spacing.xl,
-    backgroundColor: theme.colors.surfaceLight,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
     gap: theme.spacing.md,
-    marginBottom: 100,
   },
   mapButton: {
     backgroundColor: theme.colors.primary,
     paddingVertical: theme.spacing.md + 2,
     borderRadius: theme.borderRadius.lg,
-    alignItems: 'center',
-    shadowColor: theme.colors.primary,
+    alignItems: "center",
+    shadowColor: theme.colors.surface,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -255,7 +290,7 @@ const styles = StyleSheet.create({
   mapButtonText: {
     color: theme.colors.white,
     fontSize: theme.fontSize.md,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 0.5,
   },
   sellerButton: {
@@ -263,15 +298,15 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
     borderRadius: theme.borderRadius.lg,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
   sellerButtonText: {
     color: theme.colors.text,
     fontSize: theme.fontSize.sm,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
     lineHeight: 20,
   },
 });

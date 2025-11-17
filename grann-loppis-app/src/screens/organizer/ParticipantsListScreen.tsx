@@ -153,13 +153,6 @@ export default function ParticipantsListScreen() {
           <Text style={styles.infoLabel}>Adress:</Text>
           <Text style={styles.infoText}>{participant.address}</Text>
 
-          {participant.phoneNumber && (
-            <>
-              <Text style={styles.infoLabel}>Telefon:</Text>
-              <Text style={styles.infoText}>{participant.phoneNumber}</Text>
-            </>
-          )}
-
           {participant.description && (
             <>
               <Text style={styles.infoLabel}>Meddelande:</Text>
@@ -324,7 +317,7 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   applicationCard: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.md,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.md,
