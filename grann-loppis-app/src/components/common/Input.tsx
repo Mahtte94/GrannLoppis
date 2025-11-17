@@ -53,8 +53,8 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   label: {
+    fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.fontSize.md,
-    fontWeight: '600',
     color: theme.colors.text,
     marginBottom: theme.spacing.xs,
     padding: theme.spacing.xs,
@@ -63,6 +63,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   input: {
+    fontFamily: theme.fonts.body,
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: theme.borderRadius.md,
@@ -79,6 +80,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.error,
   },
   errorText: {
+    fontFamily: theme.fonts.caption,
     fontSize: theme.fontSize.xs,
     color: theme.colors.error,
     marginTop: theme.spacing.xs,
@@ -90,8 +92,8 @@ const styles = StyleSheet.create({
     transform: [{ translateY: -10 }],
   },
   eyeIconText: {
+    fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.fontSize.sm,
     color: theme.colors.primary,
-    fontWeight: '600',
   },
 });

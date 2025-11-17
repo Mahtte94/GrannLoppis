@@ -32,6 +32,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   message: {
+    fontFamily: theme.fonts.body,
     marginTop: theme.spacing.md,
     fontSize: theme.fontSize.md,
     color: theme.colors.text,

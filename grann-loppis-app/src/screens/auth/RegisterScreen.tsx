@@ -280,13 +280,14 @@ const styles = StyleSheet.create({
     padding: theme.spacing.xl,
   },
   title: {
+    fontFamily: theme.fonts.heading,
     fontSize: theme.fontSize.xxl,
-    fontWeight: 'bold',
     color: theme.colors.primary,
     marginBottom: theme.spacing.sm,
     textAlign: 'center',
   },
   subtitle: {
+    fontFamily: theme.fonts.body,
     fontSize: theme.fontSize.lg,
     color: theme.colors.text,
     marginBottom: theme.spacing.xl,
@@ -296,8 +297,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   roleLabel: {
+    fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.fontSize.md,
-    fontWeight: '600',
     color: theme.colors.text,
     marginBottom: theme.spacing.sm,
     marginTop: theme.spacing.md,
@@ -324,8 +325,8 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
   },
   sectionLabel: {
+    fontFamily: theme.fonts.subheading,
     fontSize: theme.fontSize.lg,
-    fontWeight: '600',
     color: theme.colors.text,
     marginBottom: theme.spacing.md,
   },

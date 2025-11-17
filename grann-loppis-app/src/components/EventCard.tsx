@@ -103,8 +103,8 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   title: {
+    fontFamily: theme.fonts.subheading,
     fontSize: theme.fontSize.lg,
-    fontWeight: 'bold',
     color: theme.colors.text,
     flex: 1,
     marginRight: theme.spacing.sm,
@@ -115,9 +115,9 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.sm,
   },
   statusText: {
+    fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.fontSize.xs,
     color: theme.colors.white,
-    fontWeight: '600',
     textTransform: 'capitalize',
   },
   infoRow: {
@@ -125,25 +125,27 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   infoLabel: {
+    fontFamily: theme.fonts.caption,
     fontSize: theme.fontSize.sm,
     color: theme.colors.textLight,
     width: 60,
   },
   infoValue: {
+    fontFamily: theme.fonts.body,
     fontSize: theme.fontSize.sm,
     color: theme.colors.text,
     flex: 1,
   },
   distanceValue: {
+    fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.fontSize.sm,
     color: theme.colors.primary,
-    fontWeight: '600',
     flex: 1,
   },
   eventCode: {
+    fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.fontSize.sm,
     color: theme.colors.primary,
-    fontWeight: '600',
     flex: 1,
   },
   footer: {
@@ -156,6 +158,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   participantCount: {
+    fontFamily: theme.fonts.caption,
     fontSize: theme.fontSize.sm,
     color: theme.colors.textLight,
     fontStyle: 'italic',
@@ -168,8 +171,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.error || '#ff4444',
   },
   deleteButtonText: {
+    fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.fontSize.sm,
     color: theme.colors.white,
-    fontWeight: '600',
   },
 });

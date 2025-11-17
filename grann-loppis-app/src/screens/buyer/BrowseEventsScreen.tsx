@@ -334,8 +334,8 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   heroTitle: {
+    fontFamily: theme.fonts.heading,
     fontSize: theme.fontSize.xxl + 4,
-    fontWeight: "700",
     color: theme.colors.white,
     textAlign: "left",
     marginBottom: theme.spacing.md,
@@ -343,13 +343,13 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   heroSubtitle: {
+    fontFamily: theme.fonts.body,
     fontSize: theme.fontSize.md,
     color: theme.colors.white,
     textAlign: "left",
     marginBottom: theme.spacing.lg,
     opacity: 0.85,
     lineHeight: 24,
-    fontWeight: "400",
   },
   searchBarContainer: {
     width: "100%",
@@ -366,9 +366,9 @@ const styles = StyleSheet.create({
       "-4px 8px 8px 0px rgba(0, 0, 0, 0.3), inset -2px 2px 4px -4px rgba(255, 255, 255, 1)",
   },
   ctaButtonText: {
+    fontFamily: theme.fonts.button,
     color: theme.colors.primary,
     fontSize: theme.fontSize.md,
-    fontWeight: "700",
     letterSpacing: 0.5,
   },
   // Stats Section
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     paddingVertical: theme.spacing.xl,
     paddingHorizontal: theme.spacing.md,
-    gap: theme.spacing.md,
+    gap: theme.spacing.lg,
   },
   statCard: {
     alignItems: "center",
@@ -386,23 +386,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.md,
     borderRadius: theme.borderRadius.lg,
     minWidth: 100,
-    // boxShadow:
-    //   "-4px 8px 8px 0px rgba(0, 0, 0, 0.3), inset -2px 2px 4px -4px rgba(255, 255, 255, 1)",
   },
   statNumber: {
+    fontFamily: theme.fonts.heading,
     fontSize: theme.fontSize.xxl,
-    fontWeight: "700",
     color: theme.colors.primary,
     marginBottom: theme.spacing.xs,
   },
   statLabel: {
+    fontFamily: theme.fonts.caption,
     fontSize: theme.fontSize.sm,
     color: theme.colors.textLight,
-    fontWeight: "500",
   },
   // Section Styles
   section: {
-    paddingVertical: theme.spacing.lg,
     paddingHorizontal: theme.spacing.md,
   },
   sectionHeader: {
@@ -412,8 +409,8 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   sectionTitle: {
+    fontFamily: theme.fonts.subheading,
     fontSize: theme.fontSize.xl,
-    fontWeight: "700",
     color: theme.colors.text,
     letterSpacing: -0.5,
     paddingLeft: theme.spacing.sm,
@@ -455,12 +452,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   featureTitle: {
+    fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.fontSize.md,
-    fontWeight: "700",
     color: theme.colors.text,
     marginBottom: theme.spacing.xs,
   },
   featureDescription: {
+    fontFamily: theme.fonts.body,
     fontSize: theme.fontSize.sm,
     color: theme.colors.textLight,
     lineHeight: 20,
@@ -471,14 +469,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   footerTitle: {
+    fontFamily: theme.fonts.subheading,
     fontSize: theme.fontSize.xl,
-    fontWeight: "700",
     color: theme.colors.text,
     textAlign: "left",
     marginBottom: theme.spacing.sm,
     letterSpacing: -0.5,
   },
   footerSubtitle: {
+    fontFamily: theme.fonts.body,
     fontSize: theme.fontSize.md,
     color: theme.colors.textLight,
     textAlign: "left",
@@ -492,9 +491,9 @@ const styles = StyleSheet.create({
     
   },
   secondaryButtonText: {
+    fontFamily: theme.fonts.button,
     color: theme.colors.white,
     fontSize: theme.fontSize.md,
-    fontWeight: "700",
     letterSpacing: 0.5,
   },
   // Empty State
@@ -503,6 +502,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyText: {
+    fontFamily: theme.fonts.body,
     fontSize: theme.fontSize.md,
     color: theme.colors.textLight,
   },

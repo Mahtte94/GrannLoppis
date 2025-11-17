@@ -14,6 +14,14 @@ export const theme = {
     success: '#2ED573',
     border: '#3A3A3A'
   },
+  fonts: {
+    heading: 'Poppins_700Bold',
+    subheading: 'Poppins_600SemiBold',
+    body: 'Inter_400Regular',
+    bodyMedium: 'Inter_500Medium',
+    button: 'Poppins_500Medium',
+    caption: 'Inter_400Regular'
+  },
   spacing: {
     xs: 4,
     sm: 8,

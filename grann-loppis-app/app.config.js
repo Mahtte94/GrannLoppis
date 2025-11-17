@@ -45,7 +45,8 @@ export default {
         {
           locationAlwaysAndWhenInUsePermission: "Appen använder din plats för att visa deltagare på kartan."
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 };

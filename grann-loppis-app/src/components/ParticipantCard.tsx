@@ -35,9 +35,11 @@ export function ParticipantCard({
         </View>
         <View style={styles.headerInfo}>
           <Text style={styles.name}>{participant.displayName}</Text>
-          <Text style={styles.joinedDate}>
-            Joined {formatDate(participant.joinedAt)}
-          </Text>
+          {participant.joinedAt && (
+            <Text style={styles.joinedDate}>
+              Joined {formatDate(participant.joinedAt)}
+            </Text>
+          )}
         </View>
       </View>
 
@@ -106,24 +108,26 @@ const styles = StyleSheet.create({
     marginRight: theme.spacing.md,
   },
   avatarText: {
+    fontFamily: theme.fonts.heading,
     fontSize: theme.fontSize.xl,
-    fontWeight: 'bold',
     color: theme.colors.white,
   },
   headerInfo: {
     flex: 1,
   },
   name: {
+    fontFamily: theme.fonts.subheading,
     fontSize: theme.fontSize.lg,
-    fontWeight: 'bold',
     color: theme.colors.text,
     marginBottom: theme.spacing.xs,
   },
   joinedDate: {
+    fontFamily: theme.fonts.caption,
     fontSize: theme.fontSize.xs,
     color: theme.colors.textLight,
   },
   description: {
+    fontFamily: theme.fonts.body,
     fontSize: theme.fontSize.sm,
     color: theme.colors.text,
     marginBottom: theme.spacing.md,
@@ -135,12 +139,13 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.sm,
   },
   addressLabel: {
+    fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.fontSize.xs,
     color: theme.colors.textLight,
-    fontWeight: '600',
     marginBottom: theme.spacing.xs,
   },
   address: {
+    fontFamily: theme.fonts.body,
     fontSize: theme.fontSize.sm,
     color: theme.colors.text,
   },
@@ -151,8 +156,8 @@ const styles = StyleSheet.create({
     borderTopColor: theme.colors.border,
   },
   itemCount: {
+    fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.fontSize.sm,
     color: theme.colors.primary,
-    fontWeight: '600',
   },
 });

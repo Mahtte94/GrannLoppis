@@ -197,7 +197,7 @@ export function AllEventsMapScreen() {
           {searchLocationName ? `${searchLocationName}` : 'Alla loppmarknader'}
         </Text>
         <Text style={styles.infoSubtext}>
-          {events.length} {events.length === 1 ? 'evenemang' : 'evenemang'} • Tryck på markörerna för mer info
+          {events.length} {events.length === 1 ? 'loppis' : 'loppisar'} • Tryck på markörerna för mer info
         </Text>
       </View>
     </View>

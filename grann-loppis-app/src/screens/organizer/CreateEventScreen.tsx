@@ -261,12 +261,13 @@ const styles = StyleSheet.create({
     padding: theme.spacing.xl,
   },
   title: {
+    fontFamily: theme.fonts.heading,
     fontSize: theme.fontSize.xxl,
-    fontWeight: 'bold',
     color: theme.colors.primary,
     marginBottom: theme.spacing.sm,
   },
   subtitle: {
+    fontFamily: theme.fonts.body,
     fontSize: theme.fontSize.md,
     color: theme.colors.textLight,
     marginBottom: theme.spacing.xl,
@@ -282,6 +283,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   infoText: {
+    fontFamily: theme.fonts.body,
     fontSize: theme.fontSize.sm,
     color: theme.colors.text,
     lineHeight: 20,

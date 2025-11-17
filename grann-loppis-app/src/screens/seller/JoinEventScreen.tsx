@@ -403,12 +403,13 @@ const styles = StyleSheet.create({
     borderBottomColor: theme.colors.border,
   },
   title: {
+    fontFamily: theme.fonts.heading,
     fontSize: theme.fontSize.xxl,
-    fontWeight: 'bold',
     color: theme.colors.primary,
     marginBottom: theme.spacing.xs,
   },
   subtitle: {
+    fontFamily: theme.fonts.body,
     fontSize: theme.fontSize.md,
     color: theme.colors.textLight,
     lineHeight: 22,
@@ -447,9 +448,9 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   selectedBadgeText: {
+    fontFamily: theme.fonts.button,
     color: theme.colors.white,
     fontSize: theme.fontSize.sm,
-    fontWeight: '700',
   },
   joinButton: {
     position: 'absolute',
@@ -461,9 +462,9 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.sm,
   },
   joinButtonText: {
+    fontFamily: theme.fonts.bodyMedium,
     color: theme.colors.white,
     fontSize: theme.fontSize.sm,
-    fontWeight: '600',
   },
   emptyContainer: {
     flex: 1,
@@ -472,12 +473,13 @@ const styles = StyleSheet.create({
     padding: theme.spacing.xl,
   },
   emptyTitle: {
+    fontFamily: theme.fonts.subheading,
     fontSize: theme.fontSize.xl,
-    fontWeight: 'bold',
     color: theme.colors.text,
     marginBottom: theme.spacing.sm,
   },
   emptyText: {
+    fontFamily: theme.fonts.body,
     fontSize: theme.fontSize.md,
     color: theme.colors.textLight,
     textAlign: 'center',
@@ -496,12 +498,13 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   profileLabel: {
+    fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.fontSize.sm,
-    fontWeight: '600',
     color: theme.colors.primary,
     marginBottom: theme.spacing.xs,
   },
   profileText: {
+    fontFamily: theme.fonts.body,
     fontSize: theme.fontSize.sm,
     color: theme.colors.text,
     lineHeight: 20,
@@ -534,31 +537,33 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   profileCardTitle: {
+    fontFamily: theme.fonts.subheading,
     fontSize: theme.fontSize.md,
-    fontWeight: '700',
     color: theme.colors.primary,
     marginBottom: theme.spacing.xs,
   },
   profileCardAddress: {
+    fontFamily: theme.fonts.body,
     fontSize: theme.fontSize.sm,
     color: theme.colors.text,
     marginBottom: 2,
   },
   profileCardPhone: {
+    fontFamily: theme.fonts.caption,
     fontSize: theme.fontSize.sm,
     color: theme.colors.textLight,
   },
   profileCardWarning: {
+    fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.fontSize.sm,
     color: '#D97706',
-    fontWeight: '600',
   },
   profileCardRight: {
     marginLeft: theme.spacing.md,
   },
   profileCardLink: {
+    fontFamily: theme.fonts.button,
     fontSize: theme.fontSize.sm,
-    fontWeight: '700',
     color: theme.colors.primary,
   },
   expandedContainer: {
@@ -580,8 +585,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   expandedFormTitle: {
+    fontFamily: theme.fonts.heading,
     fontSize: theme.fontSize.xl,
-    fontWeight: 'bold',
     color: theme.colors.primary,
     marginBottom: theme.spacing.lg,
     textAlign: 'center',
@@ -598,12 +603,13 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   eventDetailLabel: {
+    fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.fontSize.sm,
-    fontWeight: '700',
     color: theme.colors.primary,
     marginBottom: theme.spacing.xs,
   },
   eventDetailValue: {
+    fontFamily: theme.fonts.body,
     fontSize: theme.fontSize.md,
     color: theme.colors.text,
     lineHeight: 22,
@@ -613,12 +619,13 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   dateSelectionTitle: {
+    fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.fontSize.md,
-    fontWeight: '700',
     color: theme.colors.primary,
     marginBottom: theme.spacing.xs,
   },
   dateSelectionSubtitle: {
+    fontFamily: theme.fonts.caption,
     fontSize: theme.fontSize.sm,
     color: theme.colors.textLight,
     marginBottom: theme.spacing.md,
@@ -643,8 +650,8 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.primary,
   },
   dateChipDay: {
+    fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.fontSize.xs,
-    fontWeight: '600',
     color: theme.colors.textLight,
     textTransform: 'uppercase',
     marginBottom: 2,
@@ -653,17 +660,17 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
   },
   dateChipDate: {
+    fontFamily: theme.fonts.button,
     fontSize: theme.fontSize.sm,
-    fontWeight: '700',
     color: theme.colors.text,
   },
   dateChipDateSelected: {
     color: theme.colors.white,
   },
   selectedDatesCount: {
+    fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.fontSize.sm,
     color: theme.colors.primary,
-    fontWeight: '600',
     marginTop: theme.spacing.md,
     textAlign: 'center',
   },

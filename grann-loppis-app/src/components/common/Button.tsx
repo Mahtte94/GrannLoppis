@@ -83,8 +83,8 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   text: {
+    fontFamily: theme.fonts.button,
     fontSize: theme.fontSize.md,
-    fontWeight: '700',
     letterSpacing: 0.5,
   },
   primaryText: {
