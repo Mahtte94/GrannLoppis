@@ -85,7 +85,6 @@ class NavigationService {
       );
 
       this.notifyStateChange();
-      console.log('✅ Navigation started');
       return true;
     } catch (error) {
       console.error('Error starting navigation:', error);
@@ -107,7 +106,6 @@ class NavigationService {
     this.onRecalculateCallback = null;
     this.navigationState = this.getInitialState();
 
-    console.log('🛑 Navigation stopped');
   }
 
   /**

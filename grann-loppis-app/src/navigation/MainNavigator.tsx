@@ -228,8 +228,6 @@ export default function MainNavigator() {
       return;
     }
 
-    console.log('Setting up real-time listener for pending applications');
-
     // Keep track of the participants listener so we can clean it up
     let unsubscribeParticipants: (() => void) | null = null;
 
@@ -249,7 +247,6 @@ export default function MainNavigator() {
         }
 
         const eventIds = eventsSnapshot.docs.map(doc => doc.id);
-        console.log(`Organizer has ${eventIds.length} events`);
 
         if (eventIds.length === 0) {
           setPendingApplicationsCount(0);
@@ -257,8 +254,6 @@ export default function MainNavigator() {
         }
 
         // Now listen to pending participants across those events
-        // Note: Firestore 'in' queries support up to 30 items
-        // For organizers with >30 events, we'll use the first 30
         const limitedEventIds = eventIds.slice(0, 30);
 
         const participantsQuery = query(
@@ -271,7 +266,6 @@ export default function MainNavigator() {
           participantsQuery,
           (participantsSnapshot) => {
             const count = participantsSnapshot.size;
-            console.log(`Real-time update: ${count} pending applications`);
             setPendingApplicationsCount(count);
           },
           (error) => {
@@ -288,7 +282,6 @@ export default function MainNavigator() {
 
     // Cleanup both listeners when component unmounts or user changes
     return () => {
-      console.log('Cleaning up real-time listeners');
       unsubscribeEvents();
       if (unsubscribeParticipants) {
         unsubscribeParticipants();
@@ -393,7 +386,6 @@ export default function MainNavigator() {
   }
 
   const initialRoute = getInitialRoute();
-  console.log('Initial route will be:', initialRoute);
 
   // Always show browse tab, conditionally show others based on user role
   return (

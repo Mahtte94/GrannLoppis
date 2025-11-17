@@ -41,7 +41,6 @@ export default function JoinEventScreen() {
   // Force refresh when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      console.log('JoinEventScreen focused - triggering refresh');
       // Trigger a manual data load when screen comes into focus
       loadDataOnFocus();
     }, [user])
@@ -59,7 +58,6 @@ export default function JoinEventScreen() {
         (event) => event.status === EventStatus.UPCOMING || event.status === EventStatus.ACTIVE
       );
 
-      console.log('Focus refresh: fetched', allEvents.length, 'total events,', availableEvents.length, 'available');
       setEvents(availableEvents);
 
       if (user && participations.length >= 0) {
@@ -85,8 +83,6 @@ export default function JoinEventScreen() {
       eventsQuery,
       (snapshot) => {
         if (!isSubscribed) return;
-
-        console.log('Events snapshot received:', snapshot.docs.length, 'documents');
 
         const allEvents: Event[] = [];
 
@@ -133,8 +129,6 @@ export default function JoinEventScreen() {
           (event) => event.status === EventStatus.UPCOMING || event.status === EventStatus.ACTIVE
         );
 
-        console.log('Available events after filtering:', availableEvents.length);
-        console.log('Event IDs:', availableEvents.map(e => e.id).join(', '));
         setEvents(availableEvents);
         setLoading(false);
       },
@@ -158,7 +152,6 @@ export default function JoinEventScreen() {
         (snapshot) => {
           if (!isSubscribed) return;
 
-          console.log('User participations snapshot received:', snapshot.docs.length, 'documents');
           const participationsMap = new Map<string, ParticipantStatus>();
           snapshot.docs.forEach((doc) => {
             const data = doc.data();
@@ -199,7 +192,6 @@ export default function JoinEventScreen() {
 
   // Manual refresh function for pull-to-refresh
   const handleRefresh = async () => {
-    console.log('Manual refresh triggered');
     setRefreshing(true);
     try {
       // Fetch fresh data from services to force a refresh
@@ -214,7 +206,6 @@ export default function JoinEventScreen() {
         (event) => event.status === EventStatus.UPCOMING || event.status === EventStatus.ACTIVE
       );
 
-      console.log('Manual refresh: fetched', allEvents.length, 'events,', availableEvents.length, 'available');
       setEvents(availableEvents);
 
       // Update user participations if available

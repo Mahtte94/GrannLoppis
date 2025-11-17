@@ -97,15 +97,10 @@ export default function CreateEventScreen() {
 
     setLoading(true);
     try {
-      // Debug: Log current user and auth state
-      console.log("Current user:", user);
-      console.log("User ID:", user.id);
-
       // Get coordinates - either from autocomplete selection or geocode manually entered text
       let finalCoordinates = coordinates;
 
       if (!finalCoordinates) {
-        console.log("Geocoding area:", area);
         finalCoordinates = await geocodeAddress(area);
 
         if (!finalCoordinates) {
@@ -116,11 +111,7 @@ export default function CreateEventScreen() {
           setLoading(false);
           return;
         }
-
-        console.log("Area geocoded successfully:", finalCoordinates);
         setCoordinates(finalCoordinates);
-      } else {
-        console.log("Using coordinates from autocomplete:", finalCoordinates);
       }
 
       // startDate and endDate are guaranteed to be non-null after validation
@@ -129,16 +120,6 @@ export default function CreateEventScreen() {
       }
 
       const numDays = getDaysBetween(startDate, endDate);
-
-      console.log("Creating event with data:", {
-        name: eventName,
-        area: area,
-        coordinates: finalCoordinates,
-        startDate: startDate,
-        endDate: endDate,
-        organizerId: user.id,
-        numDays: numDays,
-      });
 
       // Create the event in Firebase
       const createdEvent = await eventsService.createEvent({
@@ -150,8 +131,6 @@ export default function CreateEventScreen() {
         endDate: endDate,
         organizerId: user.id,
       });
-
-      console.log("Event created successfully:", createdEvent);
 
       // Clear form after successful creation
       setEventName("");

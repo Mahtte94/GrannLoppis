@@ -343,7 +343,6 @@ export async function cleanupExpiredEvents(): Promise<number> {
       deletedCount++;
     }
 
-    console.log(`Cleaned up ${deletedCount} expired events`);
     return deletedCount;
   } catch (error) {
     console.error('Error cleaning up expired events:', error);

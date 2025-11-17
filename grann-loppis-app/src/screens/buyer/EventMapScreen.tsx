@@ -70,10 +70,7 @@ export function EventMapScreen() {
         participantsService.getEventParticipants(eventId)
       ]);
 
-      console.log('Loaded event:', eventData);
-      console.log('Event coordinates:', eventData?.coordinates);
-      console.log(`Loaded ${participantsData.length} participants for event ${eventId}`);
-
+     
       setEvent(eventData);
       setParticipants(participantsData);
 
@@ -85,7 +82,6 @@ export function EventMapScreen() {
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
         };
-        console.log('Setting map region to:', eventRegion);
         setRegion(eventRegion);
 
         // Animate to event location after a short delay to ensure map is ready
@@ -177,7 +173,6 @@ export function EventMapScreen() {
   };
 
   const handleRecalculateRoute = async () => {
-    console.log('🔄 Recalculating route due to off-route detection...');
 
     // Generate new route from current location
     const newRoute = await generateRoute();

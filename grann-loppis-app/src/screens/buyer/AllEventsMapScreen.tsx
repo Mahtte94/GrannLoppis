@@ -39,24 +39,19 @@ export function AllEventsMapScreen() {
       const isCacheValid = events.length > 0 && now - lastLoadTime < CACHE_DURATION;
 
       if (isCacheValid && !forceRefresh) {
-        console.log('Using cached events for map');
         setLoading(false);
         return;
       }
 
       setLoading(true);
-      console.log('Fetching fresh events for map');
 
       // Fetch location and events in parallel for better performance
       const [userLocation, eventsData] = await Promise.all([
         getUserLocation().catch(err => {
-          console.log('Could not get user location, continuing without it:', err);
           return null;
         }),
         eventsService.getAllEvents()
       ]);
-
-      console.log(`Loaded ${eventsData.length} events for map`);
 
       // Filter events that have coordinates
       const eventsWithCoordinates = eventsData.filter(e => e.coordinates);
@@ -75,7 +70,6 @@ export function AllEventsMapScreen() {
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
         };
-        console.log('Zooming to search location:', searchLocationName);
       } else if (userLocation) {
         // If we have user location, zoom in on the user's location
         // latitudeDelta/longitudeDelta of ~0.05 shows about 5km radius
@@ -137,14 +131,12 @@ export function AllEventsMapScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      console.log('AllEventsMapScreen focused');
 
       // Check if search location changed - if so, force refresh
       const locationChanged =
         JSON.stringify(prevSearchLocationRef.current) !== JSON.stringify(searchLocation);
 
       if (locationChanged) {
-        console.log('Search location changed, forcing refresh');
         prevSearchLocationRef.current = searchLocation;
         loadEvents(true);
       } else {
@@ -155,7 +147,6 @@ export function AllEventsMapScreen() {
   );
 
   const handleMarkerPress = (event: Event) => {
-    console.log('Marker pressed for event:', event.name);
     navigation.navigate('EventDetails', { eventId: event.id });
   };
 

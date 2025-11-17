@@ -75,12 +75,8 @@ export async function applyToEvent(
       ...(participationDates && participationDates.length > 0 && { participationDates }),
     };
 
-    console.log('Saving application to Firestore:', participantData);
-
     // Add participant application to the participants collection
     const docRef = await addDoc(collection(db, PARTICIPANTS_COLLECTION), participantData);
-
-    console.log('Application saved with ID:', docRef.id);
 
     return {
       id: docRef.id,
@@ -122,8 +118,6 @@ export async function approveApplication(
     await updateDoc(eventRef, {
       participants: increment(1),
     });
-
-    console.log('Application approved:', participantId);
   } catch (error) {
     console.error('Error approving application:', error);
     throw new Error('Failed to approve application');
@@ -146,7 +140,6 @@ export async function rejectApplication(
       reviewedBy: organizerId,
     });
 
-    console.log('Application rejected:', participantId);
   } catch (error) {
     console.error('Error rejecting application:', error);
     throw new Error('Failed to reject application');
@@ -328,7 +321,6 @@ export async function removeParticipant(participantId: string): Promise<void> {
     // Delete the participant
     await deleteDoc(participantRef);
 
-    console.log('Participant removed:', participantId);
   } catch (error) {
     console.error('Error removing participant:', error);
     throw new Error('Failed to remove participant');

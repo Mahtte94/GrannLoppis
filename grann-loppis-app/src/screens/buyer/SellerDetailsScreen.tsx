@@ -28,7 +28,6 @@ export default function SellerDetailsScreen() {
     try {
       setLoading(true);
       const data = await participantsService.getParticipantById(participantId);
-      console.log('Loaded participant:', data);
       setParticipant(data);
     } catch (error) {
       console.error('Error loading participant:', error);

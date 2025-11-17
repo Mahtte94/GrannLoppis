@@ -3,11 +3,12 @@ import {
   RouteWaypoint,
   RouteOptimizationOptions,
   Coordinates,
-} from '../../types';
-import { getUserLocation } from '../../utils/helpers';
+} from "../../types";
+import { getUserLocation } from "../../utils/helpers";
 
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
-const GOOGLE_MAPS_DIRECTIONS_URL = 'https://maps.googleapis.com/maps/api/directions/json';
+const GOOGLE_MAPS_DIRECTIONS_URL =
+  "https://maps.googleapis.com/maps/api/directions/json";
 
 /**
  * Google Maps Directions API response types
@@ -98,34 +99,35 @@ class GoogleMapsService {
   ): Promise<Route | null> {
     try {
       if (!GOOGLE_MAPS_API_KEY) {
-        console.error('❌ Google Maps API key is not configured in .env file');
-        console.error('❌ Please ensure EXPO_PUBLIC_GOOGLE_MAPS_API_KEY is set in your .env file');
+        console.error("Google Maps API key is not configured in .env file");
+        console.error(
+          "Please ensure EXPO_PUBLIC_GOOGLE_MAPS_API_KEY is set in your .env file"
+        );
         return null;
       }
 
-      console.log('✅ Google Maps API key is configured');
-
       if (waypoints.length < 2) {
-        console.warn('⚠️ Need at least 2 waypoints to create a route');
+        console.warn("⚠️ Need at least 2 waypoints to create a route");
         return null;
       }
 
       if (waypoints.length > 25) {
-        console.warn('⚠️ Google Maps supports up to 25 waypoints. Using first 25.');
+        console.warn(
+          "⚠️ Google Maps supports up to 25 waypoints. Using first 25."
+        );
         waypoints = waypoints.slice(0, 25);
       }
 
-      const {
-        includeUserLocation = true,
-        profile = 'foot-walking',
-      } = options;
+      const { includeUserLocation = true, profile = "foot-walking" } = options;
 
       // Get user location if needed
       let userLocation: Coordinates | null = null;
       if (includeUserLocation) {
         userLocation = await getUserLocation();
         if (!userLocation) {
-          console.warn('Could not get user location, starting from first waypoint');
+          console.warn(
+            "Could not get user location, starting from first waypoint"
+          );
         }
       }
 
@@ -134,82 +136,86 @@ class GoogleMapsService {
         ? `${userLocation.lat},${userLocation.lng}`
         : `${waypoints[0].coordinates.lat},${waypoints[0].coordinates.lng}`;
 
-      const destination = `${waypoints[waypoints.length - 1].coordinates.lat},${waypoints[waypoints.length - 1].coordinates.lng}`;
+      const destination = `${waypoints[waypoints.length - 1].coordinates.lat},${
+        waypoints[waypoints.length - 1].coordinates.lng
+      }`;
 
       // Build waypoints (exclude first and last if user location is not used)
       const waypointStart = userLocation ? 0 : 1;
-      const waypointEnd = userLocation ? waypoints.length : waypoints.length - 1;
+      const waypointEnd = userLocation
+        ? waypoints.length
+        : waypoints.length - 1;
       const intermediateWaypoints = waypoints.slice(waypointStart, waypointEnd);
 
       const waypointsParam = intermediateWaypoints
-        .map(wp => `${wp.coordinates.lat},${wp.coordinates.lng}`)
-        .join('|');
+        .map((wp) => `${wp.coordinates.lat},${wp.coordinates.lng}`)
+        .join("|");
 
       // Map profile to Google Maps travel mode
-      let travelMode = 'walking';
-      if (profile === 'driving-car') {
-        travelMode = 'driving';
-      } else if (profile === 'cycling-regular') {
-        travelMode = 'bicycling';
+      let travelMode = "walking";
+      if (profile === "driving-car") {
+        travelMode = "driving";
+      } else if (profile === "cycling-regular") {
+        travelMode = "bicycling";
       }
 
       // Build API URL with parameters
       const url = new URL(GOOGLE_MAPS_DIRECTIONS_URL);
-      url.searchParams.append('origin', origin);
-      url.searchParams.append('destination', destination);
+      url.searchParams.append("origin", origin);
+      url.searchParams.append("destination", destination);
       if (waypointsParam) {
-        url.searchParams.append('waypoints', `optimize:true|${waypointsParam}`);
+        url.searchParams.append("waypoints", `optimize:true|${waypointsParam}`);
       }
-      url.searchParams.append('mode', travelMode);
-      url.searchParams.append('key', GOOGLE_MAPS_API_KEY);
-
-      console.log(`🗺️ Requesting route for ${waypoints.length} waypoints`);
-      console.log(`🗺️ Travel mode: ${travelMode}`);
-      console.log(`🗺️ Optimization: enabled`);
+      url.searchParams.append("mode", travelMode);
+      url.searchParams.append("key", GOOGLE_MAPS_API_KEY);
 
       const response = await fetch(url.toString());
 
-      console.log(`🗺️ Response status: ${response.status}`);
-
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Google Maps API error:', response.status, errorText);
+        console.error("Google Maps API error:", response.status, errorText);
         return null;
       }
 
       const data: GoogleMapsDirectionsResponse = await response.json();
 
-      if (data.status !== 'OK') {
-        console.error('❌ Google Maps API error:', data.status, data.error_message || 'Unknown error');
+      if (data.status !== "OK") {
+        console.error(
+          "Google Maps API error:",
+          data.status,
+          data.error_message || "Unknown error"
+        );
         return null;
       }
 
       if (!data.routes || data.routes.length === 0) {
-        console.warn('⚠️ No routes found in response');
+        console.warn("No routes found in response");
         return null;
       }
 
       const route = data.routes[0];
 
       // Decode polyline to get route coordinates
-      const routeCoordinates = this.decodePolyline(route.overview_polyline.points);
+      const routeCoordinates = this.decodePolyline(
+        route.overview_polyline.points
+      );
 
       // Calculate total distance and duration from all legs
       let totalDistance = 0;
       let totalDuration = 0;
 
-      const segments = route.legs.map(leg => {
+      const segments = route.legs.map((leg) => {
         totalDistance += leg.distance.value;
         totalDuration += leg.duration.value;
 
         return {
           distance: leg.distance.value,
           duration: leg.duration.value,
-          steps: leg.steps?.map(step => ({
+          steps: leg.steps?.map((step) => ({
             distance: step.distance.value,
             duration: step.duration.value,
-            instruction: step.html_instructions.replace(/<[^>]*>/g, ''), // Remove HTML tags
-            name: step.maneuver || '',
+            instruction: step.html_instructions.replace(/<[^>]*>/g, ""), // Remove HTML tags
+            name: step.maneuver || "",
           })),
         };
       });
@@ -217,12 +223,9 @@ class GoogleMapsService {
       // Reorder waypoints if optimization was applied
       let optimizedWaypoints = [...waypoints];
       if (route.waypoint_order && route.waypoint_order.length > 0) {
-        console.log('✅ Waypoints optimized by Google Maps');
-        console.log(`   Order: ${route.waypoint_order.join(' → ')}`);
-
         // Reorder waypoints based on optimized order
         const reordered: RouteWaypoint[] = [];
-        route.waypoint_order.forEach(index => {
+        route.waypoint_order.forEach((index) => {
           if (index < intermediateWaypoints.length) {
             reordered.push(intermediateWaypoints[index]);
           }
@@ -238,11 +241,9 @@ class GoogleMapsService {
         segments,
       };
 
-      console.log(`✅ Route generated: ${(totalDistance / 1000).toFixed(2)} km, ${Math.round(totalDuration / 60)} min`);
-
       return finalRoute;
     } catch (error) {
-      console.error('Error getting optimized route:', error);
+      console.error("Error getting optimized route:", error);
       return null;
     }
   }
@@ -259,38 +260,38 @@ class GoogleMapsService {
   async getRouteInfo(
     start: Coordinates,
     end: Coordinates,
-    profile: 'driving-car' | 'foot-walking' | 'cycling-regular' = 'foot-walking'
+    profile: "driving-car" | "foot-walking" | "cycling-regular" = "foot-walking"
   ): Promise<{ distance: number; duration: number } | null> {
     try {
       if (!GOOGLE_MAPS_API_KEY) {
-        console.error('Google Maps API key is not configured');
+        console.error("Google Maps API key is not configured");
         return null;
       }
 
       // Map profile to Google Maps travel mode
-      let travelMode = 'walking';
-      if (profile === 'driving-car') {
-        travelMode = 'driving';
-      } else if (profile === 'cycling-regular') {
-        travelMode = 'bicycling';
+      let travelMode = "walking";
+      if (profile === "driving-car") {
+        travelMode = "driving";
+      } else if (profile === "cycling-regular") {
+        travelMode = "bicycling";
       }
 
       const url = new URL(GOOGLE_MAPS_DIRECTIONS_URL);
-      url.searchParams.append('origin', `${start.lat},${start.lng}`);
-      url.searchParams.append('destination', `${end.lat},${end.lng}`);
-      url.searchParams.append('mode', travelMode);
-      url.searchParams.append('key', GOOGLE_MAPS_API_KEY);
+      url.searchParams.append("origin", `${start.lat},${start.lng}`);
+      url.searchParams.append("destination", `${end.lat},${end.lng}`);
+      url.searchParams.append("mode", travelMode);
+      url.searchParams.append("key", GOOGLE_MAPS_API_KEY);
 
       const response = await fetch(url.toString());
 
       if (!response.ok) {
-        console.error('Google Maps API error:', response.status);
+        console.error("Google Maps API error:", response.status);
         return null;
       }
 
       const data: GoogleMapsDirectionsResponse = await response.json();
 
-      if (data.status !== 'OK' || !data.routes || data.routes.length === 0) {
+      if (data.status !== "OK" || !data.routes || data.routes.length === 0) {
         return null;
       }
 
@@ -301,7 +302,7 @@ class GoogleMapsService {
         duration: leg.duration.value,
       };
     } catch (error) {
-      console.error('Error getting route info:', error);
+      console.error("Error getting route info:", error);
       return null;
     }
   }

@@ -61,8 +61,6 @@ export async function register(input: RegisterInput): Promise<User> {
     // Wait for Firestore write to complete
     await setDoc(doc(db, USERS_COLLECTION, userCredential.user.uid), firestoreData);
 
-    console.log('User profile created in Firestore:', userCredential.user.uid);
-
     return {
       id: userCredential.user.uid,
       ...userData,

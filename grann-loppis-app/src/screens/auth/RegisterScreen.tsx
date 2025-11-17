@@ -105,7 +105,6 @@ export default function RegisterScreen() {
         let finalCoordinates = coordinates;
 
         if (!finalCoordinates) {
-          console.log('Geocoding address:', address.trim());
           finalCoordinates = await geocodeAddress(address.trim());
 
           if (!finalCoordinates) {
@@ -116,8 +115,6 @@ export default function RegisterScreen() {
             setLoading(false);
             return;
           }
-
-          console.log('Address geocoded to:', finalCoordinates);
         }
 
         registerInput.sellerProfile = {

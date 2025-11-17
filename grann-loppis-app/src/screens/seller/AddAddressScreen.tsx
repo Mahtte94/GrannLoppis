@@ -200,7 +200,6 @@ export default function AddAddressScreen() {
               lat: geocoded[0].latitude,
               lng: geocoded[0].longitude,
             };
-            console.log('Geocoded address to coordinates:', finalCoordinates);
           } else {
             Alert.alert(
               'Varning',
@@ -234,10 +233,7 @@ export default function AddAddressScreen() {
           );
           return;
         }
-      } else {
-        console.log('Using coordinates from selection or current location:', finalCoordinates);
       }
-
       await saveSellerProfile(finalCoordinates);
     } catch (err) {
       console.error('Error saving address:', err);

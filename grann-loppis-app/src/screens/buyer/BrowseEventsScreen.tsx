@@ -67,20 +67,16 @@ export default function BrowseEventsScreen() {
       const isCacheValid = now - lastLoadTimeRef.current < CACHE_DURATION;
 
       if (isCacheValid && !forceRefresh) {
-        console.log("Using cached events");
         setLoading(false);
         return;
       }
 
       setLoading(true);
-      console.log("Fetching fresh events from Firebase");
-
       // Get user's location
       const location = await getUserLocation();
 
       // Fetch real events from Firebase
       const fetchedEvents = await eventsService.getAllEvents();
-      console.log("Fetched events:", fetchedEvents);
 
       // Calculate distances once and add to events
       const eventsWithDistance: EventWithDistance[] = fetchedEvents.map(
@@ -114,7 +110,6 @@ export default function BrowseEventsScreen() {
   // Reload events whenever the screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      console.log("BrowseEventsScreen focused, reloading events...");
       loadEvents();
     }, [loadEvents])
   );
@@ -124,7 +119,6 @@ export default function BrowseEventsScreen() {
   };
 
   const handleLocationSelect = (location: LocationResult) => {
-    console.log("Location selected:", location);
 
     if (location.coordinates) {
       // Navigate to map tab with the selected location

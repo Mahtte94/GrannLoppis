@@ -60,8 +60,6 @@ export default function EventDetailsScreen() {
 
       // Fetch real event from Firebase
       const fetchedEvent = await eventsService.getEventById(eventId);
-      console.log("Fetched event:", fetchedEvent);
-
       setEvent(fetchedEvent);
     } catch (error) {
       console.error("Error loading event:", error);
