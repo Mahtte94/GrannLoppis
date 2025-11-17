@@ -84,7 +84,7 @@ export default function ParticipantsListScreen() {
               );
               Alert.alert(
                 "Godkänd!",
-                `${participant.displayName} har godkänts och kan nu delta i evenemanget.`
+                `${participant.displayName} har godkänts och kan nu delta i loppisen.`
               );
               loadParticipants();
             } catch (error) {
@@ -139,7 +139,7 @@ export default function ParticipantsListScreen() {
 
     Alert.alert(
       "Ta bort säljare",
-      `Är du säker på att du vill ta bort ${participant.displayName} från evenemanget?\n\nDetta går inte att ångra.`,
+      `Är du säker på att du vill ta bort ${participant.displayName} från loppisen?\n\nDetta går inte att ångra.`,
       [
         { text: "Avbryt", style: "cancel" },
         {
@@ -151,7 +151,7 @@ export default function ParticipantsListScreen() {
               await participantsService.removeParticipant(participant.id);
               Alert.alert(
                 "Borttagen",
-                `${participant.displayName} har tagits bort från evenemanget.`
+                `${participant.displayName} har tagits bort från loppisen.`
               );
               loadParticipants();
             } catch (error) {
