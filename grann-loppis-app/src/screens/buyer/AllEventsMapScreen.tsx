@@ -123,7 +123,7 @@ export function AllEventsMapScreen() {
     } finally {
       setLoading(false);
     }
-  }, [searchLocation, searchLocationName, events.length, lastLoadTime]);
+  }, [searchLocation]);
 
   // Reload map when screen comes into focus, but respect cache
   // Force refresh if search location changes
