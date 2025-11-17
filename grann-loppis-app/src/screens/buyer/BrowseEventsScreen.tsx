@@ -222,10 +222,6 @@ export default function BrowseEventsScreen() {
           <Text style={styles.statNumber}>{upcomingEvents.length}</Text>
           <Text style={styles.statLabel}>Kommande Loppisar</Text>
         </View>
-        {/* <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{events.reduce((sum, e) => sum + e.participants, 0)}</Text>
-          <Text style={styles.statLabel}>Säljare</Text>
-        </View> */}
       </View>
 
       {/* Featured Events Section */}
@@ -233,9 +229,6 @@ export default function BrowseEventsScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Loppisar i närheten</Text>
-            <TouchableOpacity>
-              <Text style={styles.seeAllText}>Se alla</Text>
-            </TouchableOpacity>
           </View>
           {featuredEvents.map((event) => (
             <EventCard
@@ -425,20 +418,13 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
     paddingLeft: theme.spacing.sm,
   },
-  seeAllText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.primary,
-    fontWeight: "600",
-    letterSpacing: 0.3,
-    paddingRight: theme.spacing.sm,
-  },
+
   // How It Works Card
   howItWorksWrapper: {
     padding: theme.spacing.md,
     
   },
-
-
+  
   howItWorksCard: {
     padding: theme.spacing.md,
     marginTop: theme.spacing.md,

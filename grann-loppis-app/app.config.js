@@ -31,8 +31,7 @@ export default {
       package: "com.yourcompany.communityloppis",
       permissions: [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "CAMERA"
+        "ACCESS_COARSE_LOCATION"
       ],
       config: {
         googleMaps: {
@@ -41,12 +40,6 @@ export default {
       }
     },
     plugins: [
-      [
-        "expo-image-picker",
-        {
-          photosPermission: "Appen behöver tillgång till dina foton för att ladda upp bilder på föremål."
-        }
-      ],
       [
         "expo-location",
         {
