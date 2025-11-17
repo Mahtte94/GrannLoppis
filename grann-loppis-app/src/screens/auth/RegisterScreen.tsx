@@ -241,7 +241,7 @@ export default function RegisterScreen() {
             )}
 
             <Button
-              title="Registrera"
+              title="Registrera konto"
               onPress={handleRegister}
               loading={loading}
               disabled={loading}
@@ -249,7 +249,7 @@ export default function RegisterScreen() {
             />
 
             <Button
-              title="Har du redan ett konto? Logga in"
+                title="Har du redan ett konto? Logga in"
               onPress={() => navigation.navigate('Login')}
               variant="outline"
                 disabled={loading}

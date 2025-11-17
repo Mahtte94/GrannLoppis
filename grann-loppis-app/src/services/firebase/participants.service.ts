@@ -382,6 +382,55 @@ export async function getActiveParticipations(userId: string): Promise<{
   }
 }
 
+/**
+ * Count pending applications across all events for a specific organizer
+ * Returns the total number of pending applications that need review
+ */
+export async function getPendingApplicationsCountForOrganizer(organizerId: string): Promise<number> {
+  try {
+    // First, get all events organized by this user
+    const eventsQuery = query(
+      collection(db, EVENTS_COLLECTION),
+      where('organizerId', '==', organizerId)
+    );
+    const eventsSnapshot = await getDocs(eventsQuery);
+
+    if (eventsSnapshot.empty) {
+      return 0;
+    }
+
+    // Get all event IDs
+    const eventIds = eventsSnapshot.docs.map(doc => doc.id);
+
+    // Count pending applications across all these events
+    // Note: Firestore 'in' queries support up to 30 items
+    // For production with many events, consider batching or alternative approaches
+    if (eventIds.length === 0) {
+      return 0;
+    }
+
+    // If organizer has more than 30 events, we need to batch the queries
+    const batchSize = 30;
+    let totalCount = 0;
+
+    for (let i = 0; i < eventIds.length; i += batchSize) {
+      const batch = eventIds.slice(i, i + batchSize);
+      const participantsQuery = query(
+        collection(db, PARTICIPANTS_COLLECTION),
+        where('eventId', 'in', batch),
+        where('status', '==', ParticipantStatus.PENDING)
+      );
+      const participantsSnapshot = await getDocs(participantsQuery);
+      totalCount += participantsSnapshot.size;
+    }
+
+    return totalCount;
+  } catch (error) {
+    console.error('Error counting pending applications for organizer:', error);
+    return 0; // Return 0 on error to avoid breaking the UI
+  }
+}
+
 export const participantsService = {
   applyToEvent,
   approveApplication,
@@ -392,4 +441,5 @@ export const participantsService = {
   getUserParticipations,
   removeParticipant,
   getActiveParticipations,
+  getPendingApplicationsCountForOrganizer,
 };

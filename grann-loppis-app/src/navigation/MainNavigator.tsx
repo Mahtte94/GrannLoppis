@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -6,6 +7,8 @@ import { UserRole, OrganizerStackParamList, SellerStackParamList, BuyerStackPara
 import { useAuth } from '../context/AuthContext';
 import AuthNavigator from './AuthNavigator';
 import { AuthButton } from '../components/common/AuthButton';
+import { NotificationBadge } from '../components/common/NotificationBadge';
+import { participantsService } from '../services/firebase/participants.service';
 import { theme } from '../styles/theme';
 
 // Organizer screens
@@ -210,12 +213,38 @@ function MapNavigator() {
 export default function MainNavigator() {
   const { user } = useAuth();
   const [forceUpdate, setForceUpdate] = useState(0);
+  const [pendingApplicationsCount, setPendingApplicationsCount] = useState(0);
 
   // Force re-render when user changes
   useEffect(() => {
     console.log(' User changed in MainNavigator:', user ? `${user.displayName} (${user.role})` : 'null');
     setForceUpdate(prev => prev + 1);
   }, [user]);
+
+  // Load pending applications count for organizers
+  useEffect(() => {
+    if (user?.role === UserRole.ORGANIZER) {
+      loadPendingApplicationsCount();
+
+      // Set up an interval to refresh the count every 30 seconds
+      const interval = setInterval(loadPendingApplicationsCount, 30000);
+
+      return () => clearInterval(interval);
+    } else {
+      setPendingApplicationsCount(0);
+    }
+  }, [user]);
+
+  const loadPendingApplicationsCount = async () => {
+    if (user?.role === UserRole.ORGANIZER) {
+      try {
+        const count = await participantsService.getPendingApplicationsCountForOrganizer(user.id);
+        setPendingApplicationsCount(count);
+      } catch (error) {
+        console.error('Error loading pending applications count:', error);
+      }
+    }
+  };
 
   console.log(' MainNavigator rendering, user:', user ? `${user.displayName} (${user.role})` : 'null', 'forceUpdate:', forceUpdate);
 
@@ -270,7 +299,10 @@ export default function MainNavigator() {
         options={{
           title: 'Min Loppis',
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="person" size={size || 24} color={color} />
+            <View>
+              <MaterialIcons name="person" size={size || 24} color={color} />
+              <NotificationBadge count={pendingApplicationsCount} />
+            </View>
           ),
         }}
       />
