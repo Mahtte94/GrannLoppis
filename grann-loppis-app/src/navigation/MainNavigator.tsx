@@ -3,12 +3,13 @@ import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { MaterialIcons } from '@expo/vector-icons';
-import { UserRole, OrganizerStackParamList, SellerStackParamList, BuyerStackParamList, MapStackParamList, MainTabParamList } from '../types';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db } from '../../firebase.config';
+import { UserRole, OrganizerStackParamList, SellerStackParamList, BuyerStackParamList, MapStackParamList, MainTabParamList, ParticipantStatus } from '../types';
 import { useAuth } from '../context/AuthContext';
 import AuthNavigator from './AuthNavigator';
 import { AuthButton } from '../components/common/AuthButton';
 import { NotificationBadge } from '../components/common/NotificationBadge';
-import { participantsService } from '../services/firebase/participants.service';
 import { theme } from '../styles/theme';
 
 // Organizer screens
@@ -217,36 +218,84 @@ export default function MainNavigator() {
 
   // Force re-render when user changes
   useEffect(() => {
-    console.log(' User changed in MainNavigator:', user ? `${user.displayName} (${user.role})` : 'null');
     setForceUpdate(prev => prev + 1);
   }, [user]);
 
-  // Load pending applications count for organizers
+  // Set up real-time listener for pending applications count (organizers only)
   useEffect(() => {
-    if (user?.role === UserRole.ORGANIZER) {
-      loadPendingApplicationsCount();
-
-      // Set up an interval to refresh the count every 30 seconds
-      const interval = setInterval(loadPendingApplicationsCount, 30000);
-
-      return () => clearInterval(interval);
-    } else {
+    if (user?.role !== UserRole.ORGANIZER) {
       setPendingApplicationsCount(0);
+      return;
     }
+
+    console.log('Setting up real-time listener for pending applications');
+
+    // Keep track of the participants listener so we can clean it up
+    let unsubscribeParticipants: (() => void) | null = null;
+
+    // First, listen to organizer's events to get event IDs
+    const eventsQuery = query(
+      collection(db, 'events'),
+      where('organizerId', '==', user.id)
+    );
+
+    const unsubscribeEvents = onSnapshot(
+      eventsQuery,
+      (eventsSnapshot) => {
+        // Cleanup previous participants listener if it exists
+        if (unsubscribeParticipants) {
+          unsubscribeParticipants();
+          unsubscribeParticipants = null;
+        }
+
+        const eventIds = eventsSnapshot.docs.map(doc => doc.id);
+        console.log(`Organizer has ${eventIds.length} events`);
+
+        if (eventIds.length === 0) {
+          setPendingApplicationsCount(0);
+          return;
+        }
+
+        // Now listen to pending participants across those events
+        // Note: Firestore 'in' queries support up to 30 items
+        // For organizers with >30 events, we'll use the first 30
+        const limitedEventIds = eventIds.slice(0, 30);
+
+        const participantsQuery = query(
+          collection(db, 'participants'),
+          where('eventId', 'in', limitedEventIds),
+          where('status', '==', ParticipantStatus.PENDING)
+        );
+
+        unsubscribeParticipants = onSnapshot(
+          participantsQuery,
+          (participantsSnapshot) => {
+            const count = participantsSnapshot.size;
+            console.log(`Real-time update: ${count} pending applications`);
+            setPendingApplicationsCount(count);
+          },
+          (error) => {
+            console.error('Error in participants listener:', error);
+            setPendingApplicationsCount(0);
+          }
+        );
+      },
+      (error) => {
+        console.error('Error in events listener:', error);
+        setPendingApplicationsCount(0);
+      }
+    );
+
+    // Cleanup both listeners when component unmounts or user changes
+    return () => {
+      console.log('Cleaning up real-time listeners');
+      unsubscribeEvents();
+      if (unsubscribeParticipants) {
+        unsubscribeParticipants();
+      }
+    };
   }, [user]);
 
-  const loadPendingApplicationsCount = async () => {
-    if (user?.role === UserRole.ORGANIZER) {
-      try {
-        const count = await participantsService.getPendingApplicationsCountForOrganizer(user.id);
-        setPendingApplicationsCount(count);
-      } catch (error) {
-        console.error('Error loading pending applications count:', error);
-      }
-    }
-  };
-
-  console.log(' MainNavigator rendering, user:', user ? `${user.displayName} (${user.role})` : 'null', 'forceUpdate:', forceUpdate);
 
   // Determine initial route based on user state
   const getInitialRoute = () => {
