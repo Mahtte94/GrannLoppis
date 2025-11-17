@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, FlatList, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, Alert, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { collection, query, where, onSnapshot, Unsubscribe } from 'firebase/firestore';
+import { db } from '../../../firebase.config';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Loading } from '../../components/common/Loading';
@@ -10,7 +12,7 @@ import { theme } from '../../styles/theme';
 import { eventsService } from '../../services/firebase/events.service';
 import { participantsService } from '../../services/firebase/participants.service';
 import { SellerStackParamList } from '../../types/navigation.types';
-import { Event, ParticipantStatus } from '../../types';
+import { Event, ParticipantStatus, EventStatus } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { useAnimatedHeader } from '../../hooks';
 
@@ -25,6 +27,7 @@ export default function JoinEventScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [userParticipations, setUserParticipations] = useState<Map<string, ParticipantStatus>>(new Map());
@@ -35,10 +38,149 @@ export default function JoinEventScreen() {
     endFadeAt: 100,
   });
 
+  // Force refresh when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      console.log('JoinEventScreen focused - triggering refresh');
+      // Trigger a manual data load when screen comes into focus
+      loadDataOnFocus();
+    }, [user])
+  );
+
+  // Load data when screen comes into focus
+  const loadDataOnFocus = async () => {
+    try {
+      const [allEvents, participations] = await Promise.all([
+        eventsService.getAllEvents(),
+        user ? participantsService.getUserParticipations(user.id) : Promise.resolve([]),
+      ]);
+
+      const availableEvents = allEvents.filter(
+        (event) => event.status === EventStatus.UPCOMING || event.status === EventStatus.ACTIVE
+      );
+
+      console.log('Focus refresh: fetched', allEvents.length, 'total events,', availableEvents.length, 'available');
+      setEvents(availableEvents);
+
+      if (user && participations.length >= 0) {
+        const participationsMap = new Map<string, ParticipantStatus>();
+        participations.forEach((participation) => {
+          participationsMap.set(participation.eventId, participation.status);
+        });
+        setUserParticipations(participationsMap);
+      }
+    } catch (error) {
+      console.error('Error loading data on focus:', error);
+    }
+  };
+
+  // Set up realtime listeners for events and user participations
   useEffect(() => {
-    loadEvents();
-    loadUserParticipations();
-  }, []);
+    let isSubscribed = true;
+    const unsubscribers: Unsubscribe[] = [];
+
+    // Realtime listener for all events
+    const eventsQuery = query(collection(db, 'events'));
+    const unsubscribeEvents = onSnapshot(
+      eventsQuery,
+      (snapshot) => {
+        if (!isSubscribed) return;
+
+        console.log('Events snapshot received:', snapshot.docs.length, 'documents');
+
+        const allEvents: Event[] = [];
+
+        snapshot.docs.forEach((doc) => {
+          const data = doc.data();
+
+          // Skip if missing required fields
+          if (!data.startDate || !data.endDate) {
+            console.warn('Event missing dates:', doc.id);
+            return;
+          }
+
+          const startDate = data.startDate.toDate();
+          const endDate = data.endDate.toDate();
+
+          // Calculate status based on dates
+          const now = new Date();
+          let status: EventStatus;
+          if (now < startDate) {
+            status = EventStatus.UPCOMING;
+          } else if (now >= startDate && now <= endDate) {
+            status = EventStatus.ACTIVE;
+          } else {
+            status = EventStatus.COMPLETED;
+          }
+
+          allEvents.push({
+            id: doc.id,
+            name: data.name,
+            description: data.description,
+            startDate,
+            endDate,
+            area: data.area,
+            coordinates: data.coordinates,
+            organizerId: data.organizerId,
+            status,
+            participants: data.participants || 0,
+            createdAt: data.createdAt.toDate(),
+          });
+        });
+
+        // Filter to only show upcoming and active events
+        const availableEvents = allEvents.filter(
+          (event) => event.status === EventStatus.UPCOMING || event.status === EventStatus.ACTIVE
+        );
+
+        console.log('Available events after filtering:', availableEvents.length);
+        console.log('Event IDs:', availableEvents.map(e => e.id).join(', '));
+        setEvents(availableEvents);
+        setLoading(false);
+      },
+      (error) => {
+        if (!isSubscribed) return;
+        console.error('Error listening to events:', error);
+        Alert.alert('Fel', 'Kunde inte ladda loppis. Försök igen.');
+        setLoading(false);
+      }
+    );
+    unsubscribers.push(unsubscribeEvents);
+
+    // Realtime listener for user participations (if user is logged in)
+    if (user) {
+      const participationsQuery = query(
+        collection(db, 'participants'),
+        where('userId', '==', user.id)
+      );
+      const unsubscribeParticipations = onSnapshot(
+        participationsQuery,
+        (snapshot) => {
+          if (!isSubscribed) return;
+
+          console.log('User participations snapshot received:', snapshot.docs.length, 'documents');
+          const participationsMap = new Map<string, ParticipantStatus>();
+          snapshot.docs.forEach((doc) => {
+            const data = doc.data();
+            participationsMap.set(data.eventId, data.status as ParticipantStatus);
+          });
+          setUserParticipations(participationsMap);
+        },
+        (error) => {
+          if (!isSubscribed) return;
+          console.error('Error listening to user participations:', error);
+          // Don't show error alert, just log it
+        }
+      );
+      unsubscribers.push(unsubscribeParticipations);
+    }
+
+    // Cleanup function to unsubscribe from all listeners
+    return () => {
+      isSubscribed = false;
+      unsubscribers.forEach((unsubscribe) => unsubscribe());
+    };
+  }, [user]);
 
   useEffect(() => {
     // Filter events based on search query
@@ -55,39 +197,39 @@ export default function JoinEventScreen() {
     }
   }, [searchQuery, events]);
 
-  const loadEvents = async () => {
+  // Manual refresh function for pull-to-refresh
+  const handleRefresh = async () => {
+    console.log('Manual refresh triggered');
+    setRefreshing(true);
     try {
-      setLoading(true);
-      const allEvents = await eventsService.getAllEvents();
+      // Fetch fresh data from services to force a refresh
+      // The realtime listeners will continue to keep data in sync after this
+      const [allEvents, participations] = await Promise.all([
+        eventsService.getAllEvents(),
+        user ? participantsService.getUserParticipations(user.id) : Promise.resolve([]),
+      ]);
+
       // Filter to only show upcoming and active events
       const availableEvents = allEvents.filter(
-        (event) => event.status === 'upcoming' || event.status === 'active'
+        (event) => event.status === EventStatus.UPCOMING || event.status === EventStatus.ACTIVE
       );
+
+      console.log('Manual refresh: fetched', allEvents.length, 'events,', availableEvents.length, 'available');
       setEvents(availableEvents);
-      setFilteredEvents(availableEvents);
+
+      // Update user participations if available
+      if (user && participations.length > 0) {
+        const participationsMap = new Map<string, ParticipantStatus>();
+        participations.forEach((participation) => {
+          participationsMap.set(participation.eventId, participation.status);
+        });
+        setUserParticipations(participationsMap);
+      }
     } catch (error) {
-      console.error('Error loading events:', error);
-      Alert.alert('Fel', 'Kunde inte ladda evenemang. Försök igen.');
+      console.error('Error refreshing data:', error);
+      Alert.alert('Fel', 'Kunde inte uppdatera data. Försök igen.');
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadUserParticipations = async () => {
-    if (!user) return;
-
-    try {
-      const participations = await participantsService.getUserParticipations(user.id);
-      const participationsMap = new Map<string, ParticipantStatus>();
-
-      participations.forEach((participation) => {
-        participationsMap.set(participation.eventId, participation.status);
-      });
-
-      setUserParticipations(participationsMap);
-    } catch (error) {
-      console.error('Error loading user participations:', error);
-      // Don't show error alert, just log it
+      setRefreshing(false);
     }
   };
 
@@ -131,13 +273,13 @@ export default function JoinEventScreen() {
     if (!user.sellerProfile) {
       Alert.alert(
         'Profil saknas',
-        'Du måste ha en komplett säljarprofil med adress för att kunna ansöka till evenemang.'
+        'Du måste ha en komplett säljarprofil med adress för att kunna ansöka till loppisen.'
       );
       return;
     }
 
     if (!selectedEvent) {
-      Alert.alert('Välj evenemang', 'Vänligen välj ett evenemang att ansöka till.');
+      Alert.alert('Välj loppis', 'Vänligen välj en loppis att ansöka till.');
       return;
     }
 
@@ -160,8 +302,16 @@ export default function JoinEventScreen() {
       setDescription('');
       setSelectedDates([]);
 
-      // Reload user participations to update the UI
-      await loadUserParticipations();
+      // Note: Realtime listener will automatically update participations
+      // But we can manually update for immediate feedback
+      if (user) {
+        const updatedParticipations = await participantsService.getUserParticipations(user.id);
+        const participationsMap = new Map<string, ParticipantStatus>();
+        updatedParticipations.forEach((participation) => {
+          participationsMap.set(participation.eventId, participation.status);
+        });
+        setUserParticipations(participationsMap);
+      }
 
       Alert.alert(
         'Ansökan skickad!',
@@ -213,7 +363,7 @@ export default function JoinEventScreen() {
         )}
         {participationStatus === ParticipantStatus.PENDING && (
           <View style={styles.pendingBadge}>
-            <Text style={styles.pendingBadgeText}>⏳ Väntar på svar</Text>
+            <Text style={styles.pendingBadgeText}>Väntar på svar</Text>
           </View>
         )}
         {participationStatus === ParticipantStatus.APPROVED && (
@@ -272,7 +422,7 @@ export default function JoinEventScreen() {
             <View style={styles.dateSelectionContainer}>
               <Text style={styles.dateSelectionTitle}>Välj datum du vill sälja:</Text>
               <Text style={styles.dateSelectionSubtitle}>
-                Välj de dagar du vill delta i evenemanget
+                Välj de dagar du vill delta i loppisen
               </Text>
               <View style={styles.datesContainer}>
                 {getEventDates(selectedEvent).map((date) => {
@@ -409,6 +559,14 @@ export default function JoinEventScreen() {
             contentContainerStyle={styles.listContent}
             onScroll={handleScroll}
             scrollEventThrottle={16}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                colors={[theme.colors.primary]}
+                tintColor={theme.colors.primary}
+              />
+            }
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyTitle}>Ingen loppmarknad hittades</Text>
