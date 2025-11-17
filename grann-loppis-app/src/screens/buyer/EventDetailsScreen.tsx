@@ -138,15 +138,12 @@ export default function EventDetailsScreen() {
           </View>
         </View>
 
-        <View style={styles.descriptionSection}>
-          <Text style={styles.sectionTitle}>Om loppmarknaden</Text>
-          <Text style={styles.description}>
-            Välkommen till en fantastisk dag av loppisshopping! Bläddra bland
-            föremål från {event.participants} säljare i {event.area}.{"\n\n"}
-            Hitta vintagekläder, möbler, böcker, elektronik och mycket mer till
-            fantastiska priser.
-          </Text>
-        </View>
+        {event.description && (
+          <View style={styles.descriptionSection}>
+            <Text style={styles.sectionTitle}>Om loppmarknaden</Text>
+            <Text style={styles.description}>{event.description}</Text>
+          </View>
+        )}
 
         <View style={styles.footer}>
           <TouchableOpacity
@@ -204,7 +201,8 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xxxl,
   },
   header: {
-    padding: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.xl,
   },
   statusBadge: {
     alignSelf: "flex-start",
@@ -259,7 +257,7 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
   },
   descriptionSection: {
-    padding: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.xl,
   },
   sectionTitle: {
     fontSize: theme.fontSize.lg,

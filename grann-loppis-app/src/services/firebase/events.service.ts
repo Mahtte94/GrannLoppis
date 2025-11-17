@@ -44,6 +44,7 @@ function calculateEventStatus(startDate: Date, endDate: Date): EventStatus {
 
 export interface CreateEventInput {
   name: string;
+  description?: string;
   startDate: Date;
   endDate: Date;
   area: string;
@@ -53,6 +54,7 @@ export interface CreateEventInput {
 
 export interface UpdateEventInput {
   name?: string;
+  description?: string;
   startDate?: Date;
   endDate?: Date;
   area?: string;
@@ -65,7 +67,7 @@ export interface UpdateEventInput {
  */
 export async function createEvent(input: CreateEventInput): Promise<Event> {
   try {
-    const eventData = {
+    const eventData: any = {
       name: input.name,
       startDate: Timestamp.fromDate(input.startDate),
       endDate: Timestamp.fromDate(input.endDate),
@@ -77,11 +79,17 @@ export async function createEvent(input: CreateEventInput): Promise<Event> {
       createdAt: Timestamp.now(),
     };
 
+    // Only add description if it's provided
+    if (input.description) {
+      eventData.description = input.description;
+    }
+
     const docRef = await addDoc(collection(db, EVENTS_COLLECTION), eventData);
 
     return {
       id: docRef.id,
       name: input.name,
+      description: input.description,
       startDate: input.startDate,
       endDate: input.endDate,
       area: input.area,
@@ -116,6 +124,7 @@ export async function getEventById(eventId: string): Promise<Event | null> {
     return {
       id: docSnap.id,
       name: data.name,
+      description: data.description,
       startDate,
       endDate,
       area: data.area,
@@ -146,6 +155,7 @@ export async function getAllEvents(): Promise<Event[]> {
       return {
         id: doc.id,
         name: data.name,
+        description: data.description,
         startDate,
         endDate,
         area: data.area,
@@ -188,6 +198,7 @@ export async function getOrganizerEvents(organizerId: string): Promise<Event[]> 
       return {
         id: doc.id,
         name: data.name,
+        description: data.description,
         startDate,
         endDate,
         area: data.area,
@@ -224,6 +235,9 @@ export async function updateEvent(
 
     if (input.name !== undefined) {
       updateData.name = input.name;
+    }
+    if (input.description !== undefined) {
+      updateData.description = input.description;
     }
     if (input.startDate !== undefined) {
       updateData.startDate = Timestamp.fromDate(input.startDate);
@@ -278,6 +292,7 @@ export async function searchEvents(searchTerm: string): Promise<Event[]> {
       return {
         id: doc.id,
         name: data.name,
+        description: data.description,
         startDate,
         endDate,
         area: data.area,

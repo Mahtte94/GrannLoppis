@@ -1,63 +1,81 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Input } from '../../components/common/Input';
-import { LocationInput } from '../../components/common/LocationInput';
-import { DatePickerInput } from '../../components/common/DatePickerInput';
-import { Button } from '../../components/common/Button';
-import { useAuth } from '../../context/AuthContext';
-import { eventsService } from '../../services/firebase';
-import { theme } from '../../styles/theme';
-import { getDaysBetween, geocodeAddress } from '../../utils/helpers';
-import { Coordinates } from '../../types';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Input } from "../../components/common/Input";
+import { LocationInput } from "../../components/common/LocationInput";
+import { DatePickerInput } from "../../components/common/DatePickerInput";
+import { Button } from "../../components/common/Button";
+import { useAuth } from "../../context/AuthContext";
+import { eventsService } from "../../services/firebase";
+import { theme } from "../../styles/theme";
+import { getDaysBetween, geocodeAddress } from "../../utils/helpers";
+import { Coordinates } from "../../types";
+import { useAnimatedHeader } from "../../hooks/useAnimatedHeader";
 
 export default function CreateEventScreen() {
   const navigation = useNavigation();
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
-  const [eventName, setEventName] = useState('');
-  const [area, setArea] = useState('');
+  const { handleScroll } = useAnimatedHeader({
+    backgroundColor: theme.colors.background,
+  });
+  const [eventName, setEventName] = useState("");
+  const [description, setDescription] = useState("");
+  const [area, setArea] = useState("");
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [errors, setErrors] = useState({ eventName: '', area: '', startDate: '', endDate: '' });
+  const [errors, setErrors] = useState({
+    eventName: "",
+    area: "",
+    startDate: "",
+    endDate: "",
+  });
   const [loading, setLoading] = useState(false);
 
   const validateForm = () => {
-    const newErrors = { eventName: '', area: '', startDate: '', endDate: '' };
+    const newErrors = { eventName: "", area: "", startDate: "", endDate: "" };
     let isValid = true;
 
     if (!eventName.trim()) {
-      newErrors.eventName = 'Loppmarknads namn krävs';
+      newErrors.eventName = "Loppmarknads namn krävs";
       isValid = false;
     }
 
     if (!area.trim()) {
-      newErrors.area = 'Område krävs';
+      newErrors.area = "Område krävs";
       isValid = false;
     }
 
     if (!startDate) {
-      newErrors.startDate = 'Startdatum krävs';
+      newErrors.startDate = "Startdatum krävs";
       isValid = false;
     }
 
     if (!endDate) {
-      newErrors.endDate = 'Slutdatum krävs';
+      newErrors.endDate = "Slutdatum krävs";
       isValid = false;
     }
 
     // Validate date range if both dates are provided
     if (startDate && endDate) {
       if (endDate < startDate) {
-        newErrors.endDate = 'Slutdatum måste vara efter startdatum';
+        newErrors.endDate = "Slutdatum måste vara efter startdatum";
         isValid = false;
       }
 
       const numDays = getDaysBetween(startDate, endDate);
       if (numDays > 7) {
-        newErrors.endDate = 'Loppmarknad kan max vara 7 dagar';
+        newErrors.endDate = "Loppmarknad kan max vara 7 dagar";
         isValid = false;
       }
     }
@@ -70,46 +88,49 @@ export default function CreateEventScreen() {
     if (!validateForm()) return;
 
     if (!user) {
-      Alert.alert('Fel', 'Du måste vara inloggad för att skapa en loppmarknad.');
+      Alert.alert(
+        "Fel",
+        "Du måste vara inloggad för att skapa en loppmarknad."
+      );
       return;
     }
 
     setLoading(true);
     try {
       // Debug: Log current user and auth state
-      console.log('Current user:', user);
-      console.log('User ID:', user.id);
+      console.log("Current user:", user);
+      console.log("User ID:", user.id);
 
       // Get coordinates - either from autocomplete selection or geocode manually entered text
       let finalCoordinates = coordinates;
 
       if (!finalCoordinates) {
-        console.log('Geocoding area:', area);
+        console.log("Geocoding area:", area);
         finalCoordinates = await geocodeAddress(area);
 
         if (!finalCoordinates) {
           Alert.alert(
-            'Ogiltigt område',
+            "Ogiltigt område",
             'Det angivna området kunde inte hittas. Vänligen välj en plats från förslagen eller ange en giltig plats (t.ex. "Vasastan, Stockholm" eller "Göteborg").'
           );
           setLoading(false);
           return;
         }
 
-        console.log('Area geocoded successfully:', finalCoordinates);
+        console.log("Area geocoded successfully:", finalCoordinates);
         setCoordinates(finalCoordinates);
       } else {
-        console.log('Using coordinates from autocomplete:', finalCoordinates);
+        console.log("Using coordinates from autocomplete:", finalCoordinates);
       }
 
       // startDate and endDate are guaranteed to be non-null after validation
       if (!startDate || !endDate) {
-        throw new Error('Start date and end date are required');
+        throw new Error("Start date and end date are required");
       }
 
       const numDays = getDaysBetween(startDate, endDate);
 
-      console.log('Creating event with data:', {
+      console.log("Creating event with data:", {
         name: eventName,
         area: area,
         coordinates: finalCoordinates,
@@ -122,6 +143,7 @@ export default function CreateEventScreen() {
       // Create the event in Firebase
       const createdEvent = await eventsService.createEvent({
         name: eventName,
+        description: description.trim() || undefined,
         area: area,
         coordinates: finalCoordinates,
         startDate: startDate,
@@ -129,22 +151,25 @@ export default function CreateEventScreen() {
         organizerId: user.id,
       });
 
-      console.log('Event created successfully:', createdEvent);
+      console.log("Event created successfully:", createdEvent);
 
       // Clear form after successful creation
-      setEventName('');
-      setArea('');
+      setEventName("");
+      setDescription("");
+      setArea("");
       setCoordinates(null);
       setStartDate(null);
       setEndDate(null);
 
       // Show success message
       Alert.alert(
-        'Loppmarknad skapat!',
-        `Din loppmarknad "${createdEvent.name}" har skapats!\n\n${numDays > 1 ? `Längd: ${numDays} dagar\n\n` : ''}Säljare kan nu ansöka om att delta i din loppmarknad. Du kan godkänna eller avslå ansökningar från deltagarlistan.`,
+        "Loppmarknad skapat!",
+        `Din loppmarknad "${createdEvent.name}" har skapats!\n\n${
+          numDays > 1 ? `Längd: ${numDays} dagar\n\n` : ""
+        }Säljare kan nu ansöka om att delta i din loppmarknad. Du kan godkänna eller avslå ansökningar från deltagarlistan.`,
         [
           {
-            text: 'OK',
+            text: "OK",
             onPress: () => {
               if (navigation.canGoBack()) {
                 navigation.goBack();
@@ -154,8 +179,11 @@ export default function CreateEventScreen() {
         ]
       );
     } catch (error: any) {
-      console.error('Error creating event:', error);
-      Alert.alert('Fel', error.message || 'Kunde inte skapa loppmarknad. Försök igen.');
+      console.error("Error creating event:", error);
+      Alert.alert(
+        "Fel",
+        error.message || "Kunde inte skapa loppmarknad. Försök igen."
+      );
     } finally {
       setLoading(false);
     }
@@ -163,12 +191,17 @@ export default function CreateEventScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.keyboardAvoid}
     >
       <ScrollView
-        contentContainerStyle={[styles.scrollContainer, { paddingTop: insets.top + 20 }]}
+        contentContainerStyle={[
+          styles.scrollContainer,
+          { paddingTop: insets.top + 20 },
+        ]}
         keyboardShouldPersistTaps="handled"
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         <View style={styles.container}>
           <Text style={styles.title}>Skapa en ny loppis</Text>
@@ -183,9 +216,28 @@ export default function CreateEventScreen() {
               value={eventName}
               onChangeText={(text) => {
                 setEventName(text);
-                setErrors({ ...errors, eventName: '' });
+                setErrors({ ...errors, eventName: "" });
               }}
               error={errors.eventName}
+            />
+
+            <Input
+              label="Beskrivning (valfritt)"
+              placeholder="Berätta mer om din loppmarknad..."
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              numberOfLines={4}
+              style={{
+                height: 100,
+                textAlignVertical: "top",
+                backgroundColor: theme.colors.surfaceLight,
+                borderRadius: theme.borderRadius.md,
+                padding: theme.spacing.md,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                color: theme.colors.text,
+              }}
             />
 
             <LocationInput
@@ -195,12 +247,12 @@ export default function CreateEventScreen() {
               onChangeText={(text) => {
                 setArea(text);
                 setCoordinates(null); // Clear coordinates when text changes manually
-                setErrors({ ...errors, area: '' });
+                setErrors({ ...errors, area: "" });
               }}
               onLocationSelect={(location) => {
                 setArea(location.description);
                 setCoordinates({ lat: location.lat, lng: location.lng });
-                setErrors({ ...errors, area: '' });
+                setErrors({ ...errors, area: "" });
               }}
               error={errors.area}
             />
@@ -210,7 +262,7 @@ export default function CreateEventScreen() {
               value={startDate}
               onChange={(date) => {
                 setStartDate(date);
-                setErrors({ ...errors, startDate: '' });
+                setErrors({ ...errors, startDate: "" });
               }}
               error={errors.startDate}
               minimumDate={new Date()}
@@ -221,7 +273,7 @@ export default function CreateEventScreen() {
               value={endDate}
               onChange={(date) => {
                 setEndDate(date);
-                setErrors({ ...errors, endDate: '' });
+                setErrors({ ...errors, endDate: "" });
               }}
               error={errors.endDate}
               minimumDate={startDate || new Date()}
@@ -229,18 +281,19 @@ export default function CreateEventScreen() {
 
             <View style={styles.infoBox}>
               <Text style={styles.infoText}>
-                Din loppmarknad kan vara mellan 1 och 7 dagar långt. Efter att du skapat eventet kan säljare ansöka om att delta. Du kommer att kunna granska och godkänna eller avslå varje ansökan.
+                Din loppmarknad kan vara mellan 1 och 7 dagar lång. Efter att du
+                skapat loppisen kan säljare ansöka om att delta. Du kommer att
+                kunna granska och godkänna eller avslå varje ansökan.
               </Text>
             </View>
 
             <Button
-              title="Skapa evenemang"
+              title="Skapa loppis"
               onPress={handleCreateEvent}
               loading={loading}
               disabled={loading}
               style={styles.createButton}
             />
-
           </View>
         </View>
       </ScrollView>
@@ -274,7 +327,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   form: {
-    width: '100%',
+    width: "100%",
   },
   infoBox: {
     backgroundColor: theme.colors.accent,
@@ -290,5 +343,5 @@ const styles = StyleSheet.create({
   },
   createButton: {
     marginBottom: theme.spacing.xxl,
-  }
+  },
 });

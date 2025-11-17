@@ -9,6 +9,7 @@ export enum EventStatus {
 export interface Event {
   id: string;
   name: string;
+  description?: string;
   startDate: Date;
   endDate: Date;
   area: string;
@@ -21,6 +22,7 @@ export interface Event {
 
 export interface CreateEventInput {
   name: string;
+  description?: string;
   startDate: Date;
   endDate: Date;
   area: string;

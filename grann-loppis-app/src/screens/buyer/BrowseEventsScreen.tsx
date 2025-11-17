@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -47,7 +47,7 @@ export default function BrowseEventsScreen() {
   const [events, setEvents] = useState<EventWithDistance[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [lastLoadTime, setLastLoadTime] = useState<number>(0);
+  const lastLoadTimeRef = useRef<number>(0);
 
   // Use animated header hook
   const { handleScroll } = useAnimatedHeader({
@@ -60,60 +60,56 @@ export default function BrowseEventsScreen() {
     navigation.navigate("AuthTab");
   };
 
-  const loadEvents = useCallback(
-    async (forceRefresh = false) => {
-      try {
-        // Check if cache is still valid
-        const now = Date.now();
-        const isCacheValid =
-          events.length > 0 && now - lastLoadTime < CACHE_DURATION;
+  const loadEvents = useCallback(async (forceRefresh = false) => {
+    try {
+      // Check if cache is still valid using ref
+      const now = Date.now();
+      const isCacheValid = now - lastLoadTimeRef.current < CACHE_DURATION;
 
-        if (isCacheValid && !forceRefresh) {
-          console.log("Using cached events");
-          setLoading(false);
-          return;
-        }
-
-        setLoading(true);
-        console.log("Fetching fresh events from Firebase");
-
-        // Get user's location
-        const location = await getUserLocation();
-
-        // Fetch real events from Firebase
-        const fetchedEvents = await eventsService.getAllEvents();
-        console.log("Fetched events:", fetchedEvents);
-
-        // Calculate distances once and add to events
-        const eventsWithDistance: EventWithDistance[] = fetchedEvents.map(
-          (event) => ({
-            ...event,
-            distance: location
-              ? calculateDistance(location, event.coordinates)
-              : undefined,
-          })
-        );
-
-        // Sort events by distance if user location is available
-        if (location) {
-          eventsWithDistance.sort((a, b) => {
-            const distanceA = a.distance ?? Infinity;
-            const distanceB = b.distance ?? Infinity;
-            return distanceA - distanceB;
-          });
-        }
-
-        setEvents(eventsWithDistance);
-        setLastLoadTime(Date.now());
-      } catch (error) {
-        console.error("Error loading events:", error);
-        Alert.alert("Error", "Failed to load events. Please try again.");
-      } finally {
+      if (isCacheValid && !forceRefresh) {
+        console.log("Using cached events");
         setLoading(false);
+        return;
       }
-    },
-    [events.length, lastLoadTime]
-  );
+
+      setLoading(true);
+      console.log("Fetching fresh events from Firebase");
+
+      // Get user's location
+      const location = await getUserLocation();
+
+      // Fetch real events from Firebase
+      const fetchedEvents = await eventsService.getAllEvents();
+      console.log("Fetched events:", fetchedEvents);
+
+      // Calculate distances once and add to events
+      const eventsWithDistance: EventWithDistance[] = fetchedEvents.map(
+        (event) => ({
+          ...event,
+          distance: location
+            ? calculateDistance(location, event.coordinates)
+            : undefined,
+        })
+      );
+
+      // Sort events by distance if user location is available
+      if (location) {
+        eventsWithDistance.sort((a, b) => {
+          const distanceA = a.distance ?? Infinity;
+          const distanceB = b.distance ?? Infinity;
+          return distanceA - distanceB;
+        });
+      }
+
+      setEvents(eventsWithDistance);
+      lastLoadTimeRef.current = Date.now();
+    } catch (error) {
+      console.error("Error loading events:", error);
+      Alert.alert("Error", "Failed to load events. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // Reload events whenever the screen comes into focus
   useFocusEffect(
