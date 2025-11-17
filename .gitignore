@@ -36,9 +36,6 @@ bower_components
 
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
-CLAUDE.md
-.claude
-ROUTING_SETUP.md
 
 # Dependency directories
 node_modules/
