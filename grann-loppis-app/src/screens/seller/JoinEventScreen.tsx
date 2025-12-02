@@ -674,7 +674,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   profileBox: {
-    backgroundColor: theme.colors.accent,
+    backgroundColor: "#424242",
     padding: theme.spacing.md,
     borderRadius: theme.borderRadius.md,
     borderWidth: 1,
@@ -777,7 +777,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   eventDetails: {
-    backgroundColor: theme.colors.accent,
+    backgroundColor: "#424242",
     borderRadius: theme.borderRadius.md,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.lg,
