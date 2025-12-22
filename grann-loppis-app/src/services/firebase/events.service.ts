@@ -275,81 +275,6 @@ export async function deleteEvent(eventId: string): Promise<void> {
   }
 }
 
-/**
- * Search events by name or area
- */
-export async function searchEvents(searchTerm: string): Promise<Event[]> {
-  try {
-    // Note: This is a simple implementation. For better search,
-    // consider using Algolia or Firebase Extensions
-    const querySnapshot = await getDocs(collection(db, EVENTS_COLLECTION));
-
-    const events = querySnapshot.docs.map((doc) => {
-      const data = doc.data();
-      const startDate = data.startDate.toDate();
-      const endDate = data.endDate.toDate();
-
-      return {
-        id: doc.id,
-        name: data.name,
-        description: data.description,
-        startDate,
-        endDate,
-        area: data.area,
-        coordinates: data.coordinates,
-        organizerId: data.organizerId,
-        status: calculateEventStatus(startDate, endDate),
-        participants: data.participants || 0,
-        createdAt: data.createdAt.toDate(),
-      };
-    });
-
-    // Filter out events that ended more than 3 days ago
-    const activeEvents = events.filter((event) => !shouldRemoveEvent(event.endDate));
-
-    // Filter client-side by search term (not ideal for large datasets)
-    const lowerSearchTerm = searchTerm.toLowerCase();
-    return activeEvents.filter(
-      (event) =>
-        event.name.toLowerCase().includes(lowerSearchTerm) ||
-        event.area.toLowerCase().includes(lowerSearchTerm)
-    );
-  } catch (error) {
-    console.error('Error searching events:', error);
-    throw new Error('Failed to search events');
-  }
-}
-
-/**
- * Clean up events that ended more than 3 days ago
- * This function permanently deletes expired events from Firestore
- * Returns the number of events deleted
- */
-export async function cleanupExpiredEvents(): Promise<number> {
-  try {
-    const querySnapshot = await getDocs(collection(db, EVENTS_COLLECTION));
-    let deletedCount = 0;
-
-    // Find all expired events
-    const expiredEvents = querySnapshot.docs.filter((doc) => {
-      const data = doc.data();
-      const endDate = data.endDate.toDate();
-      return shouldRemoveEvent(endDate);
-    });
-
-    // Delete each expired event
-    for (const doc of expiredEvents) {
-      await deleteDoc(doc.ref);
-      deletedCount++;
-    }
-
-    return deletedCount;
-  } catch (error) {
-    console.error('Error cleaning up expired events:', error);
-    throw new Error('Failed to cleanup expired events');
-  }
-}
-
 export const eventsService = {
   createEvent,
   getEventById,
@@ -357,6 +282,4 @@ export const eventsService = {
   getOrganizerEvents,
   updateEvent,
   deleteEvent,
-  searchEvents,
-  cleanupExpiredEvents,
 };

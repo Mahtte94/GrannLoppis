@@ -326,6 +326,22 @@ export default function JoinEventScreen() {
     }
   };
 
+  const handleManageItems = async (eventId: string) => {
+    if (!user) return;
+
+    try {
+      const participations = await participantsService.getUserParticipations(user.id);
+      const participation = participations.find(p => p.eventId === eventId);
+
+      if (participation) {
+        navigation.navigate('MyItems', { participantId: participation.id });
+      }
+    } catch (error) {
+      console.error('Error loading participation:', error);
+      Alert.alert('Fel', 'Kunde inte ladda dina varor.');
+    }
+  };
+
   const renderEventCard = ({ item }: { item: Event }) => {
     const isSelected = selectedEvent?.id === item.id;
     const participationStatus = userParticipations.get(item.id);
@@ -358,8 +374,17 @@ export default function JoinEventScreen() {
           </View>
         )}
         {participationStatus === ParticipantStatus.APPROVED && (
-          <View style={styles.approvedBadge}>
-            <Text style={styles.approvedBadgeText}>✓ Godkänd</Text>
+          <View style={styles.approvedContainer}>
+            <View style={styles.approvedBadge}>
+              <Text style={styles.approvedBadgeText}>✓ Godkänd</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.manageItemsButton}
+              onPress={() => handleManageItems(item.id)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.manageItemsButtonText}>Hantera varor</Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>
@@ -878,10 +903,14 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     fontSize: theme.fontSize.sm,
   },
-  approvedBadge: {
+  approvedContainer: {
     position: 'absolute',
     bottom: theme.spacing.lg,
     right: theme.spacing.md,
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+  },
+  approvedBadge: {
     backgroundColor: '#10B981',
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.xs,
@@ -893,6 +922,22 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   approvedBadgeText: {
+    fontFamily: theme.fonts.bodyMedium,
+    color: theme.colors.white,
+    fontSize: theme.fontSize.sm,
+  },
+  manageItemsButton: {
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.sm,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  manageItemsButtonText: {
     fontFamily: theme.fonts.bodyMedium,
     color: theme.colors.white,
     fontSize: theme.fontSize.sm,

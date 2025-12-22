@@ -20,6 +20,8 @@ import ParticipantsListScreen from '../screens/organizer/ParticipantsListScreen'
 // Seller screens
 import JoinEventScreen from '../screens/seller/JoinEventScreen';
 import AddAddressScreen from '../screens/seller/AddAddressScreen';
+import MyItemsScreen from '../screens/seller/MyItemsScreen';
+import AddItemScreen from '../screens/seller/AddItemScreen';
 
 // Buyer screens
 import BrowseEventsScreen from '../screens/buyer/BrowseEventsScreen';
@@ -98,6 +100,22 @@ function SellerNavigator() {
         name="AddAddress"
         component={AddAddressScreen}
         options={{ title: 'Loppis Rundan' }}
+      />
+      <SellerStack.Screen
+        name="MyItems"
+        component={MyItemsScreen}
+        options={{
+          title: 'Loppis Rundan',
+          headerBackTitle: '',
+        }}
+      />
+      <SellerStack.Screen
+        name="AddItem"
+        component={AddItemScreen}
+        options={{
+          title: 'Loppis Rundan',
+          headerBackTitle: '',
+        }}
       />
     </SellerStack.Navigator>
   );

@@ -175,48 +175,6 @@ export async function geocodeAddress(address: string): Promise<Coordinates | nul
 }
 
 /**
- * Validate that an area string corresponds to a real location
- * @param area - The area string to validate (e.g., "Vasastan, Stockholm")
- * @returns true if the area is valid (can be geocoded), false otherwise
- */
-export async function validateArea(area: string): Promise<boolean> {
-  const coordinates = await geocodeAddress(area);
-  return coordinates !== null;
-}
-
-/**
- * Reverse geocode coordinates to get an address
- * @param coordinates - The coordinates to reverse geocode
- * @returns Address string or null if reverse geocoding fails
- */
-export async function reverseGeocode(coordinates: Coordinates): Promise<string | null> {
-  try {
-    const results = await Location.reverseGeocodeAsync({
-      latitude: coordinates.lat,
-      longitude: coordinates.lng,
-    });
-
-    if (results.length === 0) {
-      return null;
-    }
-
-    const location = results[0];
-    // Build a readable address from the components
-    const parts = [
-      location.district || location.subregion,
-      location.city,
-      location.region,
-      location.country,
-    ].filter(Boolean);
-
-    return parts.join(', ');
-  } catch (error) {
-    console.error('Error reverse geocoding:', error);
-    return null;
-  }
-}
-
-/**
  * Calculate the distance between two coordinates using the Haversine formula
  * @param coord1 - First coordinate
  * @param coord2 - Second coordinate

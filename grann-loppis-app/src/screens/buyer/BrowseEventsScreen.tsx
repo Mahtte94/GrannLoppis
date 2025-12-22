@@ -486,14 +486,4 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     letterSpacing: 0.5,
   },
-  // Empty State
-  emptyContainer: {
-    padding: theme.spacing.xl,
-    alignItems: "center",
-  },
-  emptyText: {
-    fontFamily: theme.fonts.body,
-    fontSize: theme.fontSize.md,
-    color: theme.colors.textLight,
-  },
 });

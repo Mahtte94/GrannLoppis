@@ -142,12 +142,6 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     flex: 1,
   },
-  eventCode: {
-    fontFamily: theme.fonts.bodyMedium,
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.primary,
-    flex: 1,
-  },
   footer: {
     marginTop: theme.spacing.sm,
     paddingTop: theme.spacing.sm,

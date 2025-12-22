@@ -4,8 +4,7 @@ export interface Item {
   eventId: string;
   title: string;
   description: string;
-  imageUrl?: string;
-  suggestedPrice?: number;
+  imageUrls: string[];
   category?: string;
   createdAt: Date;
 }
@@ -13,6 +12,6 @@ export interface Item {
 export interface CreateItemInput {
   title: string;
   description: string;
-  imageUrl?: string;
+  imageUrls?: string[];
   category?: string;
 }

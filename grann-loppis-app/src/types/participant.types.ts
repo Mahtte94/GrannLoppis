@@ -21,8 +21,3 @@ export interface Participant {
   joinedAt?: Date; // Only set when status is APPROVED
   participationDates?: string[]; // date strings for which dates the seller wants to participate
 }
-
-export interface ApplyToEventInput {
-  eventId: string;
-  description?: string;
-}

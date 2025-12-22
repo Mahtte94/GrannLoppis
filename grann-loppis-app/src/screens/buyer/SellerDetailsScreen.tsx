@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert, Image, FlatList } from 'react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { BuyerStackParamList, Participant } from '../../types';
+import { MaterialIcons } from '@expo/vector-icons';
+import { BuyerStackParamList, Participant, Item } from '../../types';
 import { participantsService } from '../../services/firebase/participants.service';
+import { itemsService } from '../../services/firebase/items.service';
 import { theme } from '../../styles/theme';
 import { useAnimatedHeader } from '../../hooks/useAnimatedHeader';
 
@@ -12,6 +14,7 @@ export default function SellerDetailsScreen() {
   const route = useRoute<SellerDetailsScreenRouteProp>();
   const { participantId } = route.params;
   const [participant, setParticipant] = useState<Participant | null>(null);
+  const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
 
   const { handleScroll } = useAnimatedHeader({
@@ -21,16 +24,20 @@ export default function SellerDetailsScreen() {
   });
 
   useEffect(() => {
-    loadParticipant();
+    loadData();
   }, [participantId]);
 
-  const loadParticipant = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const data = await participantsService.getParticipantById(participantId);
-      setParticipant(data);
+      const [participantData, itemsData] = await Promise.all([
+        participantsService.getParticipantById(participantId),
+        itemsService.getParticipantItems(participantId),
+      ]);
+      setParticipant(participantData);
+      setItems(itemsData);
     } catch (error) {
-      console.error('Error loading participant:', error);
+      console.error('Error loading data:', error);
       Alert.alert('Fel', 'Kunde inte ladda säljarens information.');
     } finally {
       setLoading(false);
@@ -54,6 +61,27 @@ export default function SellerDetailsScreen() {
     );
   }
 
+  const renderItem = ({ item }: { item: Item }) => (
+    <View style={styles.itemCard}>
+      {item.imageUrls.length > 0 ? (
+        <Image source={{ uri: item.imageUrls[0] }} style={styles.itemImage} />
+      ) : (
+        <View style={styles.itemImagePlaceholder}>
+          <MaterialIcons name="image" size={40} color={theme.colors.textLight} />
+        </View>
+      )}
+      <View style={styles.itemContent}>
+        <Text style={styles.itemTitle}>{item.title}</Text>
+        <Text style={styles.itemDescription} numberOfLines={2}>
+          {item.description}
+        </Text>
+        {item.category && (
+          <Text style={styles.itemCategory}>{item.category}</Text>
+        )}
+      </View>
+    </View>
+  );
+
   return (
     <ScrollView
       style={styles.container}
@@ -69,6 +97,27 @@ export default function SellerDetailsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Om säljaren</Text>
           <Text style={styles.description}>{participant.description}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Varor till salu ({items.length})</Text>
+          {items.length > 0 ? (
+            <FlatList
+              data={items}
+              renderItem={renderItem}
+              keyExtractor={(item) => item.id}
+              scrollEnabled={false}
+            />
+          ) : (
+            <View style={styles.emptyItems}>
+              <MaterialIcons
+                name="inventory-2"
+                size={48}
+                color={theme.colors.textLight}
+              />
+              <Text style={styles.placeholder}>Inga varor ännu</Text>
+            </View>
+          )}
         </View>
       </View>
     </ScrollView>
@@ -139,5 +188,53 @@ const styles = StyleSheet.create({
     color: theme.colors.textLight,
     textAlign: 'center',
     fontStyle: 'italic',
+    marginTop: theme.spacing.sm,
+  },
+  itemCard: {
+    flexDirection: 'row',
+    backgroundColor: theme.colors.background,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  itemImage: {
+    width: 80,
+    height: 80,
+    borderRadius: theme.borderRadius.sm,
+    marginRight: theme.spacing.md,
+  },
+  itemImagePlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: theme.borderRadius.sm,
+    marginRight: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  itemContent: {
+    flex: 1,
+  },
+  itemTitle: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: '600',
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
+  },
+  itemDescription: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textLight,
+    marginBottom: theme.spacing.xs,
+  },
+  itemCategory: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.primary,
+    fontWeight: '600',
+  },
+  emptyItems: {
+    alignItems: 'center',
+    paddingVertical: theme.spacing.xl,
   },
 });

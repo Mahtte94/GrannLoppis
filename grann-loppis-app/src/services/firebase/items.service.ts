@@ -8,7 +8,6 @@ import {
   deleteDoc,
   query,
   where,
-  orderBy,
   Timestamp,
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -20,8 +19,7 @@ const ITEMS_COLLECTION = 'items';
 export interface UpdateItemInput {
   title?: string;
   description?: string;
-  imageUrl?: string;
-  suggestedPrice?: number;
+  imageUrls?: string[];
   category?: string;
 }
 
@@ -39,9 +37,8 @@ export async function createItem(
       eventId,
       title: input.title,
       description: input.description,
-      imageUrl: input.imageUrl,
+      imageUrls: input.imageUrls || [],
       category: input.category,
-      suggestedPrice: 0, // Default to 0, can be updated later
       createdAt: Timestamp.now(),
     };
 
@@ -53,9 +50,8 @@ export async function createItem(
       eventId,
       title: input.title,
       description: input.description,
-      imageUrl: input.imageUrl,
+      imageUrls: input.imageUrls || [],
       category: input.category,
-      suggestedPrice: 0,
       createdAt: new Date(),
     };
   } catch (error) {
@@ -72,23 +68,39 @@ export async function uploadItemImage(
   imageUri: string
 ): Promise<string> {
   try {
-    // Convert image URI to blob
     const response = await fetch(imageUri);
     const blob = await response.blob();
 
-    // Create storage reference
     const storageRef = ref(storage, `items/${itemId}/${Date.now()}.jpg`);
 
-    // Upload image
     await uploadBytes(storageRef, blob);
 
-    // Get download URL
     const downloadUrl = await getDownloadURL(storageRef);
 
     return downloadUrl;
   } catch (error) {
     console.error('Error uploading image:', error);
     throw new Error('Failed to upload image');
+  }
+}
+
+/**
+ * Upload multiple item images to Firebase Storage
+ */
+export async function uploadItemImages(
+  itemId: string,
+  imageUris: string[]
+): Promise<string[]> {
+  try {
+    const uploadPromises = imageUris.map(async (uri) => {
+      return uploadItemImage(itemId, uri);
+    });
+
+    const downloadUrls = await Promise.all(uploadPromises);
+    return downloadUrls;
+  } catch (error) {
+    console.error('Error uploading images:', error);
+    throw new Error('Failed to upload images');
   }
 }
 
@@ -111,8 +123,7 @@ export async function getItemById(itemId: string): Promise<Item | null> {
       eventId: data.eventId,
       title: data.title,
       description: data.description,
-      imageUrl: data.imageUrl,
-      suggestedPrice: data.suggestedPrice,
+      imageUrls: data.imageUrls || [],
       category: data.category,
       createdAt: data.createdAt.toDate(),
     };
@@ -129,13 +140,12 @@ export async function getEventItems(eventId: string): Promise<Item[]> {
   try {
     const q = query(
       collection(db, ITEMS_COLLECTION),
-      where('eventId', '==', eventId),
-      orderBy('createdAt', 'desc')
+      where('eventId', '==', eventId)
     );
 
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map((doc) => {
+    const items = querySnapshot.docs.map((doc) => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -143,12 +153,14 @@ export async function getEventItems(eventId: string): Promise<Item[]> {
         eventId: data.eventId,
         title: data.title,
         description: data.description,
-        imageUrl: data.imageUrl,
-        suggestedPrice: data.suggestedPrice,
+        imageUrls: data.imageUrls || [],
         category: data.category,
         createdAt: data.createdAt.toDate(),
       };
     });
+
+    // Sort by createdAt descending on the client side
+    return items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   } catch (error) {
     console.error('Error fetching event items:', error);
     throw new Error('Failed to load items');
@@ -162,13 +174,12 @@ export async function getParticipantItems(participantId: string): Promise<Item[]
   try {
     const q = query(
       collection(db, ITEMS_COLLECTION),
-      where('participantId', '==', participantId),
-      orderBy('createdAt', 'desc')
+      where('participantId', '==', participantId)
     );
 
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map((doc) => {
+    const items = querySnapshot.docs.map((doc) => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -176,12 +187,14 @@ export async function getParticipantItems(participantId: string): Promise<Item[]
         eventId: data.eventId,
         title: data.title,
         description: data.description,
-        imageUrl: data.imageUrl,
-        suggestedPrice: data.suggestedPrice,
+        imageUrls: data.imageUrls || [],
         category: data.category,
         createdAt: data.createdAt.toDate(),
       };
     });
+
+    // Sort by createdAt descending on the client side
+    return items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   } catch (error) {
     console.error('Error fetching participant items:', error);
     throw new Error('Failed to load your items');
@@ -206,11 +219,8 @@ export async function updateItem(
     if (input.description !== undefined) {
       updateData.description = input.description;
     }
-    if (input.imageUrl !== undefined) {
-      updateData.imageUrl = input.imageUrl;
-    }
-    if (input.suggestedPrice !== undefined) {
-      updateData.suggestedPrice = input.suggestedPrice;
+    if (input.imageUrls !== undefined) {
+      updateData.imageUrls = input.imageUrls;
     }
     if (input.category !== undefined) {
       updateData.category = input.category;
@@ -236,35 +246,13 @@ export async function deleteItem(itemId: string): Promise<void> {
   }
 }
 
-/**
- * Search items by title or category within an event
- */
-export async function searchItemsInEvent(
-  eventId: string,
-  searchTerm: string
-): Promise<Item[]> {
-  try {
-    const items = await getEventItems(eventId);
-
-    const lowerSearchTerm = searchTerm.toLowerCase();
-    return items.filter(
-      (item) =>
-        item.title.toLowerCase().includes(lowerSearchTerm) ||
-        (item.category && item.category.toLowerCase().includes(lowerSearchTerm))
-    );
-  } catch (error) {
-    console.error('Error searching items:', error);
-    throw new Error('Failed to search items');
-  }
-}
-
 export const itemsService = {
   createItem,
   uploadItemImage,
+  uploadItemImages,
   getItemById,
   getEventItems,
   getParticipantItems,
   updateItem,
   deleteItem,
-  searchItemsInEvent,
 };

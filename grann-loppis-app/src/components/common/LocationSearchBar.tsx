@@ -227,10 +227,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  searchIcon: {
-    fontSize: 20,
-    marginRight: theme.spacing.sm,
-  },
   input: {
     flex: 1,
     fontSize: theme.fontSize.md,
@@ -271,10 +267,6 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
-  },
-  predictionIcon: {
-    fontSize: 16,
-    marginRight: theme.spacing.sm,
   },
   predictionText: {
     flex: 1,

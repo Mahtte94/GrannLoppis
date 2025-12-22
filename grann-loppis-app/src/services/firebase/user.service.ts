@@ -1,4 +1,4 @@
-import { doc, getDoc, updateDoc, setDoc, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../firebase.config';
 import { User, UserRole } from '../../types';
 
@@ -63,41 +63,7 @@ export async function updateUserProfile(
   }
 }
 
-/**
- * Create or update user profile (useful for social auth)
- */
-export async function createOrUpdateUserProfile(
-  userId: string,
-  userData: Omit<User, 'id'>
-): Promise<User> {
-  try {
-    const docRef = doc(db, USERS_COLLECTION, userId);
-
-    const data: any = {
-      email: userData.email,
-      displayName: userData.displayName,
-      role: userData.role,
-      createdAt: Timestamp.now(),
-    };
-
-    if (userData.sellerProfile) {
-      data.sellerProfile = userData.sellerProfile;
-    }
-
-    await setDoc(docRef, data, { merge: true });
-
-    return {
-      id: userId,
-      ...userData,
-    };
-  } catch (error) {
-    console.error('Error creating/updating user profile:', error);
-    throw new Error('Failed to save user profile');
-  }
-}
-
 export const userService = {
   getUserProfile,
   updateUserProfile,
-  createOrUpdateUserProfile,
 };

@@ -307,34 +307,6 @@ class GoogleMapsService {
     }
   }
 
-  /**
-   * Format route duration in a human-readable way
-   * @param seconds - Duration in seconds
-   * @returns Formatted duration string (e.g., "1 h 30 min" or "45 min")
-   */
-  formatDuration(seconds: number): string {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.round((seconds % 3600) / 60);
-
-    if (hours > 0) {
-      return `${hours} h ${minutes} min`;
-    } else {
-      return `${minutes} min`;
-    }
-  }
-
-  /**
-   * Format route distance in a human-readable way
-   * @param meters - Distance in meters
-   * @returns Formatted distance string (e.g., "2.5 km" or "500 m")
-   */
-  formatDistance(meters: number): string {
-    if (meters < 1000) {
-      return `${Math.round(meters)} m`;
-    } else {
-      return `${(meters / 1000).toFixed(1)} km`;
-    }
-  }
 }
 
 export const googleMapsService = new GoogleMapsService();
